@@ -1,4 +1,4 @@
-# Claudia — Build Guide (v3)
+# Claudia — Build Guide (2026.05.18)
 
 A single-path, checkpoint-driven build guide for a Raspberry Pi Zero 2 W + PiSugar Whisplay HAT voice assistant powered by the Claude API. Press the on-board button, speak, and Claude talks back.
 
@@ -7,7 +7,7 @@ A single-path, checkpoint-driven build guide for a Raspberry Pi Zero 2 W + PiSug
 
 ---
 
-## What's new in v3 (vs. v2)
+## What's new in 2026.05.18 (vs. previous)
 
 - **One path, not two.** v2 offered a parallel "wake word via gpt-home" path. It's dropped. The PiSugar `whisplay-ai-chatbot` repo is purpose-built for this exact hardware and is the right choice for a Pi Zero 2 W. Wake word is supported through the official wiki (see Part 9) if you want hands-free later.
 - **Verified install commands against the live upstream repos.** Several v2 commands were wrong — corrected here.
@@ -633,4 +633,4 @@ Only Claude runs in the cloud. Everything else can run on-device if you want it 
 
 ---
 
-*Built for MindAttic LLC — v3, May 2026*
+*Built for MindAttic LLC — 2026.05.18*

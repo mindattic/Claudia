@@ -12,8 +12,8 @@ The actual chatbot runtime is the upstream [`PiSugar/whisplay-ai-chatbot`](https
 
 ```
 Claudia/
-├── Claudia_v3.md              # The build guide (canonical source of truth)
-├── Claudia_v3.htm             # Auto-generated self-contained page (inlined CSS+JS+images, light/dark theme)
+├── Claudia_2026.05.18.md              # The build guide (canonical source of truth)
+├── Claudia_2026.05.18.htm             # Auto-generated self-contained page (inlined CSS+JS+images, light/dark theme)
 ├── README.md                  # ← you are here
 ├── Claudia.Console.bat        # Top-level shortcut to scripts/Claudia.Console.bat
 ├── package.json               # Two deps: marked (markdown) + highlight.js (syntax)
@@ -80,12 +80,12 @@ You'll see something like:
     set-apikey     Set ANTHROPIC_API_KEY on the Pi.
     show-config    Print the remote .env (api key masked).
     update         Install/refresh local Node deps.
-    build-html     Render the latest Claudia_v*.md to a self-contained .htm.
+    build-html     Render the latest Claudia_<date>.md to a self-contained .htm.
     fetch-images   Force-refresh every part image from its remote URL.
-    bump           Copy Claudia_vN.md to Claudia_v(N+1).md and rebuild the .htm.
+    bump           Copy latest Claudia_<date>.md to today's date and rebuild the .htm.
     list-parts     List parts catalog + which have a chosen URL.
     find-deals     Open Amazon/official/reputable tabs per part; save your picks.
-    apply-deals    Stamp chosen URLs into the latest Claudia_v*.md.
+    apply-deals    Stamp chosen URLs into the latest Claudia_<date>.md.
     pull-latest    git fetch + overlay latest source (handles locked .ps1 files).
     self-update    Refresh node_modules + open "newer version?" searches per part.
 ```
@@ -99,7 +99,7 @@ The Console doubles as a price-comparison assistant for the parts in `config/par
 3. **Official retailer** (raspberrypi.com, pisugar.com, seeedstudio.com, etc.)
 4. **Reputable** secondaries (Adafruit, Pi Hut, Sparkfun, Mouser, DigiKey, B&H, Tindie)
 
-You pick the best URL, paste it back into the prompt, and `apply-deals` rewrites the latest `Claudia_v*.md` so each part line becomes a Markdown link to the URL you chose. The hook then auto-regenerates the PDF.
+You pick the best URL, paste it back into the prompt, and `apply-deals` rewrites the latest `Claudia_<date>.md` so each part line becomes a Markdown link to the URL you chose. The hook then auto-regenerates the PDF.
 
 ```powershell
 .\Claudia.Console.bat find-deals               # walk the whole catalog
@@ -125,7 +125,7 @@ You can also call commands directly:
 
 ## Build the device
 
-1. Open **`Claudia_v3.md`** (or the PDF if you'd rather read it printed).
+1. Open **`Claudia_2026.05.18.md`** (or the PDF if you'd rather read it printed).
 2. Follow Parts 1–3 to buy parts, assemble, and flash the SD card.
 3. SSH in. Then either:
    - **Manual path:** follow Parts 4–9 by hand.
@@ -136,16 +136,16 @@ You can also call commands directly:
 
 ## HTML workflow
 
-The `.htm` is **derived**: never hand-edit `Claudia_v3.htm`, always edit the `.md`. The output is one self-contained file — inline CSS, inline JS, inline (base64) part photos. No CDN, no `<link>`, no `<script src>`. Styling and the light/dark theme toggle follow [mindattic.com](https://mindattic.com)'s single-file convention.
+The `.htm` is **derived**: never hand-edit `Claudia_2026.05.18.htm`, always edit the `.md`. The output is one self-contained file — inline CSS, inline JS, inline (base64) part photos. No CDN, no `<link>`, no `<script src>`. Styling and the light/dark theme toggle follow [mindattic.com](https://mindattic.com)'s single-file convention.
 
 Two ways the page gets refreshed:
 
-1. **Automatic** — `.claude/settings.json` registers a `PostToolUse` hook that fires `scripts/on-md-change.ps1` whenever Claude Code edits a `Claudia_v*.md`. The hook re-renders the matching `.htm` and logs to `.claude/html-rebuild.log`. No-op for any other file edit.
+1. **Automatic** — `.claude/settings.json` registers a `PostToolUse` hook that fires `scripts/on-md-change.ps1` whenever Claude Code edits a `Claudia_<date>.md`. The hook re-renders the matching `.htm` and logs to `.claude/html-rebuild.log`. No-op for any other file edit.
 
 2. **Manual** —
    ```powershell
    .\scripts\build-html.bat              # latest version
-   .\scripts\build-html.bat -Source .\Claudia_v3.md
+   .\scripts\build-html.bat -Source .\Claudia_2026.05.18.md
    ```
 
 ### Theming
@@ -171,14 +171,15 @@ node scripts/build-html.js --no-images    # skip embedding entirely (placeholder
 
 ### Bumping the version
 
-When the guide changes substantively, bump the version rather than overwriting v3:
+When the guide changes substantively, bump to a new dated revision rather than overwriting the existing one:
 
 ```powershell
-.\scripts\bump-version.bat           # v3 -> v4 (then v5, v6, ...)
-.\scripts\bump-version.bat -To 5     # skip ahead explicitly
+.\scripts\bump-version.bat                    # today's date (YYYY.MM.DD)
+.\scripts\bump-version.bat -To 2026.06.01     # forward-date explicitly
+.\scripts\bump-version.bat -Force             # overwrite an existing same-day file
 ```
 
-The bumper copies `Claudia_vN.md` to `Claudia_v(N+1).md`, rewrites the in-file `(vN)` / `vs. v(N-1)` tags, and regenerates the matching `.htm`. The previous `.md`/`.htm` are left in place so you have a permanent diff target.
+The bumper copies the latest `Claudia_<date>.md` to a new file stamped with today's date, rewrites the in-file `Build Guide (<date>)` / `What's new in <date>` / footer tags, and regenerates the matching `.htm`. Earlier dated files are left in place so you have permanent diff targets.
 
 ---
 
@@ -195,7 +196,7 @@ Either of these can be hoisted to your global `~/.claude/commands/` later if you
 
 ## Cost / time / parts
 
-The full breakdown lives in `Claudia_v3.md` (Part 1). At a glance:
+The full breakdown lives in `Claudia_2026.05.18.md` (Part 1). At a glance:
 
 | Build | What you get | Total |
 |-------|--------------|-------|
@@ -210,7 +211,7 @@ Assembly is ~5 minutes (no soldering); first-boot software install is ~30–60 m
 
 ## Upstream references
 
-- Build guide: **`Claudia_v3.md`** in this repo
+- Build guide: **`Claudia_2026.05.18.md`** in this repo
 - Chatbot runtime: <https://github.com/PiSugar/whisplay-ai-chatbot>
 - Whisplay driver: <https://github.com/PiSugar/Whisplay>
 - Wake-word wiki: <https://github.com/PiSugar/whisplay-ai-chatbot/wiki/Wakeword>

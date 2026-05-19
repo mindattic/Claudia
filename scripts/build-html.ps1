@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Render the latest (or a specific) Claudia_v*.md to a self-contained .htm.
+    Render the latest (or a specific) Claudia_<YYYY.MM.DD>.md to a self-contained .htm.
 
 .DESCRIPTION
     Thin wrapper around scripts/build-html.js. The Node script produces ONE
@@ -10,7 +10,7 @@
 
 .PARAMETER Source
     Optional path to a specific .md. Defaults to the highest-numbered
-    Claudia_v*.md in the repo root.
+    Claudia_<date>.md in the repo root.
 #>
 [CmdletBinding()]
 param(

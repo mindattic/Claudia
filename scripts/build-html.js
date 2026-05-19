@@ -96,12 +96,13 @@ renderer.heading = function (text, level, raw) {
 
 function pickSource() {
     if (sourceArg) return path.resolve(sourceArg);
+    // Date-versioned filenames: Claudia_YYYY.MM.DD.md. Lexicographic sort
+    // gives chronological order, so the newest is last.
     const candidates = fs.readdirSync(repoRoot)
-        .filter(f => /^Claudia_v\d+\.md$/.test(f))
-        .map(f => ({ f, n: parseInt(f.match(/v(\d+)/)[1], 10) }))
-        .sort((a, b) => b.n - a.n);
-    if (!candidates.length) throw new Error('No Claudia_v*.md found in ' + repoRoot);
-    return path.join(repoRoot, candidates[0].f);
+        .filter(f => /^Claudia_\d{4}\.\d{2}\.\d{2}\.md$/.test(f))
+        .sort();
+    if (!candidates.length) throw new Error('No Claudia_<YYYY.MM.DD>.md found in ' + repoRoot);
+    return path.join(repoRoot, candidates[candidates.length - 1]);
 }
 
 function buildToc(md) {

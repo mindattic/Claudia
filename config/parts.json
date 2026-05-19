@@ -1,5 +1,5 @@
 {
-  "_description": "Parts catalog for the Claudia build. Each part has a 'searchFor' fallback (Google search) plus at least 3 direct tier links (amazon -> official -> reputable). The 'find-deals' console command opens these in order so you can pick the best price; 'apply-deals' stamps the chosen URL back into Claudia_v*.md by replacing 'match' with a Markdown link.",
+  "_description": "Parts catalog for the Claudia build. Each part has a 'searchFor' fallback (Google search) plus at least 3 direct tier links (amazon -> official -> reputable). The 'find-deals' console command opens these in order so you can pick the best price; 'apply-deals' stamps the chosen URL back into the latest Claudia_<YYYY.MM.DD>.md by replacing 'match' with a Markdown link.",
   "_priorityOrder": ["amazon", "official", "reputable"],
 
   "categories": {

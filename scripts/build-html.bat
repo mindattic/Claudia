@@ -1,5 +1,5 @@
 @echo off
-REM Render the latest Claudia_v*.md to a self-contained .htm.
+REM Render the latest Claudia_<date>.md to a self-contained .htm.
 
 setlocal
 set "SCRIPT_DIR=%~dp0"
