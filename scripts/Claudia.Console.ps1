@@ -351,12 +351,9 @@ function Cmd-ApplyDeals {
         return
     }
 
-    # Find newest Claudia_<YYYY.MM.DD>.md (lex sort = chronological).
-    $guide = Get-ChildItem -Path $repoRoot -Filter 'Claudia_*.md' -File |
-        Where-Object { $_.BaseName -match '^Claudia_\d{4}\.\d{2}\.\d{2}$' } |
-        Sort-Object Name |
-        Select-Object -Last 1
-    if (-not $guide) { throw "no Claudia_<YYYY.MM.DD>.md found." }
+    # Single stable file - the date lives inside the content.
+    $guide = Get-Item -Path (Join-Path $repoRoot 'Claudia.md') -ErrorAction SilentlyContinue
+    if (-not $guide) { throw "Claudia.md not found in $repoRoot." }
     Write-Info ("editing " + $guide.Name)
 
     $content = Get-Content $guide.FullName -Raw
@@ -540,7 +537,7 @@ function Cmd-SelfUpdate($a) {
         Open-Url $url
         Write-Warn2 'If a newer model ID is available (e.g. Haiku 4.6+), update:'
         Write-Warn2 '  - config/env.template (ANTHROPIC_MODEL=...)'
-        Write-Warn2 '  - the latest Claudia_<date>.md Part 6 table'
+        Write-Warn2 '  - Claudia.md Part 6 table'
         Write-Warn2 '  - the Pi if a unit is deployed:  Claudia.Console set-model <id>'
     }
 
@@ -585,12 +582,12 @@ $commands = [ordered]@{
     'set-apikey'   = @{ Help = 'Set ANTHROPIC_API_KEY on the Pi. Usage: set-apikey sk-ant-...';                               Action = { param($a) Cmd-SetApiKey $a } }
     'show-config'  = @{ Help = 'Print the remote .env (api key masked).';                                                     Action = { Cmd-ShowConfig } }
     'update'       = @{ Help = 'Install/refresh local Node deps. Add --clean to wipe node_modules.';                          Action = { param($a) Cmd-Update $a } }
-    'build-html'   = @{ Help = 'Render the latest (or a specific) Claudia_<date>.md to a self-contained .htm.';              Action = { param($a) Cmd-BuildHtml $a } }
+    'build-html'   = @{ Help = 'Render Claudia.md to Claudia.htm (self-contained).';                                          Action = { param($a) Cmd-BuildHtml $a } }
     'fetch-images' = @{ Help = 'Force-refresh every part image from its remote URL (ignores cache, keeps local overrides).'; Action = { param($a) Cmd-FetchImages $a } }
-    'bump'         = @{ Help = 'Copy latest Claudia_<date>.md to one stamped with today (or -To <date>) and rebuild the .htm.'; Action = { param($a) Cmd-Bump $a } }
+    'bump'         = @{ Help = 'Stamp Claudia.md with today''s revision date (or -To <YYYY.MM.DD>) and rebuild Claudia.htm.';  Action = { param($a) Cmd-Bump $a } }
     'list-parts'   = @{ Help = 'List parts catalog + which have a chosen URL.';                                               Action = { Cmd-ListParts } }
     'find-deals'   = @{ Help = 'Open Amazon/official/reputable tabs per part; save your picks. [core|mic|portable|smarthome|--all]'; Action = { param($a) Cmd-FindDeals $a } }
-    'apply-deals'  = @{ Help = 'Stamp chosen URLs into the latest Claudia_<date>.md.';                                        Action = { Cmd-ApplyDeals } }
+    'apply-deals'  = @{ Help = 'Stamp chosen URLs into Claudia.md.';                                                          Action = { Cmd-ApplyDeals } }
     'pull-latest'  = @{ Help = 'git fetch + overlay latest source. Add --force if working tree is dirty.';                    Action = { param($a) Cmd-PullLatest $a } }
     'self-update'  = @{ Help = 'Refresh node_modules + open "is there a newer version?" searches for every part / Claude model.'; Action = { param($a) Cmd-SelfUpdate $a } }
 }

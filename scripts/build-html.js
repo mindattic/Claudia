@@ -96,13 +96,11 @@ renderer.heading = function (text, level, raw) {
 
 function pickSource() {
     if (sourceArg) return path.resolve(sourceArg);
-    // Date-versioned filenames: Claudia_YYYY.MM.DD.md. Lexicographic sort
-    // gives chronological order, so the newest is last.
-    const candidates = fs.readdirSync(repoRoot)
-        .filter(f => /^Claudia_\d{4}\.\d{2}\.\d{2}\.md$/.test(f))
-        .sort();
-    if (!candidates.length) throw new Error('No Claudia_<YYYY.MM.DD>.md found in ' + repoRoot);
-    return path.join(repoRoot, candidates[candidates.length - 1]);
+    // Stable filename - the date lives inside the file, not in the name,
+    // so links to /Claudia.htm always resolve to the latest revision.
+    const p = path.join(repoRoot, 'Claudia.md');
+    if (!fs.existsSync(p)) throw new Error('Claudia.md not found in ' + repoRoot);
+    return p;
 }
 
 function buildToc(md) {
@@ -496,6 +494,41 @@ tr:hover td { background: var(--bg2); }
 img { max-width: 100%; height: auto; border-radius: 6px; }
 
 /* ──────────────────────────────────────────────────────────────────────
+   §  DOWNLOAD STRIP (raw .md / save .htm / GitHub) - pinned top-left
+   sibling of the theme toggle so the two corners feel balanced.
+   ────────────────────────────────────────────────────────────────────── */
+.download-strip {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 100;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px 6px;
+  box-shadow: var(--shadow);
+  font-size: 13px;
+}
+.download-strip a {
+  color: var(--text2);
+  padding: 5px 9px;
+  border-radius: 5px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+.download-strip a:hover { background: var(--bg3); color: var(--accent); text-decoration: none; }
+.download-strip a + a { border-left: 1px solid var(--border); border-radius: 0 5px 5px 0; padding-left: 10px; }
+.download-strip a:first-child { border-radius: 5px 0 0 5px; }
+@media (max-width: 640px) {
+  .download-strip { font-size: 12px; padding: 3px 4px; }
+  .download-strip a { padding: 4px 7px; }
+}
+
+/* ──────────────────────────────────────────────────────────────────────
    §  TOC
    ────────────────────────────────────────────────────────────────────── */
 .toc {
@@ -597,6 +630,12 @@ ${imageCss}
 <body>
 
 <a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav class="download-strip" aria-label="Source and downloads">
+  <a href="Claudia.md" download="Claudia.md" title="Download the markdown source">Markdown</a>
+  <a href="Claudia.htm" download="Claudia.htm" title="Download this page">HTML</a>
+  <a href="https://github.com/mindattic/Claudia" target="_blank" rel="noopener noreferrer" title="View the repo on GitHub">GitHub</a>
+</nav>
 
 <button id="theme-toggle" type="button" title="Toggle theme" aria-label="Toggle light/dark theme" aria-pressed="false"><span aria-hidden="true">&#x2600;</span></button>
 

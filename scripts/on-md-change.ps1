@@ -1,10 +1,10 @@
 <#
 .SYNOPSIS
-    PostToolUse hook: regenerate the matching .htm when a Claudia_<date>.md is edited.
+    PostToolUse hook: regenerate Claudia.htm whenever Claudia.md is edited.
 
 .DESCRIPTION
     Reads the hook's JSON payload from stdin, checks whether the touched path is
-    a Claudia_<YYYY.MM.DD>.md in this repo, and if so re-runs build-html.ps1 on it.
+    Claudia.md in this repo, and if so re-runs build-html.ps1 on it.
 
     Silent and non-blocking on the no-op path so it doesn't spam the session.
 #>
@@ -21,10 +21,10 @@ try {
 $path = $json.tool_input.file_path
 if (-not $path) { exit 0 }
 
-# Only react to Claudia_<YYYY.MM.DD>.md edits inside this repo.
+# Only react to Claudia.md edits inside this repo.
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $leaf = Split-Path -Leaf $path
-if ($leaf -notmatch '^Claudia_\d{4}\.\d{2}\.\d{2}\.md$') { exit 0 }
+if ($leaf -ne 'Claudia.md') { exit 0 }
 
 try {
     $full = (Resolve-Path -LiteralPath $path -ErrorAction Stop).Path
