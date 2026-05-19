@@ -219,4 +219,4 @@ Assembly is ~5 minutes (no soldering); first-boot software install is ~30–60 m
 
 ---
 
-*Built by Ryan DeBraal / MindAttic LLC. The guide carries the canonical version; this README just points at it.*
+*Built by MindAttic LLC. The guide carries the canonical version; this README just points at it.*

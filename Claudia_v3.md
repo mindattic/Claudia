@@ -2,9 +2,8 @@
 
 A single-path, checkpoint-driven build guide for a Raspberry Pi Zero 2 W + PiSugar Whisplay HAT voice assistant powered by the Claude API. Press the on-board button, speak, and Claude talks back.
 
-**Built for:** Ryan DeBraal / MindAttic LLC
-**Last verified against upstream repos:** May 2026
-**Build cost:** ~$77 base · ~$117 with battery · ~$184 fully loaded
+**Last Verified:** May 2026
+**Build Cost:** ~$77 base · ~$117 with battery · ~$184 fully loaded
 
 ---
 
@@ -634,4 +633,4 @@ Only Claude runs in the cloud. Everything else can run on-device if you want it 
 
 ---
 
-*Built for Ryan DeBraal / MindAttic LLC — v3, May 2026*
+*Built for MindAttic LLC — v3, May 2026*
