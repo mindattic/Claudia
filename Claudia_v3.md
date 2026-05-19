@@ -1,4 +1,4 @@
-# Claude Voice Assistant Box — Build Guide (v3)
+# Claudia — Build Guide (v3)
 
 A single-path, checkpoint-driven build guide for a Raspberry Pi Zero 2 W + PiSugar Whisplay HAT voice assistant powered by the Claude API. Press the on-board button, speak, and Claude talks back.
 
@@ -113,7 +113,7 @@ Download from **raspberrypi.com/software** (Windows, macOS, Linux).
    - The chatbot repo's install script expects packages from the full image. Lite will work but you'll need extra apt installs and may hit surprises.
 4. **Choose Storage** → your microSD card.
 5. Click the gear icon (⚙) for **Edit Settings** and configure:
-   - **Hostname:** `claudebox`
+   - **Hostname:** `claudia`
    - **Username:** `pi`
    - **Password:** *something secure*
    - **Enable SSH:** ✅ password auth
@@ -129,12 +129,12 @@ Download from **raspberrypi.com/software** (Windows, macOS, Linux).
 4. From your PC:
 
    ```bash
-   ssh pi@claudebox.local
+   ssh pi@claudia.local
    ```
 
-   If `claudebox.local` doesn't resolve, find the Pi's IP in your router's admin page and use `ssh pi@192.168.x.x`.
+   If `claudia.local` doesn't resolve, find the Pi's IP in your router's admin page and use `ssh pi@192.168.x.x`.
 
-✅ **Checkpoint:** You see the `pi@claudebox:~ $` prompt. Run `cat /etc/os-release` and confirm it says Debian/Raspberry Pi OS. Run `free -h` — you should see ~430 MB of `Mem:` (the Pi Zero 2 W has 512 MB total).
+✅ **Checkpoint:** You see the `pi@claudia:~ $` prompt. Run `cat /etc/os-release` and confirm it says Debian/Raspberry Pi OS. Run `free -h` — you should see ~430 MB of `Mem:` (the Pi Zero 2 W has 512 MB total).
 
 ---
 
@@ -184,7 +184,7 @@ sudo reboot
 Wait ~60 seconds, then SSH back in:
 
 ```bash
-ssh pi@claudebox.local
+ssh pi@claudia.local
 ```
 
 ✅ **Checkpoint 1 — driver loaded:**
@@ -297,7 +297,7 @@ sudo reboot
 ### Verify the default config works end-to-end
 
 ```bash
-ssh pi@claudebox.local
+ssh pi@claudia.local
 arecord -d 5 -f cd /tmp/default_test.wav && aplay /tmp/default_test.wav
 ```
 
@@ -340,7 +340,7 @@ You should see `v20.x` or similar.
 1. Go to **console.anthropic.com** and sign in (or create an account).
 2. Add a payment method and put a small amount of credit on the account (e.g., $5 — that lasts a long time on Haiku).
 3. Navigate to **API Keys** → **Create Key**.
-4. Name it `claudebox`. **Copy the key now** — you can't see it again later.
+4. Name it `claudia`. **Copy the key now** — you can't see it again later.
 5. Treat the key like a password.
 
 **Approximate cost:** Casual personal use on `claude-haiku-4-5-20251001` typically runs a few dollars per month at most. Check current pricing at anthropic.com/pricing.
@@ -411,7 +411,7 @@ Paste:
 
 ```bash
 #!/bin/bash
-# claudebox healthcheck — quick end-to-end smoke test
+# claudia healthcheck — quick end-to-end smoke test
 # Usage: bash ~/healthcheck.sh
 
 set -u

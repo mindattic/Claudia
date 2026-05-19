@@ -1,11 +1,11 @@
 <#
 .SYNOPSIS
-    Claudia console - local builder tasks + remote Pi (claudebox) configuration.
+    Claudia console - local builder tasks + remote Pi (claudia) configuration.
 
 .DESCRIPTION
     Single entry point for both:
       - Local dev: install Node deps, render PDFs, bump guide versions.
-      - Remote Pi: auto-detect "claudebox" on the LAN, then edit its .env
+      - Remote Pi: auto-detect "claudia" on the LAN, then edit its .env
         (wake word, Claude model, system prompt), tail logs, restart the
         chatbot service, or run the on-device healthcheck.
 
@@ -60,7 +60,7 @@ function Get-State {
         try { return Get-Content $statePath -Raw | ConvertFrom-Json } catch {}
     }
     return [pscustomobject]@{
-        host    = 'claudebox.local'
+        host    = 'claudia.local'
         user    = 'pi'
         envPath = '/home/pi/whisplay-ai-chatbot/.env'
     }
@@ -86,7 +86,7 @@ function Test-PiReachable($hostName) {
 
 function Find-Pi {
     $state = Get-State
-    $candidates = @($state.host, 'claudebox.local', 'raspberrypi.local') | Select-Object -Unique
+    $candidates = @($state.host, 'claudia.local', 'raspberrypi.local') | Select-Object -Unique
     foreach ($name in $candidates) {
         Write-Info "probing $name ..."
         if (Test-PiReachable $name) {

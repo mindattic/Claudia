@@ -41,7 +41,7 @@ Claudia/
     ├── on-md-change.ps1       # Hook handler - auto-rebuild .htm on .md edits
     ├── pull-latest-finisher.ps1 # Detached helper for self-update (locked-file safe)
     ├── healthcheck.sh         # End-to-end smoke test (runs on the Pi)
-    └── install-claudebox.sh   # Automates Parts 4-9 (runs on the Pi)
+    └── install-claudia.sh     # Automates Parts 4-9 (runs on the Pi)
 ```
 
 ---
@@ -63,7 +63,7 @@ You'll see something like:
 ```
   Claudia Console
   ---------------
-  target Pi  : pi@claudebox.local
+  target Pi  : pi@claudia.local
 
   Commands:
     help           List available commands.
@@ -129,7 +129,7 @@ You can also call commands directly:
 2. Follow Parts 1–3 to buy parts, assemble, and flash the SD card.
 3. SSH in. Then either:
    - **Manual path:** follow Parts 4–9 by hand.
-   - **Scripted path:** copy `scripts/install-claudebox.sh` to the Pi and run it. It walks the same steps end-to-end and prompts you when it needs a reboot or your API key.
+   - **Scripted path:** copy `scripts/install-claudia.sh` to the Pi and run it. It walks the same steps end-to-end and prompts you when it needs a reboot or your API key.
 4. Once it's running, plug Claudia onto your LAN and run `Claudia.Console detect` from this machine — every command after that targets it over SSH.
 
 ---

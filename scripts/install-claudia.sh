@@ -1,9 +1,9 @@
 #!/bin/bash
-# install-claudebox.sh — automate Parts 4 through 9 of the build guide.
+# install-claudia.sh — automate Parts 4 through 9 of the build guide.
 #
 # Run this on the Pi after a fresh Raspberry Pi OS 64-bit boot:
-#     scp scripts/install-claudebox.sh pi@claudebox.local:~
-#     ssh pi@claudebox.local 'bash ~/install-claudebox.sh'
+#     scp scripts/install-claudia.sh pi@claudia.local:~
+#     ssh pi@claudia.local 'bash ~/install-claudia.sh'
 #
 # The script is idempotent — re-running it is safe.
 

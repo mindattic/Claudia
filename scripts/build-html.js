@@ -431,8 +431,10 @@ main.page {
   margin: 0 auto;
   padding: 56px 28px 96px;
 }
-@media (min-width: 1100px) {
-  main.page { padding-left: 280px; }
+/* TOC only appears when there's enough natural left margin to host it
+   without overlapping the centered column — (viewport - 880) / 2 > 240
+   → viewport > 1360. Below that, the page is just the centered article. */
+@media (min-width: 1360px) {
   .toc { display: block; }
 }
 

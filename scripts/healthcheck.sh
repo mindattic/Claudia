@@ -1,5 +1,5 @@
 #!/bin/bash
-# claudebox healthcheck — quick end-to-end smoke test
+# claudia healthcheck — quick end-to-end smoke test
 # Verifies speaker, mic, network, and Claude API in one shot.
 # Usage: bash ~/healthcheck.sh
 
