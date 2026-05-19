@@ -38,5 +38,18 @@ $stamp = (Get-Date).ToString('s')
 Add-Content -Path $log -Value "[$stamp] rebuilding $leaf"
 
 & (Join-Path $PSScriptRoot 'build-html.ps1') -Source $full *>> $log
-Add-Content -Path $log -Value "[$stamp] exit $LASTEXITCODE"
+$buildExit = $LASTEXITCODE
+Add-Content -Path $log -Value "[$stamp] build exit $buildExit"
+
+# Mirror Claudia.htm -> index.htm so the local working tree matches what
+# deploy.ps1 will publish (and so mindattic.com/claudia/index.htm always has
+# the latest content rather than an out-of-date redirect stub).
+if ($buildExit -eq 0) {
+    $claudiaHtm = Join-Path $repoRoot 'Claudia.htm'
+    $indexFile  = Join-Path $repoRoot 'index.htm'
+    if (Test-Path $claudiaHtm) {
+        Copy-Item -Path $claudiaHtm -Destination $indexFile -Force
+        Add-Content -Path $log -Value "[$stamp] mirrored Claudia.htm -> index.htm"
+    }
+}
 exit 0

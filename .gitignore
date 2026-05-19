@@ -28,4 +28,7 @@ scripts/deploy.settings.json
 # Build artifacts
 out/
 dist/
-config/images-cache/
+
+# Runtime logs from the .claude PostToolUse hook
+.claude/html-rebuild.log
+.claude/pull-latest.log

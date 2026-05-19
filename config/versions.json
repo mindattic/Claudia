@@ -1,0 +1,15 @@
+{
+  "_description": "External dependency versions referenced in the build guide. Update these when upstream releases new majors. build-html.js injects these into Claudia.md wherever placeholders like {{NODE_LABEL}} appear (compile-time substitution, AFTER marked renders).",
+  "versionsAsOf": "2026-05-19",
+
+  "NODE_MAJOR": "24",
+  "NODE_LABEL": "v24.x",
+
+  "PYTHON_SYSTEM_MAJOR": "3.12",
+  "PYTHON_SYSTEM_LABEL": "Python 3.12 (Raspberry Pi OS default)",
+
+  "RPI_OS_LABEL": "Raspberry Pi OS 64-bit",
+
+  "CLAUDE_DEFAULT_MODEL": "claude-haiku-4-5-20251001",
+  "CLAUDE_DEFAULT_MODEL_LABEL": "Claude Haiku 4.5"
+}

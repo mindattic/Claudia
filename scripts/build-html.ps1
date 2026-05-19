@@ -9,8 +9,7 @@
     single-file site convention.
 
 .PARAMETER Source
-    Optional path to a specific .md. Defaults to the highest-numbered
-    Claudia.md in the repo root.
+    Optional path to a specific .md. Defaults to Claudia.md in the repo root.
 #>
 [CmdletBinding()]
 param(

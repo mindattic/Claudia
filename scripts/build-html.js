@@ -1,63 +1,32 @@
 #!/usr/bin/env node
 /*
- * build-html.js — render Claudia_vN.md to a self-contained Claudia_vN.htm.
+ * build-html.js — render Claudia.md to a self-contained Claudia.htm.
  *
- * Output is ONE file. No CDN. No <link>. No <script src>. Inlined CSS, inlined
- * JS, inlined images (base64 data URIs in the CSS). Modeled on mindattic.com's
- * single-file design convention with a light/dark theme toggle.
+ * Output is ONE file. No CDN. No <link>. No <script src>. Inlined CSS and
+ * inlined JS, modeled on mindattic.com's single-file design convention with a
+ * light/dark theme toggle.
  *
- * Image pipeline:
- *   - parts.json + an internal lookup map per-part-id supply image URLs.
- *   - First build: downloads each image, caches under config/images-cache/.
- *   - Every build: reads the cached bytes, base64-encodes, embeds in CSS.
- *   - Any fetch failure falls back to an SVG placeholder so the build never
- *     breaks on network hiccups.
+ * The filename is stable — the revision date lives inside the file (in the H1
+ * and footer), not in the filename, so external links never rot.
  *
  * Usage:
- *   node scripts/build-html.js [source.md] [--no-images] [--refresh-images]
+ *   node scripts/build-html.js [source.md]
  */
 
 'use strict';
 
 const fs    = require('fs');
 const path  = require('path');
-const crypto = require('crypto');
-const https = require('https');
-const http  = require('http');
-const { URL } = require('url');
 const { marked } = require('marked');
 const hljs  = require('highlight.js');
 
-const repoRoot     = path.resolve(__dirname, '..');
-const configDir    = path.join(repoRoot, 'config');
-const imagesCache  = path.join(configDir, 'images-cache');
-const partsJsonPath = path.join(configDir, 'parts.json');
+const repoRoot         = path.resolve(__dirname, '..');
+const configDir        = path.join(repoRoot, 'config');
+const partsJsonPath    = path.join(configDir, 'parts.json');
+const versionsJsonPath = path.join(configDir, 'versions.json');
 
 const argv = process.argv.slice(2);
-const flagNoImages      = argv.includes('--no-images');
-const flagRefreshImages = argv.includes('--refresh-images');
 const sourceArg = argv.find(a => !a.startsWith('--'));
-
-// ──────────────────────────────────────────────────────────────────────
-// Part-id -> image URL. Kept in the build script (not parts.json) so the
-// shopping catalog and the visual gallery stay decoupled. Pick stable hosts
-// (Wikimedia, vendor product pages). Any URL that 403s / 404s / times out
-// will fall back to a generated SVG placeholder; the build never fails.
-// ──────────────────────────────────────────────────────────────────────
-const PART_IMAGE_URLS = {
-    'pi-zero-2-wh':       'https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/Raspberry_Pi_Zero_2_W_top.jpg/640px-Raspberry_Pi_Zero_2_W_top.jpg',
-    'whisplay-hat':       'https://www.pisugar.com/assets/whisplay.png',
-    'microsd-32gb':       'https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/MicroSD_Karte.jpg/640px-MicroSD_Karte.jpg',
-    'pi-power-supply':    'https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Raspberry_Pi_universal_power_supply.jpg/640px-Raspberry_Pi_universal_power_supply.jpg',
-    'sunfounder-mic':     'https://m.media-amazon.com/images/I/61TgWzVfL5L._AC_SL1500_.jpg',
-    'respeaker-xvf3800':  'https://files.seeedstudio.com/wiki/respeaker_xvf3800/img/main.jpg',
-    'otg-adapter':        'https://cdn-shop.adafruit.com/970x728/1099-04.jpg',
-    'pisugar3-battery':   'https://www.pisugar.com/assets/pisugar3.png',
-    'tplink-kasa-hs103':  'https://static.tp-link.com/2020/202010/20201023/HS103P4_un_normal_1.0.jpg',
-    'shelly-plug-us':     'https://www.shelly.com/cdn/shop/products/Shelly_Plug_US_3.jpg',
-    'sonoff-s31':         'https://itead.cc/wp-content/uploads/2019/01/SONOFF-S31-1.jpg',
-    'hiwonder-wonderecho':'https://www.hiwonder.com/cdn/shop/files/WonderEcho_Voice_AI_Voice_Module_AI_Voice_Recognition_AI_Module.jpg',
-};
 
 // ──────────────────────────────────────────────────────────────────────
 // Markdown plumbing
@@ -110,11 +79,17 @@ function buildToc(md) {
     for (const line of lines) {
         if (/^```/.test(line)) { inFence = !inFence; continue; }
         if (inFence) continue;
-        const m = line.match(/^##\s+(.+?)\s*$/);
-        if (m) items.push(m[1].trim());
+        // H1 first (only one expected), then every H2.
+        let m = line.match(/^#\s+(.+?)\s*$/);
+        if (m) { items.push({ title: m[1].trim(), id: null }); continue; }
+        m = line.match(/^##\s+(.+?)\s*$/);
+        if (m) items.push({ title: m[1].trim(), id: null });
     }
     if (!items.length) return '';
-    const lis = items.map(t => `<li><a href="#${slugify(t)}">${escapeHtml(t)}</a></li>`).join('\n');
+    const lis = items.map(it => {
+        const href = it.id || slugify(it.title);
+        return `<li><a href="#${href}">${escapeHtml(it.title)}</a></li>`;
+    }).join('\n');
     return `<nav class="toc" aria-label="Table of contents"><div class="toc-title">Contents</div><ol>${lis}</ol></nav>`;
 }
 
@@ -123,217 +98,290 @@ function extractTitle(md) {
     return m ? m[1].trim() : 'Claudia';
 }
 
-// ──────────────────────────────────────────────────────────────────────
-// Image fetch + cache
-// ──────────────────────────────────────────────────────────────────────
-function ensureDir(p) { if (!fs.existsSync(p)) fs.mkdirSync(p, { recursive: true }); }
-
-function extensionFor(contentType, urlPath) {
-    if (contentType) {
-        const ct = contentType.split(';')[0].trim().toLowerCase();
-        if (ct === 'image/jpeg') return '.jpg';
-        if (ct === 'image/png')  return '.png';
-        if (ct === 'image/webp') return '.webp';
-        if (ct === 'image/gif')  return '.gif';
-        if (ct === 'image/svg+xml') return '.svg';
-    }
-    const ext = path.extname(urlPath || '').toLowerCase();
-    if (['.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg'].includes(ext)) {
-        return ext === '.jpeg' ? '.jpg' : ext;
-    }
-    return '.jpg';
-}
-
-function mimeFor(ext) {
-    return ({ '.jpg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp', '.gif': 'image/gif', '.svg': 'image/svg+xml' })[ext] || 'application/octet-stream';
-}
-
-function fetchUrl(urlStr, redirects) {
-    return new Promise((resolve, reject) => {
-        if ((redirects || 0) > 5) return reject(new Error('too many redirects'));
-        let u;
-        try { u = new URL(urlStr); } catch (e) { return reject(e); }
-        const client = u.protocol === 'http:' ? http : https;
-        const req = client.get(urlStr, {
-            timeout: 10000,
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Claudia build-html.js; +https://github.com/mindattic/Claudia)',
-                'Accept': 'image/*,*/*;q=0.8',
-            },
-        }, (res) => {
-            const status = res.statusCode || 0;
-            if (status >= 300 && status < 400 && res.headers.location) {
-                res.resume();
-                return resolve(fetchUrl(new URL(res.headers.location, urlStr).href, (redirects || 0) + 1));
-            }
-            if (status !== 200) {
-                res.resume();
-                return reject(new Error('HTTP ' + status));
-            }
-            const chunks = [];
-            res.on('data', c => chunks.push(c));
-            res.on('end', () => {
-                const buf = Buffer.concat(chunks);
-                const ext = extensionFor(res.headers['content-type'], u.pathname);
-                resolve({ buf, ext });
-            });
-            res.on('error', reject);
-        });
-        req.on('timeout', () => { req.destroy(new Error('timeout')); });
-        req.on('error', reject);
-    });
-}
-
-// Generated fallback when a URL is missing / fetch fails. Renders a tasteful
-// 2-tone gradient + a wrapped version of the part name so the card is still
-// readable even without the real photo.
-function svgPlaceholder(partId, label) {
-    const hue = (crypto.createHash('md5').update(partId).digest()[0] * 360 / 256) | 0;
-    // Wrap the label into ~14-char lines so it fits the 4:3 card.
-    const words = String(label || '').split(/\s+/);
-    const lines = [];
-    let cur = '';
-    for (const w of words) {
-        if ((cur + ' ' + w).trim().length > 18) { if (cur) lines.push(cur); cur = w; }
-        else { cur = (cur + ' ' + w).trim(); }
-    }
-    if (cur) lines.push(cur);
-    const maxLines = 4;
-    const shown = lines.slice(0, maxLines);
-    if (lines.length > maxLines) shown[maxLines - 1] = shown[maxLines - 1] + '...';
-    const startY = 78 - ((shown.length - 1) * 11);
-    const tspans = shown.map((line, i) =>
-        `<tspan x="100" y="${startY + i * 22}">${escapeHtml(line)}</tspan>`
-    ).join('');
-
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 150" preserveAspectRatio="xMidYMid meet">
-  <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="hsl(${hue},55%,55%)"/>
-      <stop offset="100%" stop-color="hsl(${(hue + 35) % 360},55%,35%)"/>
-    </linearGradient>
-  </defs>
-  <rect width="200" height="150" fill="url(#g)"/>
-  <text fill="#fff" font-family="system-ui,sans-serif" font-size="14" font-weight="600" text-anchor="middle">${tspans}</text>
-</svg>`;
-    return { mime: 'image/svg+xml', b64: Buffer.from(svg, 'utf8').toString('base64') };
-}
-
-async function loadPartImage(partId, label) {
-    // 1. Manual override - if config/images/<partId>.<ext> exists, use it as-is.
-    //    Wins over remote URLs so the builder always has a way to lock in the
-    //    exact image they want regardless of CDN flakiness.
-    const localDir = path.join(configDir, 'images');
-    if (fs.existsSync(localDir)) {
-        const match = fs.readdirSync(localDir).find(f => path.parse(f).name === partId);
-        if (match) {
-            const ext = path.extname(match).toLowerCase();
-            const buf = fs.readFileSync(path.join(localDir, match));
-            return { mime: mimeFor(ext), b64: buf.toString('base64'), source: 'local' };
-        }
-    }
-
-    const url = PART_IMAGE_URLS[partId];
-    if (!url || flagNoImages) {
-        return Object.assign({ source: 'placeholder' }, svgPlaceholder(partId, label));
-    }
-
-    ensureDir(imagesCache);
-    const hash = crypto.createHash('sha1').update(url).digest('hex').slice(0, 16);
-    const cachedGlob = fs.readdirSync(imagesCache).filter(f => f.startsWith(hash + '.'));
-
-    if (!flagRefreshImages && cachedGlob.length) {
-        const fname = cachedGlob[0];
-        const ext = path.extname(fname);
-        const buf = fs.readFileSync(path.join(imagesCache, fname));
-        return { mime: mimeFor(ext), b64: buf.toString('base64'), source: 'cache' };
-    }
-
-    try {
-        const { buf, ext } = await fetchUrl(url);
-        const target = path.join(imagesCache, hash + ext);
-        fs.writeFileSync(target, buf);
-        return { mime: mimeFor(ext), b64: buf.toString('base64'), source: 'fetch' };
-    } catch (e) {
-        process.stderr.write('  ! image fetch failed for ' + partId + ' (' + e.message + ') — using placeholder\n');
-        process.stderr.write('    tip: drop an image at config/images/' + partId + '.{jpg,png,webp,svg} to override.\n');
-        return Object.assign({ source: 'placeholder' }, svgPlaceholder(partId, label));
-    }
-}
-
 function readParts() {
     if (!fs.existsSync(partsJsonPath)) return null;
     try { return JSON.parse(fs.readFileSync(partsJsonPath, 'utf8')); }
     catch (e) { process.stderr.write('  ! parts.json invalid: ' + e.message + '\n'); return null; }
 }
 
+function readVersions() {
+    if (!fs.existsSync(versionsJsonPath)) return {};
+    try { return JSON.parse(fs.readFileSync(versionsJsonPath, 'utf8')); }
+    catch (e) { process.stderr.write('  ! versions.json invalid: ' + e.message + '\n'); return {}; }
+}
+
+// Substitute compile-time placeholders of the form {{KEY}} using values from
+// config/versions.json. Skips meta keys (those starting with "_" and the
+// "versionsAsOf" tracker). Unknown placeholders are left as-is so the build
+// log catches them visually.
+function applyVersionSubstitutions(html, versions) {
+    if (!versions) return html;
+    return html.replace(/\{\{([A-Z][A-Z0-9_]*)\}\}/g, (m, key) => {
+        if (Object.prototype.hasOwnProperty.call(versions, key) && typeof versions[key] !== 'object') {
+            return String(versions[key]);
+        }
+        return m;
+    });
+}
+
+// Read a per-part image off the local filesystem, base64-encode it, and
+// return a { mime, b64 } pair for inlining into CSS. Returns null if the
+// part has no imageFile or the file is missing. We ONLY accept local paths
+// (rooted at config/) — never remote URLs, since the CDN-rot lesson from
+// the previous build code was that we can't trust them across years.
+function loadPartImageLocal(part) {
+    if (!part || !part.imageFile) return null;
+    const rel = String(part.imageFile);
+    // Reject anything that looks like a URL or path traversal.
+    if (/^[a-z]+:\/\//i.test(rel) || rel.indexOf('..') !== -1) return null;
+    const full = path.join(configDir, rel);
+    if (!fs.existsSync(full)) {
+        process.stderr.write('  ! image missing for ' + part.id + ': ' + rel + '\n');
+        return null;
+    }
+    const ext = path.extname(full).toLowerCase();
+    const mime = ({
+        '.png':  'image/png',
+        '.jpg':  'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.webp': 'image/webp',
+        '.gif':  'image/gif',
+        '.svg':  'image/svg+xml',
+    })[ext] || 'application/octet-stream';
+    const buf = fs.readFileSync(full);
+    return { mime, b64: buf.toString('base64') };
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// Interactive build configurator. Axes are kept in one place so the
+// widget UI, the localStorage shape, and the conditional-block syntax
+// all reference the same source of truth.
+// ──────────────────────────────────────────────────────────────────────
+const BUILD_CONFIG_AXES = [
+    { key: 'battery', label: 'Battery / portability', default: 'no', options: [
+        ['no',  'No - desktop, wall-powered'],
+        ['yes', 'Yes - PiSugar 3 (portable)'],
+    ]},
+    { key: 'asr', label: 'Speech-to-text (ASR)', default: 'whisper-cpp', options: [
+        ['whisper-cpp', 'Whisper (local, free)'],
+        ['openai',      'OpenAI Whisper API (cloud, fast)'],
+        ['google',      'Google STT (cloud)'],
+    ]},
+    { key: 'tts', label: 'Text-to-speech (TTS)', default: 'openai', options: [
+        ['openai',     'OpenAI gpt-4o-mini-tts (recommended, native)'],
+        ['elevenlabs', 'ElevenLabs (best quality, requires patch)'],
+        ['piper',      'Piper (local, free, robotic)'],
+    ]},
+    { key: 'case', label: '3D-printed case', default: 'none', options: [
+        ['none', 'No case'],
+        ['fdm',  'FDM (filament) print'],
+        ['sla',  'SLA (resin) print'],
+    ]},
+    { key: 'smarthome', label: 'Smart-home control', default: 'none', options: [
+        ['none',   'None'],
+        ['kasa',   'TP-Link Kasa (HS103/KP125M)'],
+        ['shelly', 'Shelly Plug US'],
+        ['sonoff', 'Sonoff S31 + Tasmota'],
+    ]},
+];
+
+// Post-process the rendered HTML to convert
+//   <!-- when: mic=sunfounder,xvf3800; battery=yes -->...<!-- end -->
+// into
+//   <div class="when" data-when-mic="sunfounder,xvf3800" data-when-battery="yes">...</div>
+// The page-side JS hides any .when div whose attributes don't match the
+// user's saved config. Comments survive marked unchanged (CommonMark
+// passes HTML blocks through), so this runs on the rendered HTML.
+function wrapConditionals(html) {
+    return html.replace(
+        /<!--\s*when:\s*([^>]+?)\s*-->([\s\S]*?)<!--\s*end\s*-->/g,
+        (m, cond, body) => `<div class="when"${condToAttrs(cond)}>${body}</div>`
+    );
+}
+function condToAttrs(cond) {
+    return cond.split(';').map(c => c.trim()).filter(Boolean).map(c => {
+        const m = c.match(/^([a-z][a-z0-9_-]*)\s*=\s*(.+)$/i);
+        if (!m) return '';
+        return ` data-when-${m[1].toLowerCase()}="${escapeHtml(m[2].trim())}"`;
+    }).join('');
+}
+function partWhenAttrs(part) {
+    if (!part || !part.when) return '';
+    return Object.keys(part.when).map(k =>
+        ` data-when-${k}="${escapeHtml(String(part.when[k]))}"`
+    ).join('');
+}
+
+// Compute the union of when fields across every part in a category, so the
+// category section (header + grid) hides itself when none of its members
+// can possibly be visible. If any part is unrestricted (no `when`), the
+// category is always shown.
+function categoryWhenAttrs(parts) {
+    if (!parts || !parts.length) return '';
+    if (parts.some(p => !p.when || !Object.keys(p.when).length)) return '';
+    const byKey = {};
+    for (const p of parts) {
+        for (const key of Object.keys(p.when)) {
+            byKey[key] = byKey[key] || new Set();
+            String(p.when[key]).split(',').map(s => s.trim()).filter(Boolean).forEach(v => byKey[key].add(v));
+        }
+    }
+    return Object.keys(byKey).map(k =>
+        ` data-when-${k}="${escapeHtml([...byKey[k]].join(','))}"`
+    ).join('');
+}
+function buildConfigWidget() {
+    // Emits inner content only - the parent <section> + H2 heading come from
+    // the markdown ("## 02. Configure your build" + the marker line below).
+    const rows = BUILD_CONFIG_AXES.map(a => {
+        const opts = a.options.map(([v, lbl]) =>
+            `<option value="${escapeHtml(v)}">${escapeHtml(lbl)}</option>`
+        ).join('');
+        return `<label class="config-row">
+      <span class="config-label">${escapeHtml(a.label)}</span>
+      <select data-config="${escapeHtml(a.key)}" aria-label="${escapeHtml(a.label)}">${opts}</select>
+    </label>`;
+    }).join('\n    ');
+    return `<div class="config-widget" id="config-widget">
+  <p>Pick what you have or plan to buy and the guide below adapts. Choices save automatically.</p>
+  <div class="config-grid">
+    ${rows}
+  </div>
+  <button type="button" class="config-reset" id="config-reset">Reset to defaults</button>
+</div>`;
+}
+
 // ──────────────────────────────────────────────────────────────────────
 // Main build
 // ──────────────────────────────────────────────────────────────────────
-async function build(srcPath) {
+function build(srcPath) {
     if (!fs.existsSync(srcPath)) throw new Error('Source not found: ' + srcPath);
     const md   = fs.readFileSync(srcPath, 'utf8');
     const title = extractTitle(md);
-    const body  = marked.parse(md, { renderer });
+    let   body  = marked.parse(md, { renderer });
+    body = wrapConditionals(body);
+    body = applyVersionSubstitutions(body, readVersions());
     const toc   = buildToc(md);
 
-    // Build gallery + per-part CSS rules.
+    // Parts gallery — each card links to its Google Shopping search URL
+    // (parts.json `searchFor`) and carries a numeric data-price so the
+    // page JS can sum a live total over the visible cards. Per-part
+    // data-when-* attrs let the page JS hide cards that don't apply to
+    // the user's saved config.
+    // Emits inner content only - the parent <section> + H2 ("## 03. Shopping
+    // List") come from the markdown.
     const parts = readParts();
     let galleryHtml = '';
-    let imageCss    = '';
+    const imageCssRules = [];
     if (parts && parts.parts && parts.parts.length) {
-        const loaded = await Promise.all(parts.parts.map(async (p) => {
-            const img = await loadPartImage(p.id, p.name);
-            return { p, img };
-        }));
-        const cssRules = loaded.map(({ p, img }) => {
-            return `.part-card[data-pid="${p.id}"] .part-image { background-image: url("data:${img.mime};base64,${img.b64}"); }`;
-        });
-        imageCss = cssRules.join('\n');
-
         const grouped = {};
-        for (const { p, img } of loaded) {
-            (grouped[p.category] = grouped[p.category] || []).push({ p, img });
+        for (const p of parts.parts) {
+            (grouped[p.category] = grouped[p.category] || []).push(p);
         }
         const categoryLabels = parts.categories || {};
         const sections = Object.keys(grouped).map(cat => {
-            const cards = grouped[cat].map(({ p }) => {
-                const chosen = parts.chosen && parts.chosen[p.id];
-                const primary = chosen || (p.tiers && p.tiers[0] && p.tiers[0].url) || p.searchFor || '#';
+            const cards = grouped[cat].map(p => {
                 const note = p.note ? `<div class="part-note">${escapeHtml(p.note)}</div>` : '';
-                return `<a class="part-card" data-pid="${p.id}" href="${escapeHtml(primary)}" target="_blank" rel="noopener noreferrer">
-        <div class="part-image" aria-hidden="true"></div>
+                const whenAttrs = partWhenAttrs(p);
+                const priceAttr = (typeof p.price === 'number') ? ` data-price="${p.price}"` : '';
+                const inTotalAttr = (p.inTotal === false) ? ' data-in-total="false"' : '';
+                const priceHtml = (typeof p.price === 'number')
+                    ? `<div class="part-price">~$${p.price}</div>`
+                    : '';
+                const img = loadPartImageLocal(p);
+                let imageDiv = '';
+                let cls = whenAttrs ? 'part-card when' : 'part-card';
+                if (img) {
+                    cls += ' has-image';
+                    imageCssRules.push(`.part-card[data-pid="${p.id}"] .part-image { background-image: url("data:${img.mime};base64,${img.b64}"); }`);
+                    imageDiv = '<div class="part-image" aria-hidden="true"></div>';
+                }
+                // Vertical "Buy:" list on each card:
+                //   Official       = first tier with tier == 'official'
+                //   Google         = the searchFor URL (Google Shopping query)
+                //   Reputable #N   = every tier with tier == 'reputable', numbered in order
+                const officialTier   = (p.tiers || []).find(t => t.tier === 'official');
+                const reputableTiers = (p.tiers || []).filter(t => t.tier === 'reputable');
+                const linkRows = [];
+                if (officialTier && officialTier.url) {
+                    linkRows.push(`<a class="part-link" href="${escapeHtml(officialTier.url)}" target="_blank" rel="noopener noreferrer">Official</a>`);
+                }
+                if (p.searchFor) {
+                    linkRows.push(`<a class="part-link" href="${escapeHtml(p.searchFor)}" target="_blank" rel="noopener noreferrer">Google</a>`);
+                }
+                reputableTiers.forEach((t, i) => {
+                    if (t.url) {
+                        linkRows.push(`<a class="part-link" href="${escapeHtml(t.url)}" target="_blank" rel="noopener noreferrer">Reputable #${i + 1}</a>`);
+                    }
+                });
+                const linksHtml = linkRows.length
+                    ? `<div class="part-links"><span class="part-links-label">Buy:</span>${linkRows.join('')}</div>`
+                    : '';
+                return `<div class="${cls}" data-pid="${p.id}"${whenAttrs}${priceAttr}${inTotalAttr}>
+        ${imageDiv}
         <div class="part-body">
           <div class="part-name">${escapeHtml(p.name)}</div>
+          ${priceHtml}
+          ${linksHtml}
           ${note}
         </div>
-      </a>`;
+      </div>`;
             }).join('\n');
             const heading = categoryLabels[cat] || cat;
-            return `<h3 id="gallery-${cat}">${escapeHtml(cat)} <span class="part-cat-blurb">— ${escapeHtml(heading)}</span></h3>
+            const catWhen = categoryWhenAttrs(grouped[cat]);
+            const catCls = catWhen ? 'parts-category when' : 'parts-category';
+            return `<div class="${catCls}"${catWhen}>
+<h3 id="gallery-${cat}">${escapeHtml(cat)} <span class="part-cat-blurb">— ${escapeHtml(heading)}</span></h3>
 <div class="parts-grid">
 ${cards}
+</div>
 </div>`;
         }).join('\n');
-        galleryHtml = `<section id="parts-gallery" aria-labelledby="parts-gallery-h">
-<h2 id="parts-gallery-h">Parts gallery</h2>
-<p>Images are embedded as base64 data URIs — this section works offline. Click a card to jump to the best-known buy URL (chosen via <code>find-deals</code> if you've picked one, otherwise the Amazon tier).</p>
+        const asOf = parts.pricesAsOf || '';
+        const asOfHtml = asOf ? `<span class="parts-total-asof">prices estimated ${escapeHtml(asOf)}</span>` : '';
+        galleryHtml = `<div class="parts-gallery-wrap" id="parts-gallery">
+<p>Each card opens its Google Shopping search in a new tab so you can verify current prices. Cards that don't apply to your configuration are hidden, and the total below updates live.</p>
 ${sections}
-</section>`;
+<div class="parts-total" id="parts-total" aria-live="polite">
+  <span class="parts-total-label">Your build estimate</span>
+  <span class="parts-total-value" id="parts-total-value">~$0</span>
+  ${asOfHtml}
+</div>
+</div>`;
+    }
+
+    // Substitute the gallery into the body where the author placed
+    // <!-- PARTS-GALLERY --> (typically right after the intro). Fall back to
+    // appending at the end if no marker is present.
+    if (body.indexOf('<!-- PARTS-GALLERY -->') !== -1) {
+        body = body.replace('<!-- PARTS-GALLERY -->', galleryHtml);
+        galleryHtml = '';
+    }
+    // Same pattern for the Configure-your-build widget: lives in the body
+    // wherever the author put the <!-- CONFIG-WIDGET --> marker.
+    const widget = buildConfigWidget();
+    let inlineWidget = '';
+    if (body.indexOf('<!-- CONFIG-WIDGET -->') !== -1) {
+        body = body.replace('<!-- CONFIG-WIDGET -->', widget);
+    } else {
+        inlineWidget = widget;  // legacy: fall back to top-of-main if no marker
     }
 
     const dstPath = srcPath.replace(/\.md$/i, '.htm');
     const html = renderTemplate({
-        title, body, toc, galleryHtml, imageCss,
+        title, body, toc, galleryHtml,
+        configWidget: inlineWidget,
+        configAxesJson: JSON.stringify(BUILD_CONFIG_AXES.map(a => ({ key: a.key, default: a.default }))),
+        imageCss: imageCssRules.join('\n'),
         sourceName: path.basename(srcPath),
     });
     fs.writeFileSync(dstPath, html, 'utf8');
     return dstPath;
 }
 
-function renderTemplate({ title, body, toc, galleryHtml, imageCss, sourceName }) {
+function renderTemplate({ title, body, toc, galleryHtml, configWidget, configAxesJson, imageCss, sourceName }) {
     return `<!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -425,16 +473,78 @@ a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-
 }
 .skip-link:focus { left: 16px; top: 16px; }
 
-main.page {
-  max-width: 880px;
-  margin: 0 auto;
-  padding: 56px 28px 96px;
+/* Two-pane layout: sidebar + main each scroll independently, so the
+   browser-level scrollbar is gone. The only visible scrollbar is on the
+   side menu (styled to match the dark theme). On tablet/mobile we fall
+   back to single-column with normal page scrolling. */
+html, body { height: 100%; overflow: hidden; }
+
+.layout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 0;
+  height: 100vh;
+  padding: 0;
 }
-/* TOC only appears when there's enough natural left margin to host it
-   without overlapping the centered column — (viewport - 880) / 2 > 240
-   → viewport > 1360. Below that, the page is just the centered article. */
-@media (min-width: 1360px) {
-  .toc { display: block; }
+.layout > .sidebar {
+  height: 100vh;
+  overflow-y: auto;
+  padding: 28px 14px 28px 28px;
+  border-right: 1px solid var(--border);
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.layout > .sidebar::-webkit-scrollbar { width: 10px; }
+.layout > .sidebar::-webkit-scrollbar-track { background: transparent; }
+.layout > .sidebar::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 5px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.layout > .sidebar::-webkit-scrollbar-thumb:hover { background: var(--text3); background-clip: padding-box; border: 2px solid transparent; }
+
+main.page {
+  height: 100vh;
+  overflow-y: auto;
+  max-width: none;
+  margin: 0;
+  padding: 48px 64px 24px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+/* Prevent flex shrinking from squashing intrinsic-height children (<pre>,
+   tables, images, code blocks). With main.page being a flex column AND
+   height:100vh, flex would otherwise compress everything to fit; we want
+   children to keep their natural size and the container to scroll instead. */
+main.page > * { flex-shrink: 0; }
+main.page::-webkit-scrollbar { width: 10px; }
+main.page::-webkit-scrollbar-track { background: transparent; }
+main.page::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 5px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+main.page::-webkit-scrollbar-thumb:hover { background: var(--text3); background-clip: padding-box; border: 2px solid transparent; }
+
+@media (max-width: 1099px) {
+  html, body { overflow: visible; height: auto; }
+  .layout {
+    grid-template-columns: 1fr;
+    height: auto;
+    padding: 56px 20px 96px;
+  }
+  .layout > .sidebar { display: none; }
+  main.page { height: auto; overflow: visible; padding: 0; }
+}
+@media (max-width: 640px) {
+  .layout { padding: 70px 16px 64px; }
 }
 
 /* ──────────────────────────────────────────────────────────────────────
@@ -451,7 +561,7 @@ h2:hover .heading-anchor, h3:hover .heading-anchor, h4:hover .heading-anchor { o
 p { margin: 0 0 1em; }
 strong { color: var(--text); }
 em { color: var(--text2); }
-hr { border: none; border-top: 1px solid var(--border); margin: 2.5em 0; }
+hr { display: none; }
 ul, ol { padding-left: 1.5em; margin: 0 0 1.2em; }
 li { margin: 0.25em 0; }
 blockquote {
@@ -470,7 +580,7 @@ code, kbd, pre, samp { font-family: ui-monospace, 'JetBrains Mono', 'Cascadia Co
 }
 pre {
   background: var(--pre-bg); color: var(--pre-fg);
-  padding: 16px 18px; border-radius: 8px; overflow-x: auto;
+  padding: 16px 18px; border-radius: 8px;
   border: 1px solid var(--border); box-shadow: var(--shadow); line-height: 1.55;
 }
 pre code { background: transparent; padding: 0; border: 0; white-space: pre; color: inherit; }
@@ -494,59 +604,40 @@ tr:hover td { background: var(--bg2); }
 img { max-width: 100%; height: auto; border-radius: 6px; }
 
 /* ──────────────────────────────────────────────────────────────────────
-   §  DOWNLOAD STRIP (raw .md / save .htm / GitHub) - pinned top-left
-   sibling of the theme toggle so the two corners feel balanced.
-   ────────────────────────────────────────────────────────────────────── */
-.download-strip {
-  position: fixed;
-  top: 16px;
-  left: 16px;
-  z-index: 100;
-  display: flex;
-  gap: 6px;
-  align-items: center;
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 4px 6px;
-  box-shadow: var(--shadow);
-  font-size: 13px;
-}
-.download-strip a {
-  color: var(--text2);
-  padding: 5px 9px;
-  border-radius: 5px;
-  text-decoration: none;
-  white-space: nowrap;
-  transition: background 0.15s, color 0.15s;
-}
-.download-strip a:hover { background: var(--bg3); color: var(--accent); text-decoration: none; }
-.download-strip a + a { border-left: 1px solid var(--border); border-radius: 0 5px 5px 0; padding-left: 10px; }
-.download-strip a:first-child { border-radius: 5px 0 0 5px; }
-@media (max-width: 640px) {
-  .download-strip { font-size: 12px; padding: 3px 4px; }
-  .download-strip a { padding: 4px 7px; }
-}
-
-/* ──────────────────────────────────────────────────────────────────────
-   §  TOC
+   §  TOC (sticky sidebar on desktop, hidden on mobile)
    ────────────────────────────────────────────────────────────────────── */
 .toc {
-  display: none;
-  position: fixed; top: 56px;
-  left: max(16px, calc((100vw - 880px) / 2 - 240px));
-  width: 220px; max-height: calc(100vh - 96px); overflow-y: auto;
-  font-size: 0.88em; color: var(--text2);
-  padding: 12px 14px; border: 1px solid var(--border);
-  border-radius: 8px; background: var(--bg2);
+  font-size: 0.9em;
+  color: var(--text2);
+  padding: 14px 16px 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg2);
   box-shadow: var(--shadow);
 }
-.toc-title { font-weight: 700; font-size: 0.85em; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); margin-bottom: 8px; }
-.toc ol { list-style: none; padding: 0; margin: 0; counter-reset: toc; }
-.toc li { margin: 4px 0; counter-increment: toc; }
-.toc li::before { content: counter(toc) "."; color: var(--text3); margin-right: 6px; font-variant-numeric: tabular-nums; }
-.toc a { color: var(--text2); }
-.toc a:hover { color: var(--accent); }
+.toc-title {
+  font-weight: 700;
+  font-size: 0.78em;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 10px;
+}
+.toc ol { list-style: none; padding: 0; margin: 0; }
+.toc li { margin: 5px 0; }
+.toc a {
+  color: var(--text2);
+  display: inline-block;
+  padding: 2px 0;
+  border-left: 2px solid transparent;
+  padding-left: 0;
+  transition: color 0.15s, padding-left 0.15s, border-color 0.15s;
+}
+.toc a:hover { color: var(--accent); text-decoration: none; }
+.toc a.active {
+  color: var(--accent);
+  font-weight: 600;
+}
 
 /* ──────────────────────────────────────────────────────────────────────
    §  THEME TOGGLE
@@ -564,7 +655,83 @@ img { max-width: 100%; height: auto; border-radius: 6px; }
 #theme-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 /* ──────────────────────────────────────────────────────────────────────
-   §  PARTS GALLERY (image embedding lives in the rules generated below)
+   §  CONFIG WIDGET (interactive build picker)
+   ────────────────────────────────────────────────────────────────────── */
+.config-widget {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px 22px 22px;
+  margin: 0 0 2em;
+  box-shadow: var(--shadow);
+}
+.config-widget h2 {
+  margin: 0 0 4px;
+  padding: 0;
+  border: none;
+  font-size: 1.18em;
+  color: var(--accent);
+}
+.config-widget p {
+  margin: 0 0 16px;
+  color: var(--text2);
+  font-size: 0.92em;
+}
+.config-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 12px 16px;
+  margin-bottom: 14px;
+}
+.config-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.85em;
+  color: var(--text2);
+}
+.config-label {
+  font-weight: 600;
+  font-size: 0.82em;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+.config-row select {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 7px 10px;
+  font-size: 0.95em;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.config-row select:hover { border-color: var(--accent); }
+.config-row select:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(107, 163, 232, 0.25);
+}
+.config-reset {
+  background: transparent;
+  color: var(--text3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 5px 12px;
+  font-size: 0.82em;
+  font-family: inherit;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.config-reset:hover { color: var(--accent); border-color: var(--accent); }
+
+/* Conditional content blocks (auto-hidden when config doesn't match). */
+.when[hidden] { display: none !important; }
+
+/* ──────────────────────────────────────────────────────────────────────
+   §  PARTS GALLERY (text-only cards — no image embedding)
    ────────────────────────────────────────────────────────────────────── */
 #parts-gallery h3 { margin-top: 1.6em; }
 .part-cat-blurb { color: var(--text3); font-weight: 400; font-size: 0.8em; }
@@ -591,6 +758,33 @@ img { max-width: 100%; height: auto; border-radius: 6px; }
   text-decoration: none;
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.10);
 }
+.part-body { padding: 14px 14px 16px; }
+.part-name { font-weight: 600; color: var(--text); font-size: 0.95em; line-height: 1.3; }
+.part-price { color: var(--accent); font-weight: 600; font-size: 0.95em; margin-top: 6px; font-variant-numeric: tabular-nums; }
+.part-note { color: var(--text2); font-size: 0.82em; margin-top: 8px; line-height: 1.4; }
+
+.part-links {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 10px;
+}
+.part-links-label {
+  font-size: 0.74em;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 2px;
+}
+.part-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 0.88em;
+  line-height: 1.45;
+}
+.part-link:hover { text-decoration: underline; }
+
 .part-image {
   width: 100%;
   aspect-ratio: 4 / 3;
@@ -600,20 +794,51 @@ img { max-width: 100%; height: auto; border-radius: 6px; }
   background-repeat: no-repeat;
   border-bottom: 1px solid var(--border);
 }
-.part-body { padding: 10px 12px 14px; }
-.part-name { font-weight: 600; color: var(--text); font-size: 0.95em; line-height: 1.3; }
-.part-note { color: var(--text2); font-size: 0.82em; margin-top: 4px; line-height: 1.4; }
-
-/* Per-part image data URIs (generated). */
 ${imageCss}
+
+.parts-gallery-wrap { margin: 0.5em 0 0; }
+.parts-total {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px 18px;
+  margin: 1.4em 0 0.6em;
+  padding: 18px 22px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+}
+.parts-total-label {
+  font-size: 0.78em;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text3);
+  font-weight: 700;
+}
+.parts-total-value {
+  font-size: 1.6em;
+  font-weight: 700;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+.parts-total-asof {
+  margin-left: auto;
+  color: var(--text3);
+  font-size: 0.82em;
+  font-style: italic;
+}
 
 /* ──────────────────────────────────────────────────────────────────────
    §  FOOTER + PRINT
    ────────────────────────────────────────────────────────────────────── */
-.page-footer {
-  margin-top: 4em; padding-top: 1.5em;
+#site-footer.pin-when-short {
+  margin-top: auto;
+  padding: 28px 0 12px;
   border-top: 1px solid var(--border);
-  color: var(--text3); font-size: 0.88em; text-align: center;
+  color: var(--text3);
+  font-size: 0.85em;
+  text-align: center;
 }
 @media print {
   #theme-toggle, .toc, .skip-link, .heading-anchor { display: none !important; }
@@ -631,23 +856,24 @@ ${imageCss}
 
 <a class="skip-link" href="#main-content">Skip to main content</a>
 
-<nav class="download-strip" aria-label="Source and downloads">
-  <a href="Claudia.md" download="Claudia.md" title="Download the markdown source">Markdown</a>
-  <a href="Claudia.htm" download="Claudia.htm" title="Download this page">HTML</a>
-  <a href="https://github.com/mindattic/Claudia" target="_blank" rel="noopener noreferrer" title="View the repo on GitHub">GitHub</a>
-</nav>
-
 <button id="theme-toggle" type="button" title="Toggle theme" aria-label="Toggle light/dark theme" aria-pressed="false"><span aria-hidden="true">&#x2600;</span></button>
 
-${toc}
-
-<main class="page" id="main-content">
+<div class="layout">
+  <aside class="sidebar" aria-label="Section navigation">
+    ${toc}
+  </aside>
+  <main class="page" id="main-content">
+${configWidget}
 ${body}
 ${galleryHtml}
-<footer class="page-footer">Generated by Claudia <code>build-html.js</code> from <code>${escapeHtml(sourceName)}</code></footer>
-</main>
+<footer id="site-footer" class="pin-when-short" role="contentinfo">
+  <span>&copy; <script>document.write(new Date().getFullYear())</script><noscript>2026</noscript> MindAttic LLC</span>
+</footer>
+  </main>
+</div>
 
 <script>
+// ───────── Theme toggle ─────────
 (function () {
   var btn  = document.getElementById('theme-toggle');
   var html = document.documentElement;
@@ -660,8 +886,11 @@ ${galleryHtml}
   }
   var saved = null;
   try { saved = localStorage.getItem('claudia-theme'); } catch (_) {}
-  var systemDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-  var startDark = saved ? (saved === 'dark') : !!systemDark;
+  if (saved !== 'dark' && saved !== 'light') {
+    saved = 'dark';
+    try { localStorage.setItem('claudia-theme', 'dark'); } catch (_) {}
+  }
+  var startDark = (saved === 'dark');
   html.setAttribute('data-theme', startDark ? 'dark' : 'light');
   setBtnIcon(startDark);
   btn.addEventListener('click', function () {
@@ -670,16 +899,165 @@ ${galleryHtml}
     setBtnIcon(dark);
     try { localStorage.setItem('claudia-theme', dark ? 'dark' : 'light'); } catch (_) {}
   });
-  if (window.matchMedia && !saved) {
-    var mq = window.matchMedia('(prefers-color-scheme: dark)');
-    var onChange = function (e) {
-      try { if (localStorage.getItem('claudia-theme')) return; } catch (_) {}
-      html.setAttribute('data-theme', e.matches ? 'dark' : 'light');
-      setBtnIcon(e.matches);
-    };
-    if (mq.addEventListener) mq.addEventListener('change', onChange);
-    else if (mq.addListener) mq.addListener(onChange);
+}());
+
+// ───────── Build configurator ─────────
+// Each <select data-config="KEY"> drives a localStorage entry under
+// "claudia-build-config". Any element with class "when" and one or more
+// data-when-KEY="val1,val2,..." attributes is shown only when the saved
+// config[KEY] is in that list (or, with a leading "!", NOT in it).
+(function () {
+  var AXES = ${configAxesJson};
+  var SAVED_KEY = 'claudia-build-config';
+
+  function loadConfig() {
+    var cfg = {};
+    AXES.forEach(function (a) { cfg[a.key] = a.default; });
+    try {
+      var raw = localStorage.getItem(SAVED_KEY);
+      if (raw) {
+        var parsed = JSON.parse(raw);
+        AXES.forEach(function (a) {
+          if (parsed && Object.prototype.hasOwnProperty.call(parsed, a.key)) {
+            cfg[a.key] = parsed[a.key];
+          }
+        });
+      }
+    } catch (_) {}
+    return cfg;
   }
+  function saveConfig(cfg) {
+    try { localStorage.setItem(SAVED_KEY, JSON.stringify(cfg)); } catch (_) {}
+  }
+  function matches(attrValue, current) {
+    var values = String(attrValue).split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+    var positives = [], negatives = [];
+    values.forEach(function (v) {
+      if (v.charAt(0) === '!') negatives.push(v.slice(1));
+      else positives.push(v);
+    });
+    if (positives.length && positives.indexOf(current) === -1) return false;
+    if (negatives.length && negatives.indexOf(current) !== -1) return false;
+    return true;
+  }
+  function applyVisibility(cfg) {
+    var nodes = document.querySelectorAll('.when');
+    for (var i = 0; i < nodes.length; i++) {
+      var el = nodes[i];
+      var visible = true;
+      var attrs = el.attributes;
+      for (var j = 0; j < attrs.length; j++) {
+        var a = attrs[j];
+        if (a.name.indexOf('data-when-') !== 0) continue;
+        var key = a.name.slice('data-when-'.length);
+        if (!Object.prototype.hasOwnProperty.call(cfg, key)) continue;
+        if (!matches(a.value, cfg[key])) { visible = false; break; }
+      }
+      if (visible) el.removeAttribute('hidden');
+      else el.setAttribute('hidden', '');
+    }
+    // Also hide TOC entries whose target heading is inside a hidden .when.
+    var tocLinks = document.querySelectorAll('.toc a[href^="#"]');
+    for (var k = 0; k < tocLinks.length; k++) {
+      var link = tocLinks[k];
+      var li = link.closest('li');
+      if (!li) continue;
+      var targetId = decodeURIComponent(link.getAttribute('href').slice(1));
+      var target = document.getElementById(targetId);
+      if (!target) continue;
+      li.style.display = target.closest('.when[hidden]') ? 'none' : '';
+    }
+    // Recompute the visible-parts total. Sum data-price on every part-card
+    // that is not hidden and is not marked data-in-total="false".
+    var totalEl = document.getElementById('parts-total-value');
+    if (totalEl) {
+      var cards = document.querySelectorAll('.part-card[data-price]');
+      var sum = 0;
+      for (var m = 0; m < cards.length; m++) {
+        var c = cards[m];
+        if (c.hasAttribute('hidden')) continue;
+        if (c.getAttribute('data-in-total') === 'false') continue;
+        var v = parseFloat(c.getAttribute('data-price'));
+        if (!isNaN(v)) sum += v;
+      }
+      totalEl.textContent = '~$' + sum;
+    }
+  }
+  function hydrate(cfg) {
+    AXES.forEach(function (a) {
+      var sel = document.querySelector('select[data-config="' + a.key + '"]');
+      if (!sel) return;
+      sel.value = cfg[a.key];
+      sel.addEventListener('change', function () {
+        cfg[a.key] = sel.value;
+        saveConfig(cfg);
+        applyVisibility(cfg);
+      });
+    });
+    var reset = document.getElementById('config-reset');
+    if (reset) {
+      reset.addEventListener('click', function () {
+        AXES.forEach(function (a) { cfg[a.key] = a.default; });
+        saveConfig(cfg);
+        AXES.forEach(function (a) {
+          var sel = document.querySelector('select[data-config="' + a.key + '"]');
+          if (sel) sel.value = cfg[a.key];
+        });
+        applyVisibility(cfg);
+      });
+    }
+  }
+
+  var cfg = loadConfig();
+  // Persist defaults on first visit so the next load reads the same shape.
+  try { if (!localStorage.getItem(SAVED_KEY)) saveConfig(cfg); } catch (_) {}
+  hydrate(cfg);
+  applyVisibility(cfg);
+}());
+
+// ───────── Scroll-spy: highlight the current TOC entry ─────────
+(function () {
+  var links = document.querySelectorAll('.toc a[href^="#"]');
+  if (!links.length || !('IntersectionObserver' in window)) return;
+  var byId = {};
+  var targets = [];
+  links.forEach(function (l) {
+    var id = decodeURIComponent(l.getAttribute('href').slice(1));
+    var el = document.getElementById(id);
+    if (!el) return;
+    byId[id] = l;
+    targets.push(el);
+  });
+  if (!targets.length) return;
+  var currentId = null;
+  function setActive(id) {
+    if (id === currentId) return;
+    if (currentId && byId[currentId]) byId[currentId].classList.remove('active');
+    currentId = id;
+    if (currentId && byId[currentId]) byId[currentId].classList.add('active');
+  }
+  var visible = new Set();
+  // Scrolling happens inside main.page on desktop (two-pane layout). Use
+  // it as the IO root so rootMargin is calculated relative to the pane.
+  // Fallback to the viewport on mobile (single-column, normal scrolling).
+  var pageRoot = document.querySelector('main.page');
+  var useRoot = pageRoot && window.matchMedia('(min-width: 1100px)').matches ? pageRoot : null;
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting) visible.add(e.target.id);
+      else visible.delete(e.target.id);
+    });
+    if (!visible.size) return;
+    var topId = null, topY = Infinity;
+    visible.forEach(function (id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      var y = el.getBoundingClientRect().top;
+      if (y < topY) { topY = y; topId = id; }
+    });
+    if (topId) setActive(topId);
+  }, { root: useRoot, rootMargin: '-15% 0px -75% 0px' });
+  targets.forEach(function (t) { io.observe(t); });
 }());
 </script>
 
@@ -688,13 +1066,11 @@ ${galleryHtml}
 `;
 }
 
-(async () => {
+(function () {
     try {
         const src = pickSource();
         process.stderr.write('-> Source: ' + path.basename(src) + '\n');
-        if (flagNoImages)      process.stderr.write('   (--no-images: skipping image embed)\n');
-        if (flagRefreshImages) process.stderr.write('   (--refresh-images: re-downloading)\n');
-        const out = await build(src);
+        const out = build(src);
         const size = fs.statSync(out).size;
         console.log('OK  Wrote ' + path.basename(out) + ' (' + size.toLocaleString() + ' bytes)');
     } catch (err) {

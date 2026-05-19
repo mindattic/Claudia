@@ -1,6 +1,6 @@
 # Claudia
 
-> **Claudia** is a palm-sized voice assistant box you build yourself: Raspberry Pi Zero 2 W + PiSugar Whisplay HAT, powered by the Claude API. Press the button, ask anything, Claude talks back.
+> **Claudia** is a palm-sized voice assistant box you build yourself: Raspberry Pi Zero 2 W + PiSugar Whisplay HAT, powered by the Claude API. Say "Hey Jarvis" (or train your own "Claudia" wake word — Appendix A in the guide), ask anything, and Claude talks back. There's an on-board button as a fallback.
 
 This repo is the **builder kit** — the build guide, the configuration files that go on the device, and a Windows-side console for flashing/updating/configuring it once it's on your LAN.
 
@@ -28,11 +28,9 @@ Claudia/
 │   ├── env.template           # Example .env for the Pi
 │   ├── asoundrc.usbmic        # ~/.asoundrc for USB-mic builds
 │   ├── parts.json             # Parts catalog (Amazon/official/reputable URLs per part)
-│   ├── console.json           # Saved Pi host/user (created on first detect)
-│   ├── images/                # OPTIONAL local overrides for gallery photos (<part-id>.<ext>)
-│   └── images-cache/          # Downloaded part photos (git-ignored)
+│   └── console.json           # Saved Pi host/user (created on first detect)
 │
-├── index.htm                  # Forwards to Claudia.htm (so /claudia/ serves the guide)
+├── index.htm                  # Byte-identical clone of Claudia.htm (so /claudia/ serves it directly — no redirect)
 │
 └── scripts/
     ├── Claudia.Console.ps1    # Multi-command console (local + remote Pi)
@@ -55,7 +53,7 @@ Claudia/
 You need **Node.js** ([nodejs.org](https://nodejs.org)) and **PowerShell 5+** (ships with Windows).
 
 ```powershell
-# 1. one-time: install the local deps the PDF pipeline uses
+# 1. one-time: install the local deps the HTML build uses
 .\scripts\Claudia.Console.bat update
 
 # 2. open the interactive console
@@ -78,14 +76,16 @@ You'll see something like:
     restart        Restart chatbot.service on Claudia.
     logs           Tail Claudia chatbot logs.
     healthcheck    Copy scripts/healthcheck.sh to Claudia and run it.
-    set-wakeword   Set WAKE_WORD on the Pi.
+    set-wakeword   Set the openWakeWord model on the Pi (e.g. hey_jarvis, claudia).
     set-model      Set ANTHROPIC_MODEL on the Pi.
     set-prompt     Set SYSTEM_PROMPT on the Pi.
     set-apikey     Set ANTHROPIC_API_KEY on the Pi.
+    set-tts        Set TTS_SERVER on the Pi (openai | piper | elevenlabs | gemini | ...).
+    set-asr        Set ASR_SERVER on the Pi (whisper-cpp | openai | google).
+    set-llm        Set LLM_SERVER on the Pi (anthropic | openai).
     show-config    Print the remote .env (api key masked).
     update         Install/refresh local Node deps.
     build-html     Render the latest Claudia.md to a self-contained .htm.
-    fetch-images   Force-refresh every part image from its remote URL.
     bump           Stamp Claudia.md with today's date and rebuild the .htm.
     deploy         Build Claudia.htm and FTP-upload .md/.htm/index.htm.
     list-parts     List parts catalog + which have a chosen URL.
@@ -104,7 +104,7 @@ The Console doubles as a price-comparison assistant for the parts in `config/par
 3. **Official retailer** (raspberrypi.com, pisugar.com, seeedstudio.com, etc.)
 4. **Reputable** secondaries (Adafruit, Pi Hut, Sparkfun, Mouser, DigiKey, B&H, Tindie)
 
-You pick the best URL, paste it back into the prompt, and `apply-deals` rewrites the latest `Claudia.md` so each part line becomes a Markdown link to the URL you chose. The hook then auto-regenerates the PDF.
+You pick the best URL, paste it back into the prompt, and `apply-deals` rewrites the latest `Claudia.md` so each part line becomes a Markdown link to the URL you chose. The hook then auto-regenerates `Claudia.htm`.
 
 ```powershell
 .\Claudia.Console.bat find-deals               # walk the whole catalog
@@ -130,7 +130,7 @@ You can also call commands directly:
 
 ## Build the device
 
-1. Open **`Claudia.md`** (or the PDF if you'd rather read it printed).
+1. Open **`Claudia.md`** (or `Claudia.htm` for the styled, offline-ready version).
 2. Follow Parts 1–3 to buy parts, assemble, and flash the SD card.
 3. SSH in. Then either:
    - **Manual path:** follow Parts 4–9 by hand.
@@ -141,11 +141,11 @@ You can also call commands directly:
 
 ## HTML workflow
 
-The `.htm` is **derived**: never hand-edit `Claudia.htm`, always edit the `.md`. The output is one self-contained file — inline CSS, inline JS, inline (base64) part photos. No CDN, no `<link>`, no `<script src>`. Styling and the light/dark theme toggle follow [mindattic.com](https://mindattic.com)'s single-file convention.
+The `.htm` is **derived**: never hand-edit `Claudia.htm`, always edit the `.md`. The output is one self-contained file — inline CSS, inline JS. No CDN, no `<link>`, no `<script src>`. Styling and the light/dark theme toggle follow [mindattic.com](https://mindattic.com)'s single-file convention.
 
 Two ways the page gets refreshed:
 
-1. **Automatic** — `.claude/settings.json` registers a `PostToolUse` hook that fires `scripts/on-md-change.ps1` whenever Claude Code edits a `Claudia.md`. The hook re-renders the matching `.htm` and logs to `.claude/html-rebuild.log`. No-op for any other file edit.
+1. **Automatic** — `.claude/settings.json` registers a `PostToolUse` hook that fires `scripts/on-md-change.ps1` whenever Claude Code edits `Claudia.md`. The hook re-renders `Claudia.htm`, mirrors it to `index.htm`, and logs to `.claude/html-rebuild.log`. No-op for any other file edit.
 
 2. **Manual** —
    ```powershell
@@ -155,24 +155,11 @@ Two ways the page gets refreshed:
 
 ### Theming
 
-The page ships with both palettes. The toggle button (top-right corner) flips `data-theme` on `<html>`; CSS custom properties drive every color so the rest of the cascade follows. The choice persists via `localStorage` under the key `claudia-theme`. First-time visitors get the palette implied by `prefers-color-scheme`.
+The page ships with both palettes and **defaults to dark**. The toggle button (top-right corner) flips `data-theme` on `<html>`; CSS custom properties drive every color so the rest of the cascade follows. The choice is persisted to `localStorage` under the key `claudia-theme` — including on first visit, so the dark default is locked in until the user explicitly flips it.
 
-### Part images (base64-embedded)
+### Parts gallery
 
-`build-html.js` builds a "Parts gallery" section. For every entry in `config/parts.json` it tries to:
-
-1. Use a local override at `config/images/<part-id>.<ext>` if present (always wins).
-2. Otherwise look up the part in the script's URL map, download once, and cache to `config/images-cache/` (git-ignored).
-3. Fall back to a generated SVG placeholder with the part name baked in.
-
-Either way, the result is base64-encoded into a `.part-card[data-pid="<id>"] .part-image { background-image: url(data:...) }` rule and inlined in the page CSS — so once you open the `.htm`, no further network requests fire.
-
-Tune which images get embedded:
-
-```powershell
-.\Claudia.Console.bat fetch-images        # force-refresh every URL
-node scripts/build-html.js --no-images    # skip embedding entirely (placeholders only)
-```
+`build-html.js` builds a text-only "Parts gallery" section from `config/parts.json`. Each card links to the buy URL chosen by `find-deals` (or the Amazon-tier URL as a fallback). No images are fetched or embedded — vendor CDNs rot too fast for that to be worth the maintenance.
 
 ### Bumping the version
 
@@ -203,21 +190,22 @@ copy scripts\deploy.settings.json.template scripts\deploy.settings.json
 What `deploy.ps1` does, in order:
 
 1. **Builds** — runs `build-html.js` so `Claudia.htm` reflects the current `.md`. Skip with `-NoBuild` if you just ran it.
-2. **Stamps** — inserts/replaces a `<!-- Last Updated: ISO8601 -->` comment at the top of `index.htm`.
+2. **Stamps + clones** — inserts/replaces a `<!-- Last Updated: ISO8601 -->` comment at the top of `Claudia.htm`, then writes that same byte stream out to `index.htm`. Both files are identical post-deploy, so `mindattic.com/claudia/` serves the full page directly with no redirect hop.
 3. **Uploads** — `curl.exe --ssl-reqd --ftp-pasv` pushes `Claudia.md`, `Claudia.htm`, and `index.htm` to `FtpRemotePath` (defaults to `/mindattic.com/claudia`).
 
 Credentials never leave your machine: `scripts/deploy.settings.json` is in `.gitignore`. Only the placeholder template gets committed.
 
 ---
 
-## Slash commands (`/commit`, `/do`)
+## Slash commands (`/commit`, `/do`, `/deploy`)
 
-Two project-scoped commands live under `.claude/commands/`:
+Three project-scoped commands live under `.claude/commands/`:
 
 - **`/commit`** — stages and commits the current working tree with a concise, log-style-matching message. Never `git add -A`, never `--amend`, never `--no-verify`.
 - **`/do`** — explicit version of the "bare `do` means continue" rule. Resumes whatever Claude was in the middle of when you stepped away.
+- **`/deploy`** — rebuilds `Claudia.htm`, stamps `index.htm`, and FTP-uploads `Claudia.md` / `Claudia.htm` / `index.htm` to `mindattic.com/claudia/`. Mirrors the `/deploy` command in the [mindattic.com](https://mindattic.com) repo.
 
-Either of these can be hoisted to your global `~/.claude/commands/` later if you want them everywhere.
+Any of these can be hoisted to your global `~/.claude/commands/` later if you want them everywhere.
 
 ---
 

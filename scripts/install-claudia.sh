@@ -22,36 +22,26 @@ die()  { printf "\033[0;31m  ✗ %s\033[0m\n" "$1"; exit 1; }
 [ "$EUID" -eq 0 ] && die "Run as 'pi', not root. The script will sudo where needed."
 sudo -v || die "sudo is required."
 
-step "4.1  apt update + full-upgrade  (~5–15 min on a Pi Zero)"
+step "5.1  apt update + full-upgrade  (~5–15 min on a Pi Zero)"
 sudo apt update
 sudo apt full-upgrade -y
 
-step "4.2  disable services we don't need (free up RAM)"
+step "5.2  disable services we don't need (free up RAM)"
 for svc in hciuart bluetooth triggerhappy; do
     sudo systemctl disable --now "$svc" 2>/dev/null || warn "$svc not present"
 done
 ok "trimmed background services"
 
-step "4.3  build dependencies"
+step "5.3  build dependencies"
 sudo apt install -y git curl build-essential python3-pip python3-venv \
   portaudio19-dev libsndfile1 ffmpeg alsa-utils libatlas-base-dev
 ok "apt deps installed"
 
-step "4.4  Whisplay HAT driver (LCD + audio + buttons + LEDs)"
-if aplay -l 2>/dev/null | grep -q wm8960; then
-    ok "wm8960 driver already loaded — skipping install"
-else
-    cd "$HOME"
-    [ -d Whisplay ] || git clone --depth 1 https://github.com/PiSugar/Whisplay.git
-    cd Whisplay/Driver
-    sudo bash install_wm8960_drive.sh
-    warn "driver installed — REBOOT REQUIRED before continuing."
-    warn "after reboot, re-run: bash ~/$SCRIPT_NAME"
-    echo
-    read -rp "Reboot now? [Y/n] " ans
-    if [[ ! "$ans" =~ ^[Nn]$ ]]; then sudo reboot; fi
-    exit 0
-fi
+step "5.4  Enable I2C + tools for the WonderEcho module"
+sudo raspi-config nonint do_i2c 0
+sudo apt install -y i2c-tools python3-smbus
+ok "I2C enabled"
+warn "after the next reboot, run 'i2cdetect -y 1' to confirm the WonderEcho is on the bus."
 
 step "5  chatbot software (PiSugar/whisplay-ai-chatbot)"
 cd "$HOME"
@@ -67,7 +57,7 @@ if [ ! -f .install_dependencies.done ]; then
 fi
 ok "chatbot deps installed"
 
-step "7.1  .env  (create from template if missing — edit before continuing)"
+step "8.1  .env  (create from template if missing — edit before continuing)"
 if [ ! -f .env ]; then
     if [ -f .env.template ]; then
         cp .env.template .env
@@ -75,10 +65,15 @@ if [ ! -f .env ]; then
     else
         warn ".env.template not found in upstream — creating minimal stub"
         cat > .env <<'EOF'
-LLM_PROVIDER=anthropic
+LLM_SERVER=anthropic
 ANTHROPIC_API_KEY=sk-ant-REPLACE-ME
 ANTHROPIC_MODEL=claude-haiku-4-5-20251001
 SYSTEM_PROMPT=You are a concise, friendly voice assistant.
+ASR_SERVER=whisper-cpp
+TTS_SERVER=openai
+OPENAI_API_KEY=sk-REPLACE-ME
+OPENAI_VOICE_MODEL=gpt-4o-mini-tts
+OPENAI_VOICE_TYPE=nova
 EOF
     fi
 fi
@@ -90,18 +85,26 @@ if grep -q 'sk-ant-REPLACE-ME' .env; then
     exit 0
 fi
 
-step "7.2  build the chatbot  (~5–10 min)"
+step "8.2  build the chatbot  (~5–10 min)"
 bash build.sh
 ok "build complete"
 
-step "8  healthcheck"
+step "8.3  WonderEcho I2C check"
+if i2cdetect -y 1 2>/dev/null | grep -qE '52|53|54'; then
+    ok "WonderEcho detected on I2C bus 1"
+else
+    warn "WonderEcho not detected on I2C bus 1 - check 4-pin wiring (SDA/SCL/5V/GND)"
+    warn "and confirm i2c was enabled in step 5.4 (a reboot may be required first)."
+fi
+
+step "9  healthcheck"
 if [ -f "$HOME/healthcheck.sh" ]; then
     bash "$HOME/healthcheck.sh" || warn "healthcheck reported failures — review before enabling boot"
 else
     warn "healthcheck.sh not present — skipping (upload it from the repo's scripts/ folder)"
 fi
 
-step "9  register on-boot service"
+step "10  register on-boot service"
 if systemctl is-enabled chatbot.service >/dev/null 2>&1; then
     ok "chatbot.service already enabled"
 else

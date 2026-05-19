@@ -41,6 +41,33 @@ $useSsl     = [bool]$cfg.FtpUseSsl
 $usePassive = [bool]$cfg.FtpPassive
 
 # ---------------------------------------------------------------------------
+# Auto-bump the build version stamped in Claudia.md's "Last updated:" line.
+# Format: YYYY.MM.DD<letter>, where the letter increments per same-day build
+# (first build of a day = "a", next = "b", ...) and resets to "a" on a new
+# day. Done before the build step so the rebuilt HTML reflects the new stamp.
+# ---------------------------------------------------------------------------
+$mdPath = Join-Path $repoRoot 'Claudia.md'
+if (Test-Path $mdPath) {
+    $today = (Get-Date -Format 'yyyy.MM.dd')
+    $mdContent = [System.IO.File]::ReadAllText($mdPath, [System.Text.Encoding]::UTF8)
+    if ($mdContent -match '\*Last updated:\s*(\d{4}\.\d{2}\.\d{2})([a-z]?)\*') {
+        $oldDate   = $Matches[1]
+        $oldLetter = $Matches[2]
+        if ($oldDate -eq $today -and $oldLetter) {
+            $newLetter = [char]([byte][char]$oldLetter + 1)
+        } else {
+            $newLetter = 'a'
+        }
+        $newVersion = "$today$newLetter"
+        $mdContent  = $mdContent -replace '\*Last updated:\s*\d{4}\.\d{2}\.\d{2}[a-z]?\*', "*Last updated: $newVersion*"
+        [System.IO.File]::WriteAllText($mdPath, $mdContent, (New-Object System.Text.UTF8Encoding($false)))
+        Write-Host "Bumped build: $oldDate$oldLetter -> $newVersion"
+    } else {
+        Write-Warning "No '*Last updated: YYYY.MM.DD<letter>*' line found in Claudia.md - skipping version bump."
+    }
+}
+
+# ---------------------------------------------------------------------------
 # Build Claudia.htm (skip with -NoBuild if you already just built it)
 # ---------------------------------------------------------------------------
 if (-not $NoBuild) {
@@ -53,23 +80,28 @@ if (-not $NoBuild) {
 }
 
 # ---------------------------------------------------------------------------
-# Stamp index.htm
+# Stamp Claudia.htm with the deploy timestamp, then clone it to index.htm so
+# mindattic.com/claudia/ serves the full content directly (no redirect hop).
+# Both files are byte-identical post-stamp.
 # ---------------------------------------------------------------------------
-$indexFile = Join-Path $repoRoot 'index.htm'
-if (Test-Path $indexFile) {
-    $date    = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
-    $stamp   = "<!-- Last Updated: $date -->"
-    $content = [System.IO.File]::ReadAllText($indexFile, [System.Text.Encoding]::UTF8)
+$claudiaHtm = Join-Path $repoRoot 'Claudia.htm'
+$indexFile  = Join-Path $repoRoot 'index.htm'
 
-    if ($content -match "(?s)^<!--\s*Last Updated:.*?-->(\r?\n)") {
-        $content = $content -replace "(?s)^<!--\s*Last Updated:.*?-->(\r?\n)", "$stamp`$1"
-    } else {
-        $content = "$stamp`r`n$content"
-    }
+if (-not (Test-Path $claudiaHtm)) { Write-Error "Claudia.htm missing - build step must have failed." }
 
-    [System.IO.File]::WriteAllText($indexFile, $content, [System.Text.Encoding]::UTF8)
-    Write-Host "Stamped: $date"
+$date    = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+$stamp   = "<!-- Last Updated: $date -->"
+$content = [System.IO.File]::ReadAllText($claudiaHtm, [System.Text.Encoding]::UTF8)
+
+if ($content -match "(?s)^<!--\s*Last Updated:.*?-->(\r?\n)") {
+    $content = $content -replace "(?s)^<!--\s*Last Updated:.*?-->(\r?\n)", "$stamp`$1"
+} else {
+    $content = "$stamp`r`n$content"
 }
+
+[System.IO.File]::WriteAllText($claudiaHtm, $content, [System.Text.Encoding]::UTF8)
+[System.IO.File]::WriteAllText($indexFile,  $content, [System.Text.Encoding]::UTF8)
+Write-Host "Stamped + cloned Claudia.htm -> index.htm  ($date)"
 
 # ---------------------------------------------------------------------------
 # Collect local files to deploy

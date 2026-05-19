@@ -172,10 +172,19 @@ function Cmd-Healthcheck {
 }
 
 function Cmd-SetWakeword($a) {
-    if (-not $a -or $a.Count -lt 1) { throw 'Usage: set-wakeword "hey claudia"' }
-    $word = ($a -join ' ').Trim('"').Trim()
-    Set-RemoteEnv 'WAKE_WORD' $word
-    Write-Warn2 'wake-word activation needs the wake-word engine - see Part 9 of the guide.'
+    # openWakeWord uses the WAKE_WORDS env key (plural, underscore-separated).
+    # Built-in models include: hey_jarvis, hey_mycroft, alexa, hey_rhasspy.
+    # For the custom 'claudia' model, set WAKE_WORDS=claudia AND
+    # WAKE_WORD_MODEL_PATHS=/home/pi/wakeword/claudia.tflite (handled by hand
+    # since it requires the trained model file to already be on the Pi).
+    if (-not $a -or $a.Count -lt 1) { throw 'Usage: set-wakeword <name>  (e.g. hey_jarvis, claudia)' }
+    $word = ($a -join ' ').Trim('"').Trim() -replace '\s+', '_'
+    Set-RemoteEnv 'WAKE_WORDS' $word
+    Set-RemoteEnv 'WAKE_WORD_ENABLED' 'true'
+    Write-Warn2 'restart the service for it to take effect:  Claudia.Console restart'
+    if ($word -eq 'claudia') {
+        Write-Warn2 'reminder: custom "claudia" model also needs WAKE_WORD_MODEL_PATHS set to the .tflite path.'
+    }
 }
 
 function Cmd-SetModel($a) {
@@ -194,6 +203,40 @@ function Cmd-SetApiKey($a) {
     if (-not $a -or $a.Count -lt 1) { throw 'Usage: set-apikey sk-ant-...' }
     Set-RemoteEnv 'ANTHROPIC_API_KEY' $a[0]
     Write-Ok 'key updated. Restart:  Claudia.Console restart'
+}
+
+function Cmd-SetTts($a) {
+    # Upstream switches by TTS_SERVER (lowercase) - see src/cloud-api/server.ts.
+    # Built-in handlers: test, openai, gemini, tencent, volcengine, piper,
+    # piper-http, espeak-ng, llm8850melotts, supertonic, picovoice.
+    # 'elevenlabs' is only valid AFTER applying the patch documented in
+    # Claudia.md section 09 (Configure the chatbot - TTS subsection).
+    if (-not $a -or $a.Count -lt 1) { throw 'Usage: set-tts <server>  (e.g. openai, piper, elevenlabs)' }
+    $val = ($a[0] -as [string]).ToLower()
+    Set-RemoteEnv 'TTS_SERVER' $val
+    Write-Warn2 'restart the service for it to take effect:  Claudia.Console restart'
+    if ($val -eq 'elevenlabs') {
+        Write-Warn2 'elevenlabs needs the patch in Claudia.md section 09 (TTS subsection)'
+        Write-Warn2 'and these env keys: ELEVENLABS_API_KEY, ELEVENLABS_VOICE_ID, ELEVENLABS_MODEL_ID.'
+    } elseif ($val -eq 'openai') {
+        Write-Warn2 'reminder: openai needs OPENAI_API_KEY, OPENAI_VOICE_MODEL, OPENAI_VOICE_TYPE set.'
+    } elseif ($val -eq 'piper') {
+        Write-Warn2 'reminder: piper needs PIPER_BINARY_PATH and PIPER_MODEL_PATH set.'
+    }
+}
+
+function Cmd-SetAsr($a) {
+    # Upstream switches by ASR_SERVER. Common values: whisper-cpp, openai, google.
+    if (-not $a -or $a.Count -lt 1) { throw 'Usage: set-asr <server>  (e.g. whisper-cpp, openai, google)' }
+    Set-RemoteEnv 'ASR_SERVER' (($a[0] -as [string]).ToLower())
+    Write-Warn2 'restart the service for it to take effect:  Claudia.Console restart'
+}
+
+function Cmd-SetLlm($a) {
+    # Upstream switches by LLM_SERVER. Default for Claudia is anthropic.
+    if (-not $a -or $a.Count -lt 1) { throw 'Usage: set-llm <server>  (e.g. anthropic, openai)' }
+    Set-RemoteEnv 'LLM_SERVER' (($a[0] -as [string]).ToLower())
+    Write-Warn2 'restart the service for it to take effect:  Claudia.Console restart'
 }
 
 function Cmd-ShowConfig {
@@ -264,23 +307,6 @@ function Cmd-Deploy($a) {
     }
     if ($LASTEXITCODE -ne 0) { throw "deploy failed (exit $LASTEXITCODE)" }
     Write-Ok 'deploy complete.'
-}
-
-function Cmd-FetchImages($a) {
-    # Force-refreshes every part image from its remote URL, ignoring the
-    # local cache. Useful when the cache was poisoned by 404s the first time
-    # and the vendor has since restored the asset. Local overrides under
-    # config/images/ still win over fetched results.
-    if (-not (Get-Command node -ErrorAction SilentlyContinue)) {
-        throw "Node.js not found on PATH."
-    }
-    $builder = Join-Path $PSScriptRoot 'build-html.js'
-    Push-Location $repoRoot
-    try {
-        & node $builder --refresh-images
-        if ($LASTEXITCODE -ne 0) { throw "build-html --refresh-images failed (exit $LASTEXITCODE)" }
-    } finally { Pop-Location }
-    Write-Ok 'image cache refreshed.'
 }
 
 function Cmd-Bump($a) {
@@ -503,7 +529,7 @@ function Cmd-PullLatest($a) {
 
 function Cmd-SelfUpdate($a) {
     # Three things age out and quietly break the build:
-    #   1. node_modules (md-to-pdf + puppeteer security advisories)
+    #   1. node_modules (marked + highlight.js security advisories)
     #   2. The parts catalog (vendors discontinue, newer revisions appear)
     #   3. The Claude model ID baked into env.template
     # Walk all three. Each step is independent so partial failure is fine.
@@ -558,7 +584,7 @@ function Cmd-SelfUpdate($a) {
 
     Write-Info ''
     Write-Info '== Best-practice notes =='
-    Write-Host '  - regenerate the PDF after editing the .md:    build-pdf'
+    Write-Host '  - regenerate the HTML after editing the .md:   build-html'
     Write-Host '  - lockfile churn?  pull-latest --force         (re-syncs against origin/main)'
     Write-Host '  - dependabot-style nag without dependabot:     run self-update monthly'
     Write-Ok 'self-update walk done.'
@@ -591,18 +617,20 @@ $commands = [ordered]@{
     'restart'      = @{ Help = 'Restart chatbot.service on Claudia.';                                                         Action = { Cmd-Restart } }
     'logs'         = @{ Help = 'Tail Claudia chatbot logs (Ctrl+C to stop).';                                                 Action = { Cmd-Logs } }
     'healthcheck'  = @{ Help = 'Copy scripts/healthcheck.sh to Claudia and run it.';                                          Action = { Cmd-Healthcheck } }
-    'set-wakeword' = @{ Help = 'Set WAKE_WORD on the Pi. Usage: set-wakeword "hey claudia"';                                  Action = { param($a) Cmd-SetWakeword $a } }
+    'set-wakeword' = @{ Help = 'Set the openWakeWord model on the Pi (writes WAKE_WORDS + enables it). Usage: set-wakeword hey_jarvis | claudia';  Action = { param($a) Cmd-SetWakeword $a } }
     'set-model'    = @{ Help = 'Set ANTHROPIC_MODEL on the Pi. Usage: set-model <model-id>';                                  Action = { param($a) Cmd-SetModel $a } }
     'set-prompt'   = @{ Help = 'Set SYSTEM_PROMPT on the Pi. Usage: set-prompt "<text>"';                                     Action = { param($a) Cmd-SetPrompt $a } }
     'set-apikey'   = @{ Help = 'Set ANTHROPIC_API_KEY on the Pi. Usage: set-apikey sk-ant-...';                               Action = { param($a) Cmd-SetApiKey $a } }
+    'set-tts'      = @{ Help = 'Set TTS_SERVER on the Pi (openai | piper | elevenlabs | gemini | ...). Usage: set-tts openai'; Action = { param($a) Cmd-SetTts $a } }
+    'set-asr'      = @{ Help = 'Set ASR_SERVER on the Pi (whisper-cpp | openai | google). Usage: set-asr openai';             Action = { param($a) Cmd-SetAsr $a } }
+    'set-llm'      = @{ Help = 'Set LLM_SERVER on the Pi (anthropic | openai). Usage: set-llm anthropic';                     Action = { param($a) Cmd-SetLlm $a } }
     'show-config'  = @{ Help = 'Print the remote .env (api key masked).';                                                     Action = { Cmd-ShowConfig } }
     'update'       = @{ Help = 'Install/refresh local Node deps. Add --clean to wipe node_modules.';                          Action = { param($a) Cmd-Update $a } }
     'build-html'   = @{ Help = 'Render Claudia.md to Claudia.htm (self-contained).';                                          Action = { param($a) Cmd-BuildHtml $a } }
-    'fetch-images' = @{ Help = 'Force-refresh every part image from its remote URL (ignores cache, keeps local overrides).'; Action = { param($a) Cmd-FetchImages $a } }
     'deploy'       = @{ Help = 'Build Claudia.htm and FTP-upload .md/.htm/index.htm (uses scripts/deploy.settings.json). Add --no-build to skip the rebuild.'; Action = { param($a) Cmd-Deploy $a } }
     'bump'         = @{ Help = 'Stamp Claudia.md with today''s revision date (or -To <YYYY.MM.DD>) and rebuild Claudia.htm.';  Action = { param($a) Cmd-Bump $a } }
     'list-parts'   = @{ Help = 'List parts catalog + which have a chosen URL.';                                               Action = { Cmd-ListParts } }
-    'find-deals'   = @{ Help = 'Open Amazon/official/reputable tabs per part; save your picks. [core|mic|portable|smarthome|--all]'; Action = { param($a) Cmd-FindDeals $a } }
+    'find-deals'   = @{ Help = 'Open Amazon/official/reputable tabs per part; save your picks. [core|mic|portable|smarthome|wakeword|--all]'; Action = { param($a) Cmd-FindDeals $a } }
     'apply-deals'  = @{ Help = 'Stamp chosen URLs into Claudia.md.';                                                          Action = { Cmd-ApplyDeals } }
     'pull-latest'  = @{ Help = 'git fetch + overlay latest source. Add --force if working tree is dirty.';                    Action = { param($a) Cmd-PullLatest $a } }
     'self-update'  = @{ Help = 'Refresh node_modules + open "is there a newer version?" searches for every part / Claude model.'; Action = { param($a) Cmd-SelfUpdate $a } }
