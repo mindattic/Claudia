@@ -1,0 +1,14 @@
+{
+  "name": "claudia-build-tools",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local builder deps for the Claudia voice assistant box guide (markdown -> self-contained HTML).",
+  "scripts": {
+    "build:html": "node scripts/build-html.js",
+    "bump": "powershell -ExecutionPolicy Bypass -File scripts/bump-version.ps1"
+  },
+  "dependencies": {
+    "marked": "^4.3.0",
+    "highlight.js": "^11.9.0"
+  }
+}

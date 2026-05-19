@@ -1,0 +1,30 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Node (build-pdf uses npx md-to-pdf)
+node_modules/
+package-lock.json
+
+# Python
+__pycache__/
+*.pyc
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Local secrets — never commit a real .env
+.env
+config/.env
+config/*.local.*
+
+# Editor
+.vscode/
+.idea/
+
+# Build artifacts
+out/
+dist/
+config/images-cache/

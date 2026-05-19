@@ -1,0 +1,21 @@
+# Drop into ~/.asoundrc on the Pi when using a USB mic (SunFooder / reSpeaker).
+# Playback stays on the Whisplay speaker (card 0); capture comes from the USB
+# mic (card 1). Pair this with /etc/modprobe.d/alsa-base.conf locking the USB
+# mic to index 1 — see Part 4.5 of the guide.
+
+pcm.!default {
+    type asym
+    playback.pcm {
+        type plug
+        slave.pcm "hw:0,0"
+    }
+    capture.pcm {
+        type plug
+        slave.pcm "hw:1,0"
+    }
+}
+
+ctl.!default {
+    type hw
+    card 1
+}

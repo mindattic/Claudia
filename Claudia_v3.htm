@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="Claudia build-html.js — generated from Claudia_v3.md">
+<title>Claude Voice Assistant Box — Build Guide (v3)</title>
+<style>
+/* ──────────────────────────────────────────────────────────────────────
+   §  THEME TOKENS
+   ────────────────────────────────────────────────────────────────────── */
+:root {
+  --bg: #fff;
+  --bg2: #f8f9fb;
+  --bg3: #f0f2f5;
+  --border: #e2e6ea;
+  --accent: #1b4f8c;
+  --accent2: #2563b0;
+  --text: #1a1a2e;
+  --text2: #4a5568;
+  --text3: #718096;
+  --rule: #2c5f8a;
+  --code-bg: #f4f6f8;
+  --code-fg: #1a1a2e;
+  --pre-bg: #0f1419;
+  --pre-fg: #e8eaf0;
+  --shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 2px 8px rgba(15, 23, 42, 0.06);
+}
+[data-theme="dark"] {
+  --bg: #0b0d12;
+  --bg2: #13161b;
+  --bg3: #1a1e25;
+  --border: #2a2f3a;
+  --accent: #6ba3e8;
+  --accent2: #90bbf0;
+  --text: #e8eaf0;
+  --text2: #9aa0b0;
+  --text3: #5c6275;
+  --rule: #3d6fa3;
+  --code-bg: #1a1e25;
+  --code-fg: #e8eaf0;
+  --pre-bg: #0f1419;
+  --pre-fg: #e8eaf0;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0b0d12;
+    --bg2: #13161b;
+    --bg3: #1a1e25;
+    --border: #2a2f3a;
+    --accent: #6ba3e8;
+    --accent2: #90bbf0;
+    --text: #e8eaf0;
+    --text2: #9aa0b0;
+    --text3: #5c6275;
+    --rule: #3d6fa3;
+    --code-bg: #1a1e25;
+    --code-fg: #e8eaf0;
+    --pre-bg: #0f1419;
+    --pre-fg: #e8eaf0;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.5);
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+   §  RESET + TYPOGRAPHY
+   ────────────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 17px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent2); text-decoration: underline; }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+
+.skip-link {
+  position: absolute;
+  left: -9999px; top: 0;
+  background: var(--accent); color: #fff;
+  padding: 8px 14px; z-index: 200;
+}
+.skip-link:focus { left: 16px; top: 16px; }
+
+main.page {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 56px 28px 96px;
+}
+@media (min-width: 1100px) {
+  main.page { padding-left: 280px; }
+  .toc { display: block; }
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+   §  HEADINGS / BODY / CODE / TABLES
+   ────────────────────────────────────────────────────────────────────── */
+h1, h2, h3, h4 { color: var(--text); font-weight: 700; line-height: 1.2; margin: 1.75em 0 0.55em; letter-spacing: -0.01em; }
+h1 { font-size: 2.15em; margin-top: 0; border-bottom: 2px solid var(--rule); padding-bottom: 0.35em; }
+h2 { font-size: 1.55em; border-bottom: 1px solid var(--border); padding-bottom: 0.25em; }
+h3 { font-size: 1.22em; }
+h4 { font-size: 1.05em; color: var(--text2); }
+.heading-anchor { margin-left: 0.4em; color: var(--text3); font-weight: 400; opacity: 0; transition: opacity 0.15s; }
+h2:hover .heading-anchor, h3:hover .heading-anchor, h4:hover .heading-anchor { opacity: 1; }
+
+p { margin: 0 0 1em; }
+strong { color: var(--text); }
+em { color: var(--text2); }
+hr { border: none; border-top: 1px solid var(--border); margin: 2.5em 0; }
+ul, ol { padding-left: 1.5em; margin: 0 0 1.2em; }
+li { margin: 0.25em 0; }
+blockquote {
+  margin: 1em 0; padding: 0.5em 1.1em;
+  border-left: 4px solid var(--accent);
+  background: var(--bg2); color: var(--text2);
+  border-radius: 0 4px 4px 0;
+}
+blockquote p:last-child { margin-bottom: 0; }
+
+code, kbd, pre, samp { font-family: ui-monospace, 'JetBrains Mono', 'Cascadia Code', Menlo, Consolas, 'Liberation Mono', monospace; font-size: 0.92em; }
+:not(pre) > code {
+  background: var(--code-bg); color: var(--code-fg);
+  padding: 0.15em 0.4em; border-radius: 3px;
+  border: 1px solid var(--border); white-space: nowrap;
+}
+pre {
+  background: var(--pre-bg); color: var(--pre-fg);
+  padding: 16px 18px; border-radius: 8px; overflow-x: auto;
+  border: 1px solid var(--border); box-shadow: var(--shadow); line-height: 1.55;
+}
+pre code { background: transparent; padding: 0; border: 0; white-space: pre; color: inherit; }
+
+.hljs { color: #e8eaf0; }
+.hljs-comment, .hljs-quote { color: #7d8590; font-style: italic; }
+.hljs-keyword, .hljs-selector-tag, .hljs-built_in, .hljs-name, .hljs-tag { color: #ff7b72; }
+.hljs-string, .hljs-title, .hljs-section, .hljs-attribute, .hljs-literal, .hljs-template-tag, .hljs-template-variable, .hljs-type, .hljs-addition { color: #a5d6ff; }
+.hljs-number, .hljs-symbol, .hljs-bullet, .hljs-meta, .hljs-link { color: #79c0ff; }
+.hljs-variable, .hljs-class .hljs-title, .hljs-title.class_, .hljs-attr { color: #ffa657; }
+.hljs-function .hljs-title, .hljs-title.function_ { color: #d2a8ff; }
+.hljs-emphasis { font-style: italic; }
+.hljs-strong { font-weight: 700; }
+
+table { width: 100%; border-collapse: collapse; margin: 1.2em 0; font-size: 0.95em; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { background: var(--bg2); font-weight: 600; color: var(--text); border-bottom: 2px solid var(--rule); }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--bg2); }
+
+img { max-width: 100%; height: auto; border-radius: 6px; }
+
+/* ──────────────────────────────────────────────────────────────────────
+   §  TOC
+   ────────────────────────────────────────────────────────────────────── */
+.toc {
+  display: none;
+  position: fixed; top: 56px;
+  left: max(16px, calc((100vw - 880px) / 2 - 240px));
+  width: 220px; max-height: calc(100vh - 96px); overflow-y: auto;
+  font-size: 0.88em; color: var(--text2);
+  padding: 12px 14px; border: 1px solid var(--border);
+  border-radius: 8px; background: var(--bg2);
+  box-shadow: var(--shadow);
+}
+.toc-title { font-weight: 700; font-size: 0.85em; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); margin-bottom: 8px; }
+.toc ol { list-style: none; padding: 0; margin: 0; counter-reset: toc; }
+.toc li { margin: 4px 0; counter-increment: toc; }
+.toc li::before { content: counter(toc) "."; color: var(--text3); margin-right: 6px; font-variant-numeric: tabular-nums; }
+.toc a { color: var(--text2); }
+.toc a:hover { color: var(--accent); }
+
+/* ──────────────────────────────────────────────────────────────────────
+   §  THEME TOGGLE
+   ────────────────────────────────────────────────────────────────────── */
+#theme-toggle {
+  position: fixed; top: 16px; right: 16px; z-index: 100;
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 8px;
+  color: var(--text2); cursor: pointer;
+  font-size: 18px; line-height: 1; padding: 9px 11px;
+  transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.2s;
+  box-shadow: var(--shadow);
+}
+#theme-toggle:hover { background: var(--bg3); border-color: var(--accent); color: var(--accent); }
+#theme-toggle:active { transform: scale(0.96); }
+#theme-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ──────────────────────────────────────────────────────────────────────
+   §  PARTS GALLERY (image embedding lives in the rules generated below)
+   ────────────────────────────────────────────────────────────────────── */
+#parts-gallery h3 { margin-top: 1.6em; }
+.part-cat-blurb { color: var(--text3); font-weight: 400; font-size: 0.8em; }
+.parts-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  margin: 0.8em 0 2em;
+}
+.part-card {
+  display: flex; flex-direction: column;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.18s, border-color 0.18s, box-shadow 0.18s;
+  box-shadow: var(--shadow);
+}
+.part-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+  text-decoration: none;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.10);
+}
+.part-image {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background-color: var(--bg3);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-bottom: 1px solid var(--border);
+}
+.part-body { padding: 10px 12px 14px; }
+.part-name { font-weight: 600; color: var(--text); font-size: 0.95em; line-height: 1.3; }
+.part-note { color: var(--text2); font-size: 0.82em; margin-top: 4px; line-height: 1.4; }
+
+/* Per-part image data URIs (generated). */
+.part-card[data-pid="pi-zero-2-wh"] .part-image { background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMTUwIiBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSJ4TWlkWU1pZCBtZWV0Ij4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZyIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSJoc2woMTEzLDU1JSw1NSUpIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iaHNsKDE0OCw1NSUsMzUlKSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIxNTAiIGZpbGw9InVybCgjZykiLz4KICA8dGV4dCBmaWxsPSIjZmZmIiBmb250LWZhbWlseT0ic3lzdGVtLXVpLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTQiIGZvbnQtd2VpZ2h0PSI2MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPjx0c3BhbiB4PSIxMDAiIHk9IjY3Ij5SYXNwYmVycnkgUGkgWmVybzwvdHNwYW4+PHRzcGFuIHg9IjEwMCIgeT0iODkiPjIgV0g8L3RzcGFuPjwvdGV4dD4KPC9zdmc+"); }
+.part-card[data-pid="whisplay-hat"] .part-image { background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMTUwIiBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSJ4TWlkWU1pZCBtZWV0Ij4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZyIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSJoc2woMjM3LDU1JSw1NSUpIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iaHNsKDI3Miw1NSUsMzUlKSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIxNTAiIGZpbGw9InVybCgjZykiLz4KICA8dGV4dCBmaWxsPSIjZmZmIiBmb250LWZhbWlseT0ic3lzdGVtLXVpLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTQiIGZvbnQtd2VpZ2h0PSI2MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPjx0c3BhbiB4PSIxMDAiIHk9IjY3Ij5QaVN1Z2FyIFdoaXNwbGF5PC90c3Bhbj48dHNwYW4geD0iMTAwIiB5PSI4OSI+SEFUPC90c3Bhbj48L3RleHQ+Cjwvc3ZnPg=="); }
+.part-card[data-pid="microsd-32gb"] .part-image { background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMTUwIiBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSJ4TWlkWU1pZCBtZWV0Ij4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZyIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSJoc2woMjE2LDU1JSw1NSUpIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iaHNsKDI1MSw1NSUsMzUlKSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIxNTAiIGZpbGw9InVybCgjZykiLz4KICA8dGV4dCBmaWxsPSIjZmZmIiBmb250LWZhbWlseT0ic3lzdGVtLXVpLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTQiIGZvbnQtd2VpZ2h0PSI2MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPjx0c3BhbiB4PSIxMDAiIHk9IjU2Ij5taWNyb1NEIGNhcmQsIDMyPC90c3Bhbj48dHNwYW4geD0iMTAwIiB5PSI3OCI+R0IgQ2xhc3MgMTA8L3RzcGFuPjx0c3BhbiB4PSIxMDAiIHk9IjEwMCI+KFNhbkRpc2sgVWx0cmEpPC90c3Bhbj48L3RleHQ+Cjwvc3ZnPg=="); }
+.part-card[data-pid="pi-power-supply"] .part-image { background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMTUwIiBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSJ4TWlkWU1pZCBtZWV0Ij4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZyIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSJoc2woMTIwLDU1JSw1NSUpIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iaHNsKDE1NSw1NSUsMzUlKSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIxNTAiIGZpbGw9InVybCgjZykiLz4KICA8dGV4dCBmaWxsPSIjZmZmIiBmb250LWZhbWlseT0ic3lzdGVtLXVpLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTQiIGZvbnQtd2VpZ2h0PSI2MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPjx0c3BhbiB4PSIxMDAiIHk9IjQ1Ij5PZmZpY2lhbCBSYXNwYmVycnk8L3RzcGFuPjx0c3BhbiB4PSIxMDAiIHk9IjY3Ij5QaSAxMi41VyBtaWNyby1VU0I8L3RzcGFuPjx0c3BhbiB4PSIxMDAiIHk9Ijg5Ij5wb3dlciBzdXBwbHk8L3RzcGFuPjx0c3BhbiB4PSIxMDAiIHk9IjExMSI+KDVWLzIuNUEpPC90c3Bhbj48L3RleHQ+Cjwvc3ZnPg=="); }
+.part-card[data-pid="sunfounder-mic"] .part-image { background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMTUwIiBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSJ4TWlkWU1pZCBtZWV0Ij4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZyIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSJoc2woNzMsNTUlLDU1JSkiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSJoc2woMTA4LDU1JSwzNSUpIi8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjE1MCIgZmlsbD0idXJsKCNnKSIvPgogIDx0ZXh0IGZpbGw9IiNmZmYiIGZvbnQtZmFtaWx5PSJzeXN0ZW0tdWksc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9IjYwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+PHRzcGFuIHg9IjEwMCIgeT0iNjciPlN1bkZvdW5kZXIgVVNCPC90c3Bhbj48dHNwYW4geD0iMTAwIiB5PSI4OSI+TWluaSBNaWM8L3RzcGFuPjwvdGV4dD4KPC9zdmc+"); }
+.part-card[data-pid="respeaker-xvf3800"] .part-image { background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMTUwIiBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSJ4TWlkWU1pZCBtZWV0Ij4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZyIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSJoc2woMTUsNTUlLDU1JSkiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSJoc2woNTAsNTUlLDM1JSkiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMTUwIiBmaWxsPSJ1cmwoI2cpIi8+CiAgPHRleHQgZmlsbD0iI2ZmZiIgZm9udC1mYW1pbHk9InN5c3RlbS11aSxzYW5zLXNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iNjAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj48dHNwYW4geD0iMTAwIiB5PSI1NiI+U2VlZWQgcmVTcGVha2VyPC90c3Bhbj48dHNwYW4geD0iMTAwIiB5PSI3OCI+WFZGMzgwMCBVU0IgTWljPC90c3Bhbj48dHNwYW4geD0iMTAwIiB5PSIxMDAiPkFycmF5PC90c3Bhbj48L3RleHQ+Cjwvc3ZnPg=="); }
+.part-card[data-pid="otg-adapter"] .part-image { background-image: url("data:image/jpeg;base64,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"); }
+.part-card[data-pid="pisugar3-battery"] .part-image { background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMTUwIiBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSJ4TWlkWU1pZCBtZWV0Ij4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZyIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSJoc2woMjgxLDU1JSw1NSUpIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iaHNsKDMxNiw1NSUsMzUlKSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIxNTAiIGZpbGw9InVybCgjZykiLz4KICA8dGV4dCBmaWxsPSIjZmZmIiBmb250LWZhbWlseT0ic3lzdGVtLXVpLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTQiIGZvbnQtd2VpZ2h0PSI2MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPjx0c3BhbiB4PSIxMDAiIHk9IjY3Ij5QaVN1Z2FyIDMgMTIwMCBtQWg8L3RzcGFuPjx0c3BhbiB4PSIxMDAiIHk9Ijg5Ij5iYXR0ZXJ5PC90c3Bhbj48L3RleHQ+Cjwvc3ZnPg=="); }
+.part-card[data-pid="tplink-kasa-hs103"] .part-image { background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMTUwIiBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSJ4TWlkWU1pZCBtZWV0Ij4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZyIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSJoc2woMzAwLDU1JSw1NSUpIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iaHNsKDMzNSw1NSUsMzUlKSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIxNTAiIGZpbGw9InVybCgjZykiLz4KICA8dGV4dCBmaWxsPSIjZmZmIiBmb250LWZhbWlseT0ic3lzdGVtLXVpLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTQiIGZvbnQtd2VpZ2h0PSI2MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPjx0c3BhbiB4PSIxMDAiIHk9IjQ1Ij5UUC1MaW5rIEthc2EgSFMxMDM8L3RzcGFuPjx0c3BhbiB4PSIxMDAiIHk9IjY3Ij4vIEtQMTI1TSBzbWFydDwvdHNwYW4+PHRzcGFuIHg9IjEwMCIgeT0iODkiPnBsdWcgKGxvY2FsPC90c3Bhbj48dHNwYW4geD0iMTAwIiB5PSIxMTEiPmNvbnRyb2wgdmlhLi4uPC90c3Bhbj48L3RleHQ+Cjwvc3ZnPg=="); }
+.part-card[data-pid="shelly-plug-us"] .part-image { background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMTUwIiBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSJ4TWlkWU1pZCBtZWV0Ij4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZyIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSJoc2woMzQwLDU1JSw1NSUpIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iaHNsKDE1LDU1JSwzNSUpIi8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjE1MCIgZmlsbD0idXJsKCNnKSIvPgogIDx0ZXh0IGZpbGw9IiNmZmYiIGZvbnQtZmFtaWx5PSJzeXN0ZW0tdWksc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9IjYwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+PHRzcGFuIHg9IjEwMCIgeT0iNDUiPlNoZWxseSBQbHVnIFVTPC90c3Bhbj48dHNwYW4geD0iMTAwIiB5PSI2NyI+KGxvY2FsIEhUVFAgLzwvdHNwYW4+PHRzcGFuIHg9IjEwMCIgeT0iODkiPk1RVFQsIG5vIGNsb3VkPC90c3Bhbj48dHNwYW4geD0iMTAwIiB5PSIxMTEiPnJlcXVpcmVkKTwvdHNwYW4+PC90ZXh0Pgo8L3N2Zz4="); }
+.part-card[data-pid="hiwonder-wonderecho"] .part-image { background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMTUwIiBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSJ4TWlkWU1pZCBtZWV0Ij4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZyIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSJoc2woMjksNTUlLDU1JSkiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSJoc2woNjQsNTUlLDM1JSkiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMTUwIiBmaWxsPSJ1cmwoI2cpIi8+CiAgPHRleHQgZmlsbD0iI2ZmZiIgZm9udC1mYW1pbHk9InN5c3RlbS11aSxzYW5zLXNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iNjAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj48dHNwYW4geD0iMTAwIiB5PSI0NSI+SGl3b25kZXI8L3RzcGFuPjx0c3BhbiB4PSIxMDAiIHk9IjY3Ij5Xb25kZXJFY2hvIG9mZmxpbmU8L3RzcGFuPjx0c3BhbiB4PSIxMDAiIHk9Ijg5Ij5BSSB2b2ljZSBtb2R1bGU8L3RzcGFuPjx0c3BhbiB4PSIxMDAiIHk9IjExMSI+KEkyQywgd2FrZS13b3JkICsuLi48L3RzcGFuPjwvdGV4dD4KPC9zdmc+"); }
+.part-card[data-pid="sonoff-s31"] .part-image { background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMTUwIiBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSJ4TWlkWU1pZCBtZWV0Ij4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZyIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSJoc2woMjQwLDU1JSw1NSUpIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iaHNsKDI3NSw1NSUsMzUlKSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIxNTAiIGZpbGw9InVybCgjZykiLz4KICA8dGV4dCBmaWxsPSIjZmZmIiBmb250LWZhbWlseT0ic3lzdGVtLXVpLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTQiIGZvbnQtd2VpZ2h0PSI2MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPjx0c3BhbiB4PSIxMDAiIHk9IjQ1Ij5Tb25vZmYgUzMxPC90c3Bhbj48dHNwYW4geD0iMTAwIiB5PSI2NyI+KHJlLWZsYXNoYWJsZSB3aXRoPC90c3Bhbj48dHNwYW4geD0iMTAwIiB5PSI4OSI+VGFzbW90YSBmb3IgbG9jYWw8L3RzcGFuPjx0c3BhbiB4PSIxMDAiIHk9IjExMSI+TVFUVCBjb250cm9sKTwvdHNwYW4+PC90ZXh0Pgo8L3N2Zz4="); }
+
+/* ──────────────────────────────────────────────────────────────────────
+   §  FOOTER + PRINT
+   ────────────────────────────────────────────────────────────────────── */
+.page-footer {
+  margin-top: 4em; padding-top: 1.5em;
+  border-top: 1px solid var(--border);
+  color: var(--text3); font-size: 0.88em; text-align: center;
+}
+@media print {
+  #theme-toggle, .toc, .skip-link, .heading-anchor { display: none !important; }
+  body { background: #fff; color: #111; font-size: 11pt; }
+  main.page { padding: 0; max-width: none; }
+  pre { background: #f5f5f5; color: #111; border: 1px solid #ddd; }
+  :not(pre) > code { background: #f5f5f5; color: #111; }
+  a { color: #111; text-decoration: underline; }
+  table, tr, td, th { background: #fff !important; color: #111 !important; }
+  .part-card { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<button id="theme-toggle" type="button" title="Toggle theme" aria-label="Toggle light/dark theme" aria-pressed="false"><span aria-hidden="true">&#x2600;</span></button>
+
+<nav class="toc" aria-label="Table of contents"><div class="toc-title">Contents</div><ol><li><a href="#whats-new-in-v3-vs-v2">What&#39;s new in v3 (vs. v2)</a></li>
+<li><a href="#pick-your-build-before-you-buy">Pick your build before you buy</a></li>
+<li><a href="#part-1-shopping-list">Part 1: Shopping list</a></li>
+<li><a href="#part-2-assemble-the-hardware">Part 2: Assemble the hardware</a></li>
+<li><a href="#part-3-flash-the-microsd-card">Part 3: Flash the microSD card</a></li>
+<li><a href="#part-4-system-setup">Part 4: System setup</a></li>
+<li><a href="#part-45-configure-a-usb-microphone-skip-if-using-on-board-mics">Part 4.5: Configure a USB microphone *(skip if using on-board mics)*</a></li>
+<li><a href="#part-5-install-the-chatbot-software">Part 5: Install the chatbot software</a></li>
+<li><a href="#part-6-get-a-claude-api-key">Part 6: Get a Claude API key</a></li>
+<li><a href="#part-7-configure-the-chatbot">Part 7: Configure the chatbot</a></li>
+<li><a href="#part-8-first-run-sanity-check">Part 8: First-run sanity check</a></li>
+<li><a href="#part-9-run-the-chatbot">Part 9: Run the chatbot</a></li>
+<li><a href="#part-10-optional-case-3d-printed">Part 10: Optional case (3D-printed)</a></li>
+<li><a href="#part-11-troubleshooting">Part 11: Troubleshooting</a></li>
+<li><a href="#reference">Reference</a></li>
+<li><a href="#summary-stack">Summary stack</a></li></ol></nav>
+
+<main class="page" id="main-content">
+<h1 id="claude-voice-assistant-box-build-guide-v3">Claude Voice Assistant Box — Build Guide (v3)</h1>
+<p>A single-path, checkpoint-driven build guide for a Raspberry Pi Zero 2 W + PiSugar Whisplay HAT voice assistant powered by the Claude API. Press the on-board button, speak, and Claude talks back.</p>
+<p><strong>Built for:</strong> Ryan DeBraal / MindAttic LLC
+<strong>Last verified against upstream repos:</strong> May 2026
+<strong>Build cost:</strong> ~$77 base · ~$117 with battery · ~$184 fully loaded</p>
+<hr>
+<h2 id="whats-new-in-v3-vs-v2">What&#39;s new in v3 (vs. v2) <a class="heading-anchor" href="#whats-new-in-v3-vs-v2" aria-label="link to this section">#</a></h2>
+<ul>
+<li><strong>One path, not two.</strong> v2 offered a parallel &quot;wake word via gpt-home&quot; path. It&#39;s dropped. The PiSugar <code>whisplay-ai-chatbot</code> repo is purpose-built for this exact hardware and is the right choice for a Pi Zero 2 W. Wake word is supported through the official wiki (see Part 9) if you want hands-free later.</li>
+<li><strong>Verified install commands against the live upstream repos.</strong> Several v2 commands were wrong — corrected here.</li>
+<li><strong>Checkpoint tests at the end of each Part.</strong> If something breaks, you&#39;ll know exactly where.</li>
+<li><strong>First-run <code>healthcheck.sh</code> script</strong> (Part 8) — tests speaker, mic, network, and Claude API in one shot.</li>
+<li><strong>systemd unit dropped.</strong> v2 hand-rolled one and didn&#39;t load <code>.env</code> correctly. The repo provides <code>startup.sh</code> which sets up <code>chatbot.service</code> properly — just use it.</li>
+<li><strong>Mic decision moved to the front</strong> as a 3-question flowchart, not buried in a table.</li>
+<li><strong>Cost tiers cut from 4 to 2.</strong> Desktop or portable. Done.</li>
+</ul>
+<hr>
+<h2 id="pick-your-build-before-you-buy">Pick your build before you buy <a class="heading-anchor" href="#pick-your-build-before-you-buy" aria-label="link to this section">#</a></h2>
+<p>Two questions decide everything.</p>
+<p><strong>Q1 — Where will this device sit?</strong></p>
+<ul>
+<li><em>On my desk, within arm&#39;s reach</em> → desktop build (cheaper, simpler)</li>
+<li><em>Roaming around the house / outside / unplugged</em> → portable build (add the PiSugar 3 battery)</li>
+</ul>
+<p><strong>Q2 — How far away will you be when you talk to it?</strong></p>
+<ul>
+<li><em>Within 3 feet, quiet room</em> → use the Whisplay&#39;s on-board mics (no extra purchase)</li>
+<li><em>4–10 feet, normal room</em> → add the SunFounder USB mini mic (~$13) + an OTG adapter</li>
+<li><em>Across the room, possibly noisy, &quot;Alexa-class&quot; pickup</em> → add the reSpeaker XVF3800 mic array (~$60) + an OTG adapter</li>
+</ul>
+<p>That&#39;s it. Now build the cart.</p>
+<hr>
+<h2 id="part-1-shopping-list">Part 1: Shopping list <a class="heading-anchor" href="#part-1-shopping-list" aria-label="link to this section">#</a></h2>
+<h3 id="core-build-required">Core build (required) <a class="heading-anchor" href="#core-build-required" aria-label="link to this section">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Why</th>
+<th>~Price</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Raspberry Pi Zero 2 WH</strong></td>
+<td>The brain. The <strong>&quot;H&quot;</strong> matters — it has the GPIO header pre-soldered, which the Whisplay HAT needs. Don&#39;t buy the bare &quot;Pi Zero 2 W&quot; or you&#39;ll need to solder 40 pins yourself.</td>
+<td>~$22</td>
+<td>Search Amazon or Adafruit for &quot;Raspberry Pi Zero 2 WH&quot;</td>
+</tr>
+<tr>
+<td><strong>PiSugar Whisplay HAT</strong></td>
+<td>LCD, speaker, dual mic, RGB LED, buttons — everything except the CPU.</td>
+<td>~$36</td>
+<td>Direct from PiSugar&#39;s site or Amazon</td>
+</tr>
+<tr>
+<td><strong>microSD card, 32 GB Class 10</strong> (SanDisk Ultra or equivalent)</td>
+<td>The &quot;hard drive.&quot; 16 GB works but 32 GB gives you headroom.</td>
+<td>~$9</td>
+<td>Any reputable brand</td>
+</tr>
+<tr>
+<td><strong>Official Raspberry Pi 12.5W micro-USB power supply (5V/2.5A)</strong></td>
+<td>The Pi Zero 2 W is rated for 5V/2.5A. Phone chargers will <em>seem</em> to work and then cause random crashes. Buy the official one or a known-good 2.5A+ supply.</td>
+<td>~$10</td>
+<td>Pi Hut, Adafruit, official resellers</td>
+</tr>
+</tbody></table>
+<h3 id="pick-your-mic-optional">Pick-your-mic (optional) <a class="heading-anchor" href="#pick-your-mic-optional" aria-label="link to this section">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>When to buy</th>
+<th>~Price</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>SunFounder USB Mini Mic</strong></td>
+<td>If you need 4–10 ft pickup.</td>
+<td>~$13</td>
+</tr>
+<tr>
+<td><strong>Seeed reSpeaker XVF3800 USB Mic Array</strong></td>
+<td>If you want across-the-room pickup with built-in echo cancellation, beamforming, and noise suppression.</td>
+<td>~$60</td>
+</tr>
+<tr>
+<td><strong>micro-USB OTG adapter</strong></td>
+<td><strong>Required</strong> if you bought either USB mic above — the Pi Zero only has a micro-USB data port.</td>
+<td>~$7</td>
+</tr>
+</tbody></table>
+<h3 id="portable-optional">Portable (optional) <a class="heading-anchor" href="#portable-optional" aria-label="link to this section">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>When to buy</th>
+<th>~Price</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>PiSugar 3 1200 mAh battery</strong></td>
+<td>If you want to unplug and carry it around. Snaps onto the Pi via magnetic pogo pins — no soldering.</td>
+<td>~$40</td>
+</tr>
+</tbody></table>
+<h3 id="totals">Totals <a class="heading-anchor" href="#totals" aria-label="link to this section">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>Build</th>
+<th>What you get</th>
+<th>Total</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Desktop</strong></td>
+<td>Core + Whisplay&#39;s mics + wall power</td>
+<td>~$77</td>
+</tr>
+<tr>
+<td><strong>Desktop + better mic (budget)</strong></td>
+<td>+ SunFounder + OTG</td>
+<td>~$97</td>
+</tr>
+<tr>
+<td><strong>Desktop + better mic (premium)</strong></td>
+<td>+ reSpeaker XVF3800 + OTG</td>
+<td>~$144</td>
+</tr>
+<tr>
+<td><strong>Portable + premium mic</strong></td>
+<td>All of the above + PiSugar 3 battery</td>
+<td>~$184</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>Prices fluctuate. Verify before checkout. Where I&#39;ve named vendors, search by product name rather than trusting a link.</p>
+</blockquote>
+<h3 id="what-you-do-not-need">What you do <strong>not</strong> need <a class="heading-anchor" href="#what-you-do-not-need" aria-label="link to this section">#</a></h3>
+<ul>
+<li>A separate speaker (the Whisplay has one)</li>
+<li>A monitor or keyboard (we do the whole setup over SSH from your PC)</li>
+<li>A USB hub (one USB mic on the OTG port is fine)</li>
+</ul>
+<hr>
+<h2 id="part-2-assemble-the-hardware">Part 2: Assemble the hardware <a class="heading-anchor" href="#part-2-assemble-the-hardware" aria-label="link to this section">#</a></h2>
+<p><strong>Total time:</strong> ~5 minutes. No soldering.</p>
+<ol>
+<li><strong>Do not insert the microSD yet.</strong> Flash it first in Part 3.</li>
+<li>Align the Whisplay HAT&#39;s 40-pin socket with the Pi Zero 2 WH&#39;s GPIO header pins. The Whisplay&#39;s buttons should be on the same side as the Pi&#39;s USB ports.</li>
+<li>Press the HAT down firmly and evenly until fully seated. <strong>Hold the PCB edges; do not press on the glass LCD.</strong> Press the LCD and it cracks.</li>
+<li>Peel off the LCD protective film.</li>
+<li><em>(Optional, portable build)</em> Snap the PiSugar 3 battery onto the underside of the Pi using its magnetic pogo pins.</li>
+</ol>
+<p><strong>Final stack (top → bottom):</strong> Whisplay HAT → Pi Zero 2 WH → <em>PiSugar 3 (optional)</em></p>
+<p>✅ <strong>Checkpoint:</strong> The stack feels solid, the LCD is exposed and undamaged, nothing wobbles.</p>
+<hr>
+<h2 id="part-3-flash-the-microsd-card">Part 3: Flash the microSD card <a class="heading-anchor" href="#part-3-flash-the-microsd-card" aria-label="link to this section">#</a></h2>
+<h3 id="31-install-raspberry-pi-imager">3.1 Install Raspberry Pi Imager <a class="heading-anchor" href="#31-install-raspberry-pi-imager" aria-label="link to this section">#</a></h3>
+<p>Download from <strong>raspberrypi.com/software</strong> (Windows, macOS, Linux).</p>
+<h3 id="32-flash">3.2 Flash <a class="heading-anchor" href="#32-flash" aria-label="link to this section">#</a></h3>
+<ol>
+<li>Open Raspberry Pi Imager.</li>
+<li><strong>Choose Device</strong> → <code>Raspberry Pi Zero 2 W</code>.</li>
+<li><strong>Choose OS</strong> → <code>Raspberry Pi OS (other)</code> → <strong>Raspberry Pi OS (64-bit)</strong> (the full version, <em>not</em> Lite).<ul>
+<li>The chatbot repo&#39;s install script expects packages from the full image. Lite will work but you&#39;ll need extra apt installs and may hit surprises.</li>
+</ul>
+</li>
+<li><strong>Choose Storage</strong> → your microSD card.</li>
+<li>Click the gear icon (⚙) for <strong>Edit Settings</strong> and configure:<ul>
+<li><strong>Hostname:</strong> <code>claudebox</code></li>
+<li><strong>Username:</strong> <code>pi</code></li>
+<li><strong>Password:</strong> <em>something secure</em></li>
+<li><strong>Enable SSH:</strong> ✅ password auth</li>
+<li><strong>Wireless LAN:</strong> SSID + password for your home Wi-Fi</li>
+<li><strong>Locale:</strong> <code>America/Chicago</code>, keyboard <code>us</code></li>
+</ul>
+</li>
+<li><strong>Save</strong>, then <strong>Write</strong>. Takes 2–5 minutes.</li>
+</ol>
+<h3 id="33-first-boot">3.3 First boot <a class="heading-anchor" href="#33-first-boot" aria-label="link to this section">#</a></h3>
+<ol>
+<li><p>Insert the microSD into the Pi.</p>
+</li>
+<li><p>Plug the official power supply into the <strong><code>PWR IN</code></strong> micro-USB port (the one nearest the corner, labeled <code>PWR IN</code> on the silkscreen). <strong>Not</strong> the middle port labeled <code>USB</code>.</p>
+</li>
+<li><p>Wait 60–90 seconds.</p>
+</li>
+<li><p>From your PC:</p>
+<pre><code class="language-bash">ssh pi@claudebox.local
+</code></pre>
+<p>If <code>claudebox.local</code> doesn&#39;t resolve, find the Pi&#39;s IP in your router&#39;s admin page and use <code>ssh pi@192.168.x.x</code>.</p>
+</li>
+</ol>
+<p>✅ <strong>Checkpoint:</strong> You see the <code>pi@claudebox:~ $</code> prompt. Run <code>cat /etc/os-release</code> and confirm it says Debian/Raspberry Pi OS. Run <code>free -h</code> — you should see ~430 MB of <code>Mem:</code> (the Pi Zero 2 W has 512 MB total).</p>
+<hr>
+<h2 id="part-4-system-setup">Part 4: System setup <a class="heading-anchor" href="#part-4-system-setup" aria-label="link to this section">#</a></h2>
+<p>Run these from the SSH session. One at a time. Wait for each to finish.</p>
+<h3 id="41-update">4.1 Update <a class="heading-anchor" href="#41-update" aria-label="link to this section">#</a></h3>
+<pre><code class="language-bash"><span class="hljs-built_in">sudo</span> apt update &amp;&amp; <span class="hljs-built_in">sudo</span> apt full-upgrade -y
+</code></pre>
+<p>This takes 5–15 minutes on a Pi Zero. Be patient.</p>
+<h3 id="42-free-up-ram-pi-zero-only-has-512-mb">4.2 Free up RAM (Pi Zero only has 512 MB) <a class="heading-anchor" href="#42-free-up-ram-pi-zero-only-has-512-mb" aria-label="link to this section">#</a></h3>
+<p>The Pi Zero 2 W is RAM-constrained. Disable services you don&#39;t need:</p>
+<pre><code class="language-bash"><span class="hljs-comment"># Disable Bluetooth (not used by this build)</span>
+<span class="hljs-built_in">sudo</span> systemctl <span class="hljs-built_in">disable</span> hciuart bluetooth
+
+<span class="hljs-comment"># Disable triggerhappy (gamepad daemon, not needed)</span>
+<span class="hljs-built_in">sudo</span> systemctl <span class="hljs-built_in">disable</span> triggerhappy
+</code></pre>
+<h3 id="43-install-build-dependencies">4.3 Install build dependencies <a class="heading-anchor" href="#43-install-build-dependencies" aria-label="link to this section">#</a></h3>
+<pre><code class="language-bash"><span class="hljs-built_in">sudo</span> apt install -y git curl build-essential python3-pip python3-venv \
+  portaudio19-dev libsndfile1 ffmpeg alsa-utils libatlas-base-dev
+</code></pre>
+<h3 id="44-install-the-whisplay-hat-driver-lcd-audio-buttons-leds">4.4 Install the Whisplay HAT driver (LCD + audio + buttons + LEDs) <a class="heading-anchor" href="#44-install-the-whisplay-hat-driver-lcd-audio-buttons-leds" aria-label="link to this section">#</a></h3>
+<p>This is the official PiSugar driver. The install script also enables the I2C, SPI, and I2S buses automatically.</p>
+<pre><code class="language-bash"><span class="hljs-built_in">cd</span> ~
+git <span class="hljs-built_in">clone</span> https://github.com/PiSugar/Whisplay.git --depth 1
+<span class="hljs-built_in">cd</span> Whisplay/Driver
+<span class="hljs-built_in">sudo</span> bash install_wm8960_drive.sh
+<span class="hljs-built_in">sudo</span> reboot
+</code></pre>
+<p>Wait ~60 seconds, then SSH back in:</p>
+<pre><code class="language-bash">ssh pi@claudebox.local
+</code></pre>
+<p>✅ <strong>Checkpoint 1 — driver loaded:</strong></p>
+<pre><code class="language-bash">aplay -l
+</code></pre>
+<p>You should see a card whose name contains <code>wm8960</code>. If not, the driver didn&#39;t load — re-run the install script and re-check.</p>
+<p>✅ <strong>Checkpoint 2 — speaker works:</strong></p>
+<pre><code class="language-bash">speaker-test -t sine -f 440 -l 1 -D plughw:CARD=wm8960soundcard
+</code></pre>
+<p>You should hear a one-second 440 Hz beep from the Whisplay&#39;s speaker. If you hear nothing, run <code>alsamixer</code>, press F6, pick the wm8960 card, and turn up the playback levels.</p>
+<p>✅ <strong>Checkpoint 3 — on-board mic works:</strong></p>
+<pre><code class="language-bash">arecord -d 5 -f <span class="hljs-built_in">cd</span> /tmp/mic_test.wav &amp;&amp; aplay /tmp/mic_test.wav
+</code></pre>
+<p>Record 5 seconds, then play it back. You should hear your voice. If it&#39;s silent or garbled, raise the &quot;Capture&quot; levels in <code>alsamixer</code> (F4 toggles between Playback and Capture).</p>
+<p>If all three checkpoints pass and you&#39;re using the on-board mic, skip to Part 5. Otherwise, do Part 4.5 first.</p>
+<hr>
+<h2 id="part-45-configure-a-usb-microphone-skip-if-using-on-board-mics">Part 4.5: Configure a USB microphone <em>(skip if using on-board mics)</em> <a class="heading-anchor" href="#part-45-configure-a-usb-microphone-skip-if-using-on-board-mics" aria-label="link to this section">#</a></h2>
+<h3 id="plug-it-in">Plug it in <a class="heading-anchor" href="#plug-it-in" aria-label="link to this section">#</a></h3>
+<ol>
+<li>Power down: <code>sudo shutdown -h now</code> and unplug power.</li>
+<li>Connect the OTG adapter to the Pi&#39;s <strong>data</strong> micro-USB port — that&#39;s the <strong>middle</strong> one labeled <code>USB</code>, not <code>PWR IN</code>.</li>
+<li>Plug the USB mic into the OTG adapter.</li>
+<li>Power back on, SSH in.</li>
+</ol>
+<h3 id="verify-its-detected">Verify it&#39;s detected <a class="heading-anchor" href="#verify-its-detected" aria-label="link to this section">#</a></h3>
+<pre><code class="language-bash">arecord -l
+</code></pre>
+<p>You should now see two capture cards:</p>
+<pre><code><span class="hljs-attribute">card</span> <span class="hljs-number">0</span>: wm8960soundcard ...
+<span class="hljs-attribute">card</span> <span class="hljs-number">1</span>: ArrayUAC10 / Mini Mic ...  (your USB mic — name varies)
+</code></pre>
+<p>If <code>card 1</code> is missing: try a different OTG cable (some are charge-only), or make sure you&#39;re in the data port not the power one. Run <code>lsusb</code> and confirm the device shows up.</p>
+<h3 id="test-recording-from-the-usb-mic">Test recording from the USB mic <a class="heading-anchor" href="#test-recording-from-the-usb-mic" aria-label="link to this section">#</a></h3>
+<pre><code class="language-bash">arecord -D plughw:1,0 -d 5 -f <span class="hljs-built_in">cd</span> /tmp/usb_test.wav
+aplay /tmp/usb_test.wav
+</code></pre>
+<p>If it&#39;s quiet, run <code>alsamixer</code>, press F6 to switch to the USB card, F4 for Capture controls, and raise it to ~80%.</p>
+<h3 id="make-the-usb-mic-the-system-default-capture-device">Make the USB mic the system default capture device <a class="heading-anchor" href="#make-the-usb-mic-the-system-default-capture-device" aria-label="link to this section">#</a></h3>
+<p>This way the chatbot picks it up automatically — speaker stays on the Whisplay.</p>
+<pre><code class="language-bash">nano ~/.asoundrc
+</code></pre>
+<p>Paste:</p>
+<pre><code class="language-conf"><span class="hljs-meta"># Playback on Whisplay speaker (card 0), capture on USB mic (card 1)</span>
+<span class="hljs-title">pcm</span>.!<span class="hljs-keyword">default</span> {
+    <span class="hljs-class"><span class="hljs-keyword">type</span> asym</span>
+    playback.pcm {
+        <span class="hljs-class"><span class="hljs-keyword">type</span> plug</span>
+        slave.pcm <span class="hljs-string">&quot;hw:0,0&quot;</span>
+    }
+    capture.pcm {
+        <span class="hljs-class"><span class="hljs-keyword">type</span> plug</span>
+        slave.pcm <span class="hljs-string">&quot;hw:1,0&quot;</span>
+    }
+}
+
+<span class="hljs-title">ctl</span>.!<span class="hljs-keyword">default</span> {
+    <span class="hljs-class"><span class="hljs-keyword">type</span> hw</span>
+    card <span class="hljs-number">1</span>
+}
+</code></pre>
+<p>Save with <code>Ctrl+X</code>, <code>Y</code>, <code>Enter</code>.</p>
+<h3 id="pin-the-card-numbering-across-reboots">Pin the card numbering across reboots <a class="heading-anchor" href="#pin-the-card-numbering-across-reboots" aria-label="link to this section">#</a></h3>
+<p>Linux&#39;s USB card numbers can swap on reboot. Lock the USB mic to card 1:</p>
+<pre><code class="language-bash"><span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;options snd_usb_audio index=1&quot;</span> | <span class="hljs-built_in">sudo</span> <span class="hljs-built_in">tee</span> /etc/modprobe.d/alsa-base.conf
+</code></pre>
+<p>Reboot:</p>
+<pre><code class="language-bash"><span class="hljs-built_in">sudo</span> reboot
+</code></pre>
+<h3 id="verify-the-default-config-works-end-to-end">Verify the default config works end-to-end <a class="heading-anchor" href="#verify-the-default-config-works-end-to-end" aria-label="link to this section">#</a></h3>
+<pre><code class="language-bash">ssh pi@claudebox.local
+arecord -d 5 -f <span class="hljs-built_in">cd</span> /tmp/default_test.wav &amp;&amp; aplay /tmp/default_test.wav
+</code></pre>
+<p>This should record from the USB mic and play through the Whisplay speaker — without specifying any device flags.</p>
+<p>✅ <strong>Checkpoint:</strong> Recording and playback both use the right devices via the system default.</p>
+<blockquote>
+<p><strong>reSpeaker XVF3800 note:</strong> The on-board AEC, beamforming, and noise suppression run automatically. No extra software needed. For raw multi-channel access or firmware tweaks, see the <a href="https://wiki.seeedstudio.com/respeaker_xvf3800_introduction/">Seeed reSpeaker XVF3800 wiki</a>.</p>
+</blockquote>
+<hr>
+<h2 id="part-5-install-the-chatbot-software">Part 5: Install the chatbot software <a class="heading-anchor" href="#part-5-install-the-chatbot-software" aria-label="link to this section">#</a></h2>
+<p>This is the PiSugar <code>whisplay-ai-chatbot</code> repo. It&#39;s purpose-built for the Pi Zero 2 W + Whisplay combo. Press button → speak → release → Claude answers.</p>
+<pre><code class="language-bash"><span class="hljs-built_in">cd</span> ~
+git <span class="hljs-built_in">clone</span> https://github.com/PiSugar/whisplay-ai-chatbot.git
+<span class="hljs-built_in">cd</span> whisplay-ai-chatbot
+bash install_dependencies.sh
+<span class="hljs-built_in">source</span> ~/.bashrc
+</code></pre>
+<p>The dependency install pulls Node.js, Python packages, and audio libraries. This takes <strong>15–25 minutes</strong> on a Pi Zero 2 W. Let it finish.</p>
+<blockquote>
+<p>The <code>source ~/.bashrc</code> line is important — the installer sets PATH entries you need in your current shell session.</p>
+</blockquote>
+<p>✅ <strong>Checkpoint:</strong> <code>install_dependencies.sh</code> finishes without errors. Test that Node is on PATH:</p>
+<pre><code class="language-bash">node --version
+</code></pre>
+<p>You should see <code>v20.x</code> or similar.</p>
+<hr>
+<h2 id="part-6-get-a-claude-api-key">Part 6: Get a Claude API key <a class="heading-anchor" href="#part-6-get-a-claude-api-key" aria-label="link to this section">#</a></h2>
+<ol>
+<li>Go to <strong>console.anthropic.com</strong> and sign in (or create an account).</li>
+<li>Add a payment method and put a small amount of credit on the account (e.g., $5 — that lasts a long time on Haiku).</li>
+<li>Navigate to <strong>API Keys</strong> → <strong>Create Key</strong>.</li>
+<li>Name it <code>claudebox</code>. <strong>Copy the key now</strong> — you can&#39;t see it again later.</li>
+<li>Treat the key like a password.</li>
+</ol>
+<p><strong>Approximate cost:</strong> Casual personal use on <code>claude-haiku-4-5-20251001</code> typically runs a few dollars per month at most. Check current pricing at anthropic.com/pricing.</p>
+<h3 id="which-model-to-pick">Which model to pick <a class="heading-anchor" href="#which-model-to-pick" aria-label="link to this section">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>Model ID</th>
+<th>Speed</th>
+<th>Quality</th>
+<th>When to use</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>claude-haiku-4-5-20251001</code></td>
+<td>Fastest</td>
+<td>Good</td>
+<td><strong>Default for this device.</strong> Latency matters more than essay-grade prose for a voice assistant.</td>
+</tr>
+<tr>
+<td><code>claude-sonnet-4-6</code></td>
+<td>Medium</td>
+<td>Excellent</td>
+<td>If you want richer answers and don&#39;t mind a slightly slower response.</td>
+</tr>
+<tr>
+<td><code>claude-opus-4-7</code></td>
+<td>Slowest</td>
+<td>Best</td>
+<td>Overkill for spoken Q&amp;A. Use for hard reasoning tasks only.</td>
+</tr>
+</tbody></table>
+<p>Model IDs change over time. The current list lives at <a href="https://docs.claude.com/en/docs/about-claude/models/overview">docs.claude.com</a>.</p>
+<hr>
+<h2 id="part-7-configure-the-chatbot">Part 7: Configure the chatbot <a class="heading-anchor" href="#part-7-configure-the-chatbot" aria-label="link to this section">#</a></h2>
+<h3 id="71-create-your-env">7.1 Create your <code>.env</code> <a class="heading-anchor" href="#71-create-your-env" aria-label="link to this section">#</a></h3>
+<pre><code class="language-bash"><span class="hljs-built_in">cd</span> ~/whisplay-ai-chatbot
+<span class="hljs-built_in">cp</span> .env.template .<span class="hljs-built_in">env</span>
+nano .<span class="hljs-built_in">env</span>
+</code></pre>
+<p>The template ships with many fields for different ASR/LLM/TTS providers. For a Claude-based build, you need the LLM section set to Anthropic. Find and set:</p>
+<pre><code class="language-env"><span class="hljs-comment"># === LLM (the AI brain) ===</span>
+<span class="hljs-attribute">LLM_PROVIDER</span>=anthropic
+<span class="hljs-attribute">ANTHROPIC_API_KEY</span>=sk-ant-YOUR-KEY-HERE
+<span class="hljs-attribute">ANTHROPIC_MODEL</span>=claude-haiku-4-5-20251001
+
+<span class="hljs-comment"># === System prompt — shapes the assistant&#x27;s voice ===</span>
+<span class="hljs-attribute">SYSTEM_PROMPT</span>=You are a concise, friendly voice assistant. Answer <span class="hljs-keyword">in</span> plain spoken English — <span class="hljs-literal">no</span> markdown, <span class="hljs-literal">no</span> bullet lists, <span class="hljs-literal">no</span> headings. Keep responses <span class="hljs-keyword">to</span> 1–3 sentences unless the<span class="hljs-built_in"> user </span>explicitly asks <span class="hljs-keyword">for</span> more.
+</code></pre>
+<p>For speech-to-text (ASR) and text-to-speech (TTS), the template defaults usually work. If you want fully local (no extra API keys), pick <code>whisper</code> for ASR and <code>piper</code> for TTS. If you want higher-quality cloud STT/TTS, see the wiki for OpenAI / Google / Volcengine options — each needs its own API key.</p>
+<blockquote>
+<p>The <code>.env.template</code> evolves. If your file looks different from this guide, the live template at <a href="https://github.com/PiSugar/whisplay-ai-chatbot/blob/master/.env.template">github.com/PiSugar/whisplay-ai-chatbot/blob/master/.env.template</a> is the source of truth.</p>
+</blockquote>
+<p>Save: <code>Ctrl+X</code>, <code>Y</code>, <code>Enter</code>.</p>
+<h3 id="72-build-the-project">7.2 Build the project <a class="heading-anchor" href="#72-build-the-project" aria-label="link to this section">#</a></h3>
+<pre><code class="language-bash">bash build.sh
+</code></pre>
+<p>This compiles the TypeScript and prepares assets. ~5–10 minutes on a Pi Zero 2 W.</p>
+<p>✅ <strong>Checkpoint:</strong> <code>build.sh</code> exits cleanly with no errors.</p>
+<hr>
+<h2 id="part-8-first-run-sanity-check">Part 8: First-run sanity check <a class="heading-anchor" href="#part-8-first-run-sanity-check" aria-label="link to this section">#</a></h2>
+<p>Before launching the full chatbot, run a 90-second healthcheck that verifies every layer end-to-end: speaker, mic, network, Claude API.</p>
+<p>Create the script:</p>
+<pre><code class="language-bash">nano ~/healthcheck.sh
+</code></pre>
+<p>Paste:</p>
+<pre><code class="language-bash"><span class="hljs-meta">#!/bin/bash</span>
+<span class="hljs-comment"># claudebox healthcheck — quick end-to-end smoke test</span>
+<span class="hljs-comment"># Usage: bash ~/healthcheck.sh</span>
+
+<span class="hljs-built_in">set</span> -u
+ENV_FILE=<span class="hljs-string">&quot;<span class="hljs-variable">$HOME</span>/whisplay-ai-chatbot/.env&quot;</span>
+PASS=<span class="hljs-string">&quot;\033[0;32m✓\033[0m&quot;</span>
+FAIL=<span class="hljs-string">&quot;\033[0;31m✗\033[0m&quot;</span>
+exit_code=0
+
+<span class="hljs-function"><span class="hljs-title">step</span></span>() { <span class="hljs-built_in">printf</span> <span class="hljs-string">&quot;\n%s\n&quot;</span> <span class="hljs-string">&quot;── <span class="hljs-variable">$1</span> ──&quot;</span>; }
+<span class="hljs-function"><span class="hljs-title">ok</span></span>()   { <span class="hljs-built_in">printf</span> <span class="hljs-string">&quot;  <span class="hljs-variable">$PASS</span> %s\n&quot;</span> <span class="hljs-string">&quot;<span class="hljs-variable">$1</span>&quot;</span>; }
+<span class="hljs-function"><span class="hljs-title">bad</span></span>()  { <span class="hljs-built_in">printf</span> <span class="hljs-string">&quot;  <span class="hljs-variable">$FAIL</span> %s\n&quot;</span> <span class="hljs-string">&quot;<span class="hljs-variable">$1</span>&quot;</span>; exit_code=1; }
+
+step <span class="hljs-string">&quot;1. Audio devices&quot;</span>
+aplay -l | grep -q wm8960 &amp;&amp; ok <span class="hljs-string">&quot;wm8960 playback card detected&quot;</span> || bad <span class="hljs-string">&quot;wm8960 NOT detected (driver issue?)&quot;</span>
+arecord -l | grep -q card &amp;&amp; ok <span class="hljs-string">&quot;at least one capture card detected&quot;</span> || bad <span class="hljs-string">&quot;no capture card detected&quot;</span>
+
+step <span class="hljs-string">&quot;2. Speaker test (1s beep)&quot;</span>
+speaker-test -t sine -f 440 -l 1 -s 1 &gt;/dev/null 2&gt;&amp;1 \
+  &amp;&amp; ok <span class="hljs-string">&quot;speaker-test completed (did you hear a beep?)&quot;</span> \
+  || bad <span class="hljs-string">&quot;speaker-test failed&quot;</span>
+
+step <span class="hljs-string">&quot;3. Mic test (3s record-and-replay)&quot;</span>
+<span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;  (speak for 3 seconds now…)&quot;</span>
+arecord -d 3 -f <span class="hljs-built_in">cd</span> /tmp/hc_mic.wav &gt;/dev/null 2&gt;&amp;1
+[ -s /tmp/hc_mic.wav ] &amp;&amp; ok <span class="hljs-string">&quot;captured audio file written&quot;</span> || bad <span class="hljs-string">&quot;no audio captured&quot;</span>
+aplay /tmp/hc_mic.wav &gt;/dev/null 2&gt;&amp;1 &amp;&amp; ok <span class="hljs-string">&quot;playback OK (did you hear yourself?)&quot;</span> || bad <span class="hljs-string">&quot;playback failed&quot;</span>
+
+step <span class="hljs-string">&quot;4. Network reachability&quot;</span>
+ping -c 1 -W 3 api.anthropic.com &gt;/dev/null 2&gt;&amp;1 \
+  &amp;&amp; ok <span class="hljs-string">&quot;api.anthropic.com is reachable&quot;</span> \
+  || bad <span class="hljs-string">&quot;cannot reach api.anthropic.com (Wi-Fi or DNS issue)&quot;</span>
+
+step <span class="hljs-string">&quot;5. Claude API call&quot;</span>
+<span class="hljs-keyword">if</span> [ ! -f <span class="hljs-string">&quot;<span class="hljs-variable">$ENV_FILE</span>&quot;</span> ]; <span class="hljs-keyword">then</span>
+  bad <span class="hljs-string">&quot;<span class="hljs-variable">$ENV_FILE</span> not found — finish Part 7 first&quot;</span>
+<span class="hljs-keyword">else</span>
+  <span class="hljs-comment"># shellcheck disable=SC1090</span>
+  <span class="hljs-built_in">set</span> -a; <span class="hljs-built_in">source</span> <span class="hljs-string">&quot;<span class="hljs-variable">$ENV_FILE</span>&quot;</span>; <span class="hljs-built_in">set</span> +a
+  <span class="hljs-keyword">if</span> [ -z <span class="hljs-string">&quot;<span class="hljs-variable">${ANTHROPIC_API_KEY:-}</span>&quot;</span> ]; <span class="hljs-keyword">then</span>
+    bad <span class="hljs-string">&quot;ANTHROPIC_API_KEY is empty in .env&quot;</span>
+  <span class="hljs-keyword">else</span>
+    response=$(curl -s -w <span class="hljs-string">&quot;\n%{http_code}&quot;</span> https://api.anthropic.com/v1/messages \
+      -H <span class="hljs-string">&quot;x-api-key: <span class="hljs-variable">$ANTHROPIC_API_KEY</span>&quot;</span> \
+      -H <span class="hljs-string">&quot;anthropic-version: 2023-06-01&quot;</span> \
+      -H <span class="hljs-string">&quot;content-type: application/json&quot;</span> \
+      -d <span class="hljs-string">&quot;{\&quot;model\&quot;:\&quot;<span class="hljs-variable">${ANTHROPIC_MODEL:-claude-haiku-4-5-20251001}</span>\&quot;,\&quot;max_tokens\&quot;:50,\&quot;messages\&quot;:[{\&quot;role\&quot;:\&quot;user\&quot;,\&quot;content\&quot;:\&quot;Say hello in exactly 5 words.\&quot;}]}&quot;</span>)
+    http_code=$(<span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;<span class="hljs-variable">$response</span>&quot;</span> | <span class="hljs-built_in">tail</span> -n1)
+    body=$(<span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;<span class="hljs-variable">$response</span>&quot;</span> | sed <span class="hljs-string">&#x27;$d&#x27;</span>)
+    <span class="hljs-keyword">if</span> [ <span class="hljs-string">&quot;<span class="hljs-variable">$http_code</span>&quot;</span> = <span class="hljs-string">&quot;200&quot;</span> ]; <span class="hljs-keyword">then</span>
+      ok <span class="hljs-string">&quot;Claude API responded HTTP 200&quot;</span>
+      <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;  Reply: <span class="hljs-subst">$(echo <span class="hljs-string">&quot;<span class="hljs-variable">$body</span>&quot;</span> | grep -o &#x27;<span class="hljs-string">&quot;text&quot;</span>:<span class="hljs-string">&quot;[^&quot;</span>]*<span class="hljs-string">&quot;&#x27; | head -1 | sed &#x27;s/&quot;</span>text<span class="hljs-string">&quot;:&quot;</span>//;s/<span class="hljs-string">&quot;$//&#x27;)&quot;</span>
+    else
+      bad <span class="hljs-string">&quot;Claude API returned HTTP <span class="hljs-variable">$http_code</span>&quot;</span>
+      echo <span class="hljs-string">&quot;  <span class="hljs-variable">$body</span>&quot;</span> | head -3
+    fi
+  fi
+fi
+
+echo
+if [ $exit_code -eq 0 ]; then
+  printf <span class="hljs-string">&quot;<span class="hljs-variable">$PASS</span> All checks passed. You&#x27;re ready for Part 9.\n&quot;</span>
+else
+  printf <span class="hljs-string">&quot;<span class="hljs-variable">$FAIL</span> One or more checks failed. Fix above before running the chatbot.\n&quot;</span>
+fi
+exit $exit_code</span></span>
+</code></pre>
+<p>Run it:</p>
+<pre><code class="language-bash"><span class="hljs-built_in">chmod</span> +x ~/healthcheck.sh
+bash ~/healthcheck.sh
+</code></pre>
+<p>✅ <strong>Checkpoint:</strong> All five sections print green check marks. If anything fails, fix that piece before moving on — running the full chatbot before this passes just makes debugging harder.</p>
+<hr>
+<h2 id="part-9-run-the-chatbot">Part 9: Run the chatbot <a class="heading-anchor" href="#part-9-run-the-chatbot" aria-label="link to this section">#</a></h2>
+<h3 id="manual-launch-foreground-for-testing">Manual launch (foreground, for testing) <a class="heading-anchor" href="#manual-launch-foreground-for-testing" aria-label="link to this section">#</a></h3>
+<pre><code class="language-bash"><span class="hljs-built_in">cd</span> ~/whisplay-ai-chatbot
+bash run_chatbot.sh
+</code></pre>
+<p>The LCD lights up with status. Press the on-board button on the Whisplay, speak your question, release. Claude responds out loud.</p>
+<p>Stop with <code>Ctrl+C</code>.</p>
+<h3 id="set-it-to-start-on-boot">Set it to start on boot <a class="heading-anchor" href="#set-it-to-start-on-boot" aria-label="link to this section">#</a></h3>
+<p>The repo provides an opinionated startup installer that registers a <code>chatbot.service</code> systemd unit and sets the system to multi-user (headless) mode. Use it:</p>
+<pre><code class="language-bash"><span class="hljs-built_in">cd</span> ~/whisplay-ai-chatbot
+bash startup.sh
+</code></pre>
+<p>After this, the chatbot starts automatically on every boot. Verify:</p>
+<pre><code class="language-bash"><span class="hljs-built_in">sudo</span> systemctl status chatbot.service
+</code></pre>
+<p>You should see <code>Active: active (running)</code>.</p>
+<h3 id="live-logs">Live logs <a class="heading-anchor" href="#live-logs" aria-label="link to this section">#</a></h3>
+<pre><code class="language-bash"><span class="hljs-built_in">tail</span> -f ~/whisplay-ai-chatbot/chatbot.log
+<span class="hljs-comment"># or</span>
+journalctl -u chatbot.service -f
+</code></pre>
+<h3 id="wake-word-optional-hands-free">Wake word <em>(optional, hands-free)</em> <a class="heading-anchor" href="#wake-word-optional-hands-free" aria-label="link to this section">#</a></h3>
+<p>If you want &quot;Hey Claude&quot; instead of pressing a button, the PiSugar wiki has the integration guide:</p>
+<ul>
+<li><a href="https://github.com/PiSugar/whisplay-ai-chatbot/wiki/Wakeword">Wake Word wiki page</a></li>
+</ul>
+<p>It uses a separate wake-word engine and adds modest CPU load. Worth doing once everything else is working — not before.</p>
+<hr>
+<h2 id="part-10-optional-case-3d-printed">Part 10: Optional case (3D-printed) <a class="heading-anchor" href="#part-10-optional-case-3d-printed" aria-label="link to this section">#</a></h2>
+<p>PiSugar publishes free STL files for case shells:</p>
+<ul>
+<li><a href="https://github.com/PiSugar/suit-cases/tree/main/pisugar3-whisplay-chatbot">pi02 Whisplay chatbot case (resin/SLA)</a></li>
+<li><a href="https://github.com/PiSugar/suit-cases/tree/main/pisugar3-whisplay-chatbot-fdm">pi02 Whisplay chatbot case (FDM)</a></li>
+</ul>
+<p>No printer? Upload the STL to a print service like JLC3DP or Craftcloud — a few dollars shipped.</p>
+<hr>
+<h2 id="part-11-troubleshooting">Part 11: Troubleshooting <a class="heading-anchor" href="#part-11-troubleshooting" aria-label="link to this section">#</a></h2>
+<h3 id="nothing-plays-through-the-speaker">Nothing plays through the speaker <a class="heading-anchor" href="#nothing-plays-through-the-speaker" aria-label="link to this section">#</a></h3>
+<ul>
+<li><code>aplay -l</code> should list <code>wm8960</code>. If not, re-run the driver install in Part 4.4.</li>
+<li>Run <code>alsamixer</code> → F6 → wm8960 card → confirm <code>Speaker</code> is unmuted (no <code>MM</code> label) and above 0%.</li>
+</ul>
+<h3 id="mic-captures-silence-or-garbage">Mic captures silence or garbage <a class="heading-anchor" href="#mic-captures-silence-or-garbage" aria-label="link to this section">#</a></h3>
+<ul>
+<li>Run <code>arecord -l</code>, confirm the card you expect is listed.</li>
+<li>Run <code>alsamixer</code> → F6 → mic card → F4 (Capture) → raise to ~80%.</li>
+<li>For a USB mic: re-check Part 4.5; the OTG cable being charge-only is a common gotcha.</li>
+</ul>
+<h3 id="usb-mic-disappears-after-reboot">USB mic disappears after reboot <a class="heading-anchor" href="#usb-mic-disappears-after-reboot" aria-label="link to this section">#</a></h3>
+<ul>
+<li>Linux can renumber cards. The <code>/etc/modprobe.d/alsa-base.conf</code> line in Part 4.5 pins it. If you skipped that, do it now.</li>
+</ul>
+<h3 id="build-fails-out-of-memory">Build fails out of memory <a class="heading-anchor" href="#build-fails-out-of-memory" aria-label="link to this section">#</a></h3>
+<ul>
+<li>The Pi Zero 2 W only has 512 MB. Add swap if <code>build.sh</code> gets OOM-killed:<pre><code class="language-bash"><span class="hljs-built_in">sudo</span> dphys-swapfile swapoff
+<span class="hljs-built_in">sudo</span> sed -i <span class="hljs-string">&#x27;s/^CONF_SWAPSIZE=.*/CONF_SWAPSIZE=1024/&#x27;</span> /etc/dphys-swapfile
+<span class="hljs-built_in">sudo</span> dphys-swapfile setup
+<span class="hljs-built_in">sudo</span> dphys-swapfile swapon
+</code></pre>
+</li>
+</ul>
+<h3 id="service-wont-start">Service won&#39;t start <a class="heading-anchor" href="#service-wont-start" aria-label="link to this section">#</a></h3>
+<pre><code class="language-bash"><span class="hljs-built_in">sudo</span> systemctl status chatbot.service --no-pager
+journalctl -u chatbot.service -n 60 --no-pager
+</code></pre>
+<p>Look for the first ERROR line — usually a missing <code>.env</code> key or a wrong path.</p>
+<h3 id="claude-api-returns-401">Claude API returns 401 <a class="heading-anchor" href="#claude-api-returns-401" aria-label="link to this section">#</a></h3>
+<ul>
+<li>API key is invalid or expired. Re-copy from console.anthropic.com → API Keys.</li>
+</ul>
+<h3 id="claude-api-returns-429">Claude API returns 429 <a class="heading-anchor" href="#claude-api-returns-429" aria-label="link to this section">#</a></h3>
+<ul>
+<li>You&#39;re rate-limited. Add credit at console.anthropic.com → Billing.</li>
+</ul>
+<h3 id="responses-feel-slow">Responses feel slow <a class="heading-anchor" href="#responses-feel-slow" aria-label="link to this section">#</a></h3>
+<ul>
+<li>Use <code>claude-haiku-4-5-20251001</code> (Part 6 — it&#39;s the recommended default for this reason).</li>
+<li>The Pi Zero 2 W&#39;s Wi-Fi antenna is weak. Move it closer to the router.</li>
+<li>Local Whisper STT is the slowest step on a Pi Zero. If you have a cloud STT key (OpenAI, Google), switching to one of those in <code>.env</code> cuts perceived latency dramatically.</li>
+</ul>
+<h3 id="need-to-re-run-the-healthcheck">Need to re-run the healthcheck <a class="heading-anchor" href="#need-to-re-run-the-healthcheck" aria-label="link to this section">#</a></h3>
+<pre><code class="language-bash">bash ~/healthcheck.sh
+</code></pre>
+<h3 id="sd-card-filling-up">SD card filling up <a class="heading-anchor" href="#sd-card-filling-up" aria-label="link to this section">#</a></h3>
+<pre><code class="language-bash"><span class="hljs-built_in">df</span> -h
+<span class="hljs-built_in">sudo</span> apt clean
+<span class="hljs-comment"># clear chatbot recordings:</span>
+<span class="hljs-built_in">rm</span> -f ~/whisplay-ai-chatbot/data/recordings/*.wav 2&gt;/dev/null
+</code></pre>
+<hr>
+<h2 id="reference">Reference <a class="heading-anchor" href="#reference" aria-label="link to this section">#</a></h2>
+<ul>
+<li><strong>Whisplay HAT driver:</strong> <a href="https://github.com/PiSugar/Whisplay">https://github.com/PiSugar/Whisplay</a></li>
+<li><strong>Chatbot repo:</strong> <a href="https://github.com/PiSugar/whisplay-ai-chatbot">https://github.com/PiSugar/whisplay-ai-chatbot</a></li>
+<li><strong>Chatbot wiki (wake word, image gen, battery display):</strong> <a href="https://github.com/PiSugar/whisplay-ai-chatbot/wiki">https://github.com/PiSugar/whisplay-ai-chatbot/wiki</a></li>
+<li><strong>Pre-built SD card images:</strong> <a href="https://github.com/PiSugar/whisplay-ai-chatbot/wiki">https://github.com/PiSugar/whisplay-ai-chatbot/wiki</a> (skips most of Parts 4–7)</li>
+<li><strong>Claude API docs:</strong> <a href="https://docs.claude.com">https://docs.claude.com</a></li>
+<li><strong>Claude model catalog:</strong> <a href="https://docs.claude.com/en/docs/about-claude/models/overview">https://docs.claude.com/en/docs/about-claude/models/overview</a></li>
+<li><strong>Pricing:</strong> <a href="https://anthropic.com/pricing">https://anthropic.com/pricing</a></li>
+</ul>
+<hr>
+<h2 id="summary-stack">Summary stack <a class="heading-anchor" href="#summary-stack" aria-label="link to this section">#</a></h2>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>What it is</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Hardware</td>
+<td>Pi Zero 2 WH + PiSugar Whisplay HAT (+ optional PiSugar 3 battery, USB mic)</td>
+</tr>
+<tr>
+<td>OS</td>
+<td>Raspberry Pi OS 64-bit</td>
+</tr>
+<tr>
+<td>Audio driver</td>
+<td>WM8960 (Whisplay)</td>
+</tr>
+<tr>
+<td>Activation</td>
+<td>On-board button (default) or wake word (optional)</td>
+</tr>
+<tr>
+<td>Speech → text</td>
+<td>Local Whisper, or cloud STT if configured</td>
+</tr>
+<tr>
+<td>LLM</td>
+<td>Claude API (Anthropic)</td>
+</tr>
+<tr>
+<td>Text → speech</td>
+<td>Piper (local) or cloud TTS if configured</td>
+</tr>
+<tr>
+<td>Service manager</td>
+<td>systemd (<code>chatbot.service</code>, set up by <code>startup.sh</code>)</td>
+</tr>
+</tbody></table>
+<p>Only Claude runs in the cloud. Everything else can run on-device if you want it to.</p>
+<hr>
+<p><em>Built for Ryan DeBraal / MindAttic LLC — v3, May 2026</em></p>
+
+<section id="parts-gallery" aria-labelledby="parts-gallery-h">
+<h2 id="parts-gallery-h">Parts gallery</h2>
+<p>Images are embedded as base64 data URIs — this section works offline. Click a card to jump to the best-known buy URL (chosen via <code>find-deals</code> if you've picked one, otherwise the Amazon tier).</p>
+<h3 id="gallery-core">core <span class="part-cat-blurb">— Required for any build.</span></h3>
+<div class="parts-grid">
+<a class="part-card" data-pid="pi-zero-2-wh" href="https://www.amazon.com/s?k=raspberry+pi+zero+2+wh&amp;i=electronics&amp;s=price-asc-rank&amp;rh=p_72%3A2661618011" target="_blank" rel="noopener noreferrer">
+        <div class="part-image" aria-hidden="true"></div>
+        <div class="part-body">
+          <div class="part-name">Raspberry Pi Zero 2 WH</div>
+          
+        </div>
+      </a>
+<a class="part-card" data-pid="whisplay-hat" href="https://www.amazon.com/s?k=pisugar+whisplay+hat&amp;i=electronics&amp;s=price-asc-rank" target="_blank" rel="noopener noreferrer">
+        <div class="part-image" aria-hidden="true"></div>
+        <div class="part-body">
+          <div class="part-name">PiSugar Whisplay HAT</div>
+          
+        </div>
+      </a>
+<a class="part-card" data-pid="microsd-32gb" href="https://www.amazon.com/s?k=sandisk+ultra+32gb+microsd&amp;i=electronics&amp;s=price-asc-rank&amp;rh=p_72%3A2661618011" target="_blank" rel="noopener noreferrer">
+        <div class="part-image" aria-hidden="true"></div>
+        <div class="part-body">
+          <div class="part-name">microSD card, 32 GB Class 10 (SanDisk Ultra)</div>
+          
+        </div>
+      </a>
+<a class="part-card" data-pid="pi-power-supply" href="https://www.amazon.com/s?k=official+raspberry+pi+power+supply+12.5W+micro+usb&amp;s=price-asc-rank" target="_blank" rel="noopener noreferrer">
+        <div class="part-image" aria-hidden="true"></div>
+        <div class="part-body">
+          <div class="part-name">Official Raspberry Pi 12.5W micro-USB power supply (5V/2.5A)</div>
+          
+        </div>
+      </a>
+</div>
+<h3 id="gallery-mic">mic <span class="part-cat-blurb">— Optional better-than-on-board microphones.</span></h3>
+<div class="parts-grid">
+<a class="part-card" data-pid="sunfounder-mic" href="https://www.amazon.com/s?k=sunfounder+usb+mini+mic&amp;i=electronics&amp;s=price-asc-rank" target="_blank" rel="noopener noreferrer">
+        <div class="part-image" aria-hidden="true"></div>
+        <div class="part-body">
+          <div class="part-name">SunFounder USB Mini Mic</div>
+          
+        </div>
+      </a>
+<a class="part-card" data-pid="respeaker-xvf3800" href="https://www.amazon.com/s?k=respeaker+xvf3800&amp;i=electronics&amp;s=price-asc-rank" target="_blank" rel="noopener noreferrer">
+        <div class="part-image" aria-hidden="true"></div>
+        <div class="part-body">
+          <div class="part-name">Seeed reSpeaker XVF3800 USB Mic Array</div>
+          
+        </div>
+      </a>
+<a class="part-card" data-pid="otg-adapter" href="https://www.amazon.com/s?k=micro+usb+otg+adapter&amp;i=electronics&amp;s=price-asc-rank&amp;rh=p_72%3A2661618011" target="_blank" rel="noopener noreferrer">
+        <div class="part-image" aria-hidden="true"></div>
+        <div class="part-body">
+          <div class="part-name">micro-USB OTG adapter</div>
+          
+        </div>
+      </a>
+</div>
+<h3 id="gallery-portable">portable <span class="part-cat-blurb">— Optional battery for a roaming build.</span></h3>
+<div class="parts-grid">
+<a class="part-card" data-pid="pisugar3-battery" href="https://www.amazon.com/s?k=pisugar+3+1200&amp;i=electronics&amp;s=price-asc-rank" target="_blank" rel="noopener noreferrer">
+        <div class="part-image" aria-hidden="true"></div>
+        <div class="part-body">
+          <div class="part-name">PiSugar 3 1200 mAh battery</div>
+          
+        </div>
+      </a>
+</div>
+<h3 id="gallery-smarthome">smarthome <span class="part-cat-blurb">— Optional locally-controllable smart plugs. Lets Claudia run commands like &#39;Claudia turn on the living room&#39; without any cloud round-trip beyond Claude itself.</span></h3>
+<div class="parts-grid">
+<a class="part-card" data-pid="tplink-kasa-hs103" href="https://www.amazon.com/s?k=tp-link+kasa+hs103+smart+plug&amp;s=price-asc-rank" target="_blank" rel="noopener noreferrer">
+        <div class="part-image" aria-hidden="true"></div>
+        <div class="part-body">
+          <div class="part-name">TP-Link Kasa HS103 / KP125M smart plug (local control via python-kasa)</div>
+          <div class="part-note">Works locally over the LAN with the python-kasa library — no cloud round-trip. Tell Claudia &#39;turn on the living room&#39; and a one-line shell call flips it.</div>
+        </div>
+      </a>
+<a class="part-card" data-pid="shelly-plug-us" href="https://www.amazon.com/s?k=shelly+plug+us&amp;s=price-asc-rank" target="_blank" rel="noopener noreferrer">
+        <div class="part-image" aria-hidden="true"></div>
+        <div class="part-body">
+          <div class="part-name">Shelly Plug US (local HTTP / MQTT, no cloud required)</div>
+          <div class="part-note">REST endpoint at http://&lt;ip&gt;/relay/0?turn=on — Claudia can flip it with a single curl. No vendor account needed.</div>
+        </div>
+      </a>
+<a class="part-card" data-pid="sonoff-s31" href="https://www.amazon.com/s?k=sonoff+s31&amp;s=price-asc-rank" target="_blank" rel="noopener noreferrer">
+        <div class="part-image" aria-hidden="true"></div>
+        <div class="part-body">
+          <div class="part-name">Sonoff S31 (re-flashable with Tasmota for local MQTT control)</div>
+          <div class="part-note">Out-of-the-box uses the eWeLink cloud; flash with Tasmota to get fully local MQTT/HTTP control.</div>
+        </div>
+      </a>
+</div>
+<h3 id="gallery-wakeword">wakeword <span class="part-cat-blurb">— Optional dedicated low-power wake-word frontends. They run the keyword detector themselves so the Pi can sleep until you say the trigger. Not required if you&#39;re happy with the on-board button or the wiki&#39;s software wake-word approach.</span></h3>
+<div class="parts-grid">
+<a class="part-card" data-pid="hiwonder-wonderecho" href="https://www.amazon.com/dp/B0F7RR983M" target="_blank" rel="noopener noreferrer">
+        <div class="part-image" aria-hidden="true"></div>
+        <div class="part-body">
+          <div class="part-name">Hiwonder WonderEcho offline AI voice module (I2C, wake-word + canned TTS)</div>
+          <div class="part-note">Different architecture: it runs its own on-device ASR/TTS over I2C — useful as a wake-word frontend so the Pi can sleep, or as a fully offline fallback if Wi-Fi is down. NOT a drop-in replacement for the USB mic + Claude pipeline.</div>
+        </div>
+      </a>
+</div>
+</section>
+<footer class="page-footer">Generated by Claudia <code>build-html.js</code> from <code>Claudia_v3.md</code></footer>
+</main>
+
+<script>
+(function () {
+  var btn  = document.getElementById('theme-toggle');
+  var html = document.documentElement;
+  function isDark() { return html.getAttribute('data-theme') === 'dark'; }
+  function setBtnIcon(dark) {
+    var icon = btn.querySelector('span') || btn;
+    icon.textContent = dark ? '\u263E' : '\u2600';
+    btn.setAttribute('aria-pressed', dark ? 'true' : 'false');
+    btn.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
+  }
+  var saved = null;
+  try { saved = localStorage.getItem('claudia-theme'); } catch (_) {}
+  var systemDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  var startDark = saved ? (saved === 'dark') : !!systemDark;
+  html.setAttribute('data-theme', startDark ? 'dark' : 'light');
+  setBtnIcon(startDark);
+  btn.addEventListener('click', function () {
+    var dark = !isDark();
+    html.setAttribute('data-theme', dark ? 'dark' : 'light');
+    setBtnIcon(dark);
+    try { localStorage.setItem('claudia-theme', dark ? 'dark' : 'light'); } catch (_) {}
+  });
+  if (window.matchMedia && !saved) {
+    var mq = window.matchMedia('(prefers-color-scheme: dark)');
+    var onChange = function (e) {
+      try { if (localStorage.getItem('claudia-theme')) return; } catch (_) {}
+      html.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+      setBtnIcon(e.matches);
+    };
+    if (mq.addEventListener) mq.addEventListener('change', onChange);
+    else if (mq.addListener) mq.addListener(onChange);
+  }
+}());
+</script>
+
+</body>
+</html>

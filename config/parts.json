@@ -1,0 +1,175 @@
+{
+  "_description": "Parts catalog for the Claudia build. Each part has a 'searchFor' fallback (Google search) plus at least 3 direct tier links (amazon -> official -> reputable). The 'find-deals' console command opens these in order so you can pick the best price; 'apply-deals' stamps the chosen URL back into Claudia_v*.md by replacing 'match' with a Markdown link.",
+  "_priorityOrder": ["amazon", "official", "reputable"],
+
+  "categories": {
+    "core": "Required for any build.",
+    "mic":  "Optional better-than-on-board microphones.",
+    "portable": "Optional battery for a roaming build.",
+    "smarthome": "Optional locally-controllable smart plugs. Lets Claudia run commands like 'Claudia turn on the living room' without any cloud round-trip beyond Claude itself.",
+    "wakeword": "Optional dedicated low-power wake-word frontends. They run the keyword detector themselves so the Pi can sleep until you say the trigger. Not required if you're happy with the on-board button or the wiki's software wake-word approach."
+  },
+
+  "parts": [
+    {
+      "id": "pi-zero-2-wh",
+      "category": "core",
+      "name": "Raspberry Pi Zero 2 WH",
+      "match": "**Raspberry Pi Zero 2 WH**",
+      "searchFor": "https://www.google.com/search?q=%22Raspberry+Pi+Zero+2+WH%22+in+stock&tbs=li:1",
+      "tiers": [
+        { "tier": "amazon",    "url": "https://www.amazon.com/s?k=raspberry+pi+zero+2+wh&i=electronics&s=price-asc-rank&rh=p_72%3A2661618011" },
+        { "tier": "official",  "url": "https://www.raspberrypi.com/products/raspberry-pi-zero-2-w/" },
+        { "tier": "reputable", "url": "https://www.adafruit.com/product/6008" },
+        { "tier": "reputable", "url": "https://thepihut.com/products/raspberry-pi-zero-2" },
+        { "tier": "reputable", "url": "https://www.sparkfun.com/raspberry-pi-zero-2-w.html" }
+      ]
+    },
+    {
+      "id": "whisplay-hat",
+      "category": "core",
+      "name": "PiSugar Whisplay HAT",
+      "match": "**PiSugar Whisplay HAT**",
+      "searchFor": "https://www.google.com/search?q=%22PiSugar+Whisplay+HAT%22+buy",
+      "tiers": [
+        { "tier": "amazon",    "url": "https://www.amazon.com/s?k=pisugar+whisplay+hat&i=electronics&s=price-asc-rank" },
+        { "tier": "official",  "url": "https://www.pisugar.com/" },
+        { "tier": "reputable", "url": "https://www.aliexpress.us/wholesale-pisugar-whisplay.html" },
+        { "tier": "reputable", "url": "https://www.tindie.com/search/?q=pisugar+whisplay" }
+      ]
+    },
+    {
+      "id": "microsd-32gb",
+      "category": "core",
+      "name": "microSD card, 32 GB Class 10 (SanDisk Ultra)",
+      "match": "**microSD card, 32 GB Class 10** (SanDisk Ultra or equivalent)",
+      "searchFor": "https://www.google.com/search?q=%22SanDisk+Ultra%22+32GB+microSD+A1+price&tbs=li:1",
+      "tiers": [
+        { "tier": "amazon",    "url": "https://www.amazon.com/s?k=sandisk+ultra+32gb+microsd&i=electronics&s=price-asc-rank&rh=p_72%3A2661618011" },
+        { "tier": "official",  "url": "https://shop.sandisk.com/products/memory-cards/microsd-cards/sandisk-ultra-uhs-i-microsd?sku=SDSQUA4-032G-AN6MA" },
+        { "tier": "reputable", "url": "https://www.bhphotovideo.com/c/search?Ntt=sandisk+ultra+microsd+32gb&N=0&InitialSearch=yes" },
+        { "tier": "reputable", "url": "https://www.newegg.com/p/pl?d=sandisk+ultra+32gb+microsd" }
+      ]
+    },
+    {
+      "id": "pi-power-supply",
+      "category": "core",
+      "name": "Official Raspberry Pi 12.5W micro-USB power supply (5V/2.5A)",
+      "match": "**Official Raspberry Pi 12.5W micro-USB power supply (5V/2.5A)**",
+      "searchFor": "https://www.google.com/search?q=%22Raspberry+Pi%22+%2212.5W%22+micro-USB+power+supply",
+      "tiers": [
+        { "tier": "amazon",    "url": "https://www.amazon.com/s?k=official+raspberry+pi+power+supply+12.5W+micro+usb&s=price-asc-rank" },
+        { "tier": "official",  "url": "https://www.raspberrypi.com/products/micro-usb-power-supply/" },
+        { "tier": "reputable", "url": "https://thepihut.com/products/raspberry-pi-universal-power-supply" },
+        { "tier": "reputable", "url": "https://www.adafruit.com/product/1995" }
+      ]
+    },
+    {
+      "id": "sunfounder-mic",
+      "category": "mic",
+      "name": "SunFounder USB Mini Mic",
+      "match": "**SunFounder USB Mini Mic**",
+      "searchFor": "https://www.google.com/search?q=%22SunFounder%22+USB+mini+microphone",
+      "tiers": [
+        { "tier": "amazon",    "url": "https://www.amazon.com/s?k=sunfounder+usb+mini+mic&i=electronics&s=price-asc-rank" },
+        { "tier": "official",  "url": "https://www.sunfounder.com/search?q=mini+microphone" },
+        { "tier": "reputable", "url": "https://www.aliexpress.us/wholesale-sunfounder-usb-mini-mic.html" }
+      ]
+    },
+    {
+      "id": "respeaker-xvf3800",
+      "category": "mic",
+      "name": "Seeed reSpeaker XVF3800 USB Mic Array",
+      "match": "**Seeed reSpeaker XVF3800 USB Mic Array**",
+      "searchFor": "https://www.google.com/search?q=%22reSpeaker+XVF3800%22+buy",
+      "tiers": [
+        { "tier": "amazon",    "url": "https://www.amazon.com/s?k=respeaker+xvf3800&i=electronics&s=price-asc-rank" },
+        { "tier": "official",  "url": "https://www.seeedstudio.com/ReSpeaker-USB-Mic-Array-XVF3800-p-6128.html" },
+        { "tier": "reputable", "url": "https://www.mouser.com/c/?q=respeaker%20xvf3800" },
+        { "tier": "reputable", "url": "https://www.digikey.com/en/products/result?keywords=respeaker%20xvf3800" }
+      ]
+    },
+    {
+      "id": "otg-adapter",
+      "category": "mic",
+      "name": "micro-USB OTG adapter",
+      "match": "**micro-USB OTG adapter**",
+      "searchFor": "https://www.google.com/search?q=micro+USB+OTG+adapter+for+raspberry+pi+zero",
+      "tiers": [
+        { "tier": "amazon",    "url": "https://www.amazon.com/s?k=micro+usb+otg+adapter&i=electronics&s=price-asc-rank&rh=p_72%3A2661618011" },
+        { "tier": "official",  "url": "https://www.adafruit.com/product/1099" },
+        { "tier": "reputable", "url": "https://thepihut.com/products/micro-usb-otg-adapter" }
+      ]
+    },
+    {
+      "id": "pisugar3-battery",
+      "category": "portable",
+      "name": "PiSugar 3 1200 mAh battery",
+      "match": "**PiSugar 3 1200 mAh battery**",
+      "searchFor": "https://www.google.com/search?q=%22PiSugar+3%22+1200mAh+battery",
+      "tiers": [
+        { "tier": "amazon",    "url": "https://www.amazon.com/s?k=pisugar+3+1200&i=electronics&s=price-asc-rank" },
+        { "tier": "official",  "url": "https://www.pisugar.com/" },
+        { "tier": "reputable", "url": "https://www.tindie.com/search/?q=pisugar+3" },
+        { "tier": "reputable", "url": "https://www.aliexpress.us/wholesale-pisugar-3.html" }
+      ]
+    },
+
+    {
+      "id": "tplink-kasa-hs103",
+      "category": "smarthome",
+      "name": "TP-Link Kasa HS103 / KP125M smart plug (local control via python-kasa)",
+      "match": "**TP-Link Kasa HS103 smart plug**",
+      "note": "Works locally over the LAN with the python-kasa library — no cloud round-trip. Tell Claudia 'turn on the living room' and a one-line shell call flips it.",
+      "searchFor": "https://www.google.com/search?q=%22TP-Link+Kasa%22+HS103+OR+KP125M+smart+plug",
+      "tiers": [
+        { "tier": "amazon",    "url": "https://www.amazon.com/s?k=tp-link+kasa+hs103+smart+plug&s=price-asc-rank" },
+        { "tier": "official",  "url": "https://www.kasasmart.com/us/products/smart-plugs/kasa-smart-wi-fi-plug-mini-hs103" },
+        { "tier": "reputable", "url": "https://www.bestbuy.com/site/searchpage.jsp?st=tp-link+kasa+smart+plug" },
+        { "tier": "reputable", "url": "https://www.target.com/s?searchTerm=tp-link+kasa+smart+plug" }
+      ]
+    },
+    {
+      "id": "shelly-plug-us",
+      "category": "smarthome",
+      "name": "Shelly Plug US (local HTTP / MQTT, no cloud required)",
+      "match": "**Shelly Plug US smart plug**",
+      "note": "REST endpoint at http://<ip>/relay/0?turn=on — Claudia can flip it with a single curl. No vendor account needed.",
+      "searchFor": "https://www.google.com/search?q=%22Shelly+Plug+US%22+local+HTTP",
+      "tiers": [
+        { "tier": "amazon",    "url": "https://www.amazon.com/s?k=shelly+plug+us&s=price-asc-rank" },
+        { "tier": "official",  "url": "https://www.shelly.com/products/shop/shelly-plug-us" },
+        { "tier": "reputable", "url": "https://www.aliexpress.us/wholesale-shelly-plug-us.html" }
+      ]
+    },
+    {
+      "id": "hiwonder-wonderecho",
+      "category": "wakeword",
+      "name": "Hiwonder WonderEcho offline AI voice module (I2C, wake-word + canned TTS)",
+      "match": "**Hiwonder WonderEcho voice module**",
+      "note": "Different architecture: it runs its own on-device ASR/TTS over I2C — useful as a wake-word frontend so the Pi can sleep, or as a fully offline fallback if Wi-Fi is down. NOT a drop-in replacement for the USB mic + Claude pipeline.",
+      "searchFor": "https://www.google.com/search?q=%22Hiwonder+WonderEcho%22+OR+%22WonderEcho%22+voice+module",
+      "tiers": [
+        { "tier": "amazon",    "url": "https://www.amazon.com/dp/B0F7RR983M" },
+        { "tier": "official",  "url": "https://www.hiwonder.com/products/wonderecho" },
+        { "tier": "reputable", "url": "https://thinkrobotics.com/products/hiwonder-wonderecho-ai-voice-recognition-module" }
+      ]
+    },
+    {
+      "id": "sonoff-s31",
+      "category": "smarthome",
+      "name": "Sonoff S31 (re-flashable with Tasmota for local MQTT control)",
+      "match": "**Sonoff S31 smart plug**",
+      "note": "Out-of-the-box uses the eWeLink cloud; flash with Tasmota to get fully local MQTT/HTTP control.",
+      "searchFor": "https://www.google.com/search?q=%22Sonoff+S31%22+Tasmota+local",
+      "tiers": [
+        { "tier": "amazon",    "url": "https://www.amazon.com/s?k=sonoff+s31&s=price-asc-rank" },
+        { "tier": "official",  "url": "https://itead.cc/product/sonoff-s31/" },
+        { "tier": "reputable", "url": "https://www.aliexpress.us/wholesale-sonoff-s31.html" },
+        { "tier": "reputable", "url": "https://templates.blakadder.com/sonoff_S31.html" }
+      ]
+    }
+  ],
+
+  "chosen": {}
+}
