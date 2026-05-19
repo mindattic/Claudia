@@ -32,12 +32,16 @@ Claudia/
 │   ├── images/                # OPTIONAL local overrides for gallery photos (<part-id>.<ext>)
 │   └── images-cache/          # Downloaded part photos (git-ignored)
 │
+├── index.htm                  # Forwards to Claudia.htm (so /claudia/ serves the guide)
+│
 └── scripts/
     ├── Claudia.Console.ps1    # Multi-command console (local + remote Pi)
     ├── Claudia.Console.bat    # Launcher
     ├── build-html.js          # Node: markdown -> self-contained .htm with theme toggle
     ├── build-html.ps1 / .bat  # PowerShell wrapper for build-html.js
-    ├── bump-version.ps1 / .bat# Copy to next version + rebuild .htm
+    ├── bump-version.ps1 / .bat# Stamp Claudia.md with a new date + rebuild .htm
+    ├── deploy.ps1 / .bat      # Build + FTP upload to /mindattic.com/claudia/
+    ├── deploy.settings.json.template # Copy to deploy.settings.json (gitignored)
     ├── on-md-change.ps1       # Hook handler - auto-rebuild .htm on .md edits
     ├── pull-latest-finisher.ps1 # Detached helper for self-update (locked-file safe)
     ├── healthcheck.sh         # End-to-end smoke test (runs on the Pi)
@@ -82,7 +86,8 @@ You'll see something like:
     update         Install/refresh local Node deps.
     build-html     Render the latest Claudia.md to a self-contained .htm.
     fetch-images   Force-refresh every part image from its remote URL.
-    bump           Copy latest Claudia.md to today's date and rebuild the .htm.
+    bump           Stamp Claudia.md with today's date and rebuild the .htm.
+    deploy         Build Claudia.htm and FTP-upload .md/.htm/index.htm.
     list-parts     List parts catalog + which have a chosen URL.
     find-deals     Open Amazon/official/reputable tabs per part; save your picks.
     apply-deals    Stamp chosen URLs into the latest Claudia.md.
@@ -179,6 +184,29 @@ The file path is **stable** — `Claudia.md` and `Claudia.htm` never get renamed
 ```
 
 The bumper finds the current date from the H1, replaces it everywhere it appears in the file, then regenerates `Claudia.htm`.
+
+### Deploying to mindattic.com/claudia/
+
+The repo includes an FTP deploy that mirrors mindattic.com's pattern.
+
+```powershell
+# one-time setup
+copy scripts\deploy.settings.json.template scripts\deploy.settings.json
+# edit deploy.settings.json with real FTP creds (it's gitignored)
+
+# every release
+.\scripts\deploy.bat
+# or, from the Console:
+.\Claudia.Console.bat deploy
+```
+
+What `deploy.ps1` does, in order:
+
+1. **Builds** — runs `build-html.js` so `Claudia.htm` reflects the current `.md`. Skip with `-NoBuild` if you just ran it.
+2. **Stamps** — inserts/replaces a `<!-- Last Updated: ISO8601 -->` comment at the top of `index.htm`.
+3. **Uploads** — `curl.exe --ssl-reqd --ftp-pasv` pushes `Claudia.md`, `Claudia.htm`, and `index.htm` to `FtpRemotePath` (defaults to `/mindattic.com/claudia`).
+
+Credentials never leave your machine: `scripts/deploy.settings.json` is in `.gitignore`. Only the placeholder template gets committed.
 
 ---
 

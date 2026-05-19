@@ -3,7 +3,7 @@
 *.user
 *.suo
 
-# Node (build-pdf uses npx md-to-pdf)
+# Node (build-html.js uses marked + highlight.js)
 node_modules/
 package-lock.json
 
@@ -15,10 +15,11 @@ __pycache__/
 Thumbs.db
 .DS_Store
 
-# Local secrets — never commit a real .env
+# Local secrets — never commit a real .env / FTP creds
 .env
 config/.env
 config/*.local.*
+scripts/deploy.settings.json
 
 # Editor
 .vscode/

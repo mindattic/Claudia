@@ -251,6 +251,21 @@ function Cmd-BuildHtml($a) {
     if ($a -and $a.Count -gt 0) { & $script -Source $a[0] } else { & $script }
 }
 
+function Cmd-Deploy($a) {
+    # Build Claudia.htm fresh and FTP-upload it + Claudia.md + index.htm to
+    # the target configured in scripts/deploy.settings.json. Pass --no-build
+    # to skip the rebuild step (handy if you just ran build-html).
+    $script = Join-Path $PSScriptRoot 'deploy.ps1'
+    if (-not (Test-Path $script)) { throw "Missing deploy.ps1 at $script" }
+    if ($a -contains '--no-build') {
+        & $script -NoBuild
+    } else {
+        & $script
+    }
+    if ($LASTEXITCODE -ne 0) { throw "deploy failed (exit $LASTEXITCODE)" }
+    Write-Ok 'deploy complete.'
+}
+
 function Cmd-FetchImages($a) {
     # Force-refreshes every part image from its remote URL, ignoring the
     # local cache. Useful when the cache was poisoned by 404s the first time
@@ -584,6 +599,7 @@ $commands = [ordered]@{
     'update'       = @{ Help = 'Install/refresh local Node deps. Add --clean to wipe node_modules.';                          Action = { param($a) Cmd-Update $a } }
     'build-html'   = @{ Help = 'Render Claudia.md to Claudia.htm (self-contained).';                                          Action = { param($a) Cmd-BuildHtml $a } }
     'fetch-images' = @{ Help = 'Force-refresh every part image from its remote URL (ignores cache, keeps local overrides).'; Action = { param($a) Cmd-FetchImages $a } }
+    'deploy'       = @{ Help = 'Build Claudia.htm and FTP-upload .md/.htm/index.htm (uses scripts/deploy.settings.json). Add --no-build to skip the rebuild.'; Action = { param($a) Cmd-Deploy $a } }
     'bump'         = @{ Help = 'Stamp Claudia.md with today''s revision date (or -To <YYYY.MM.DD>) and rebuild Claudia.htm.';  Action = { param($a) Cmd-Bump $a } }
     'list-parts'   = @{ Help = 'List parts catalog + which have a chosen URL.';                                               Action = { Cmd-ListParts } }
     'find-deals'   = @{ Help = 'Open Amazon/official/reputable tabs per part; save your picks. [core|mic|portable|smarthome|--all]'; Action = { param($a) Cmd-FindDeals $a } }

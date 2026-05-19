@@ -1,0 +1,11 @@
+{
+  "_comment": "Copy this file to deploy.settings.json (no .template suffix) and fill in real FTP credentials. The .gitignore excludes deploy.settings.json so credentials never get committed.",
+
+  "FtpHost":        "ftp.example.com",
+  "FtpPort":        21,
+  "FtpUsername":    "user@example.com",
+  "FtpPassword":    "REPLACE_ME",
+  "FtpRemotePath":  "/mindattic.com/claudia",
+  "FtpUseSsl":      true,
+  "FtpPassive":     true
+}
