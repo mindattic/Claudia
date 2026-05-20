@@ -1,10 +1,8 @@
 # Claudia
 
-> **Claudia** is a palm-sized voice assistant box you build yourself: Raspberry Pi Zero 2 W + PiSugar Whisplay HAT, powered by the Claude API. Say "Hey Jarvis" (or train your own "Claudia" wake word — Appendix A in the guide), ask anything, and Claude talks back. There's an on-board button as a fallback.
+> **Build your own Claude-powered voice assistant.** Claudia is a palm-sized, hackable smart speaker on a Raspberry Pi Zero 2 W + PiSugar Whisplay HAT — no soldering, ~$77 to start, ready in an afternoon. Say a wake word, ask anything, and Claude talks back. This repo is the complete builder kit: an illustrated build guide, a parts catalog with price-comparison shopping, an automated Pi installer, and a Windows console that flashes, configures, and updates your device over the LAN.
 
-This repo is the **builder kit** — the build guide, the configuration files that go on the device, and a Windows-side console for flashing/updating/configuring it once it's on your LAN.
-
-The actual chatbot runtime is the upstream [`PiSugar/whisplay-ai-chatbot`](https://github.com/PiSugar/whisplay-ai-chatbot); this repo doesn't fork it.
+Wake on **"Hey Jarvis"** out of the box, or train your own **"Claudia"** wake word (Appendix A in the guide). There's an on-board button as a fallback. The chatbot runtime is the upstream [`PiSugar/whisplay-ai-chatbot`](https://github.com/PiSugar/whisplay-ai-chatbot); this repo doesn't fork it — it's the guide, configs, and Windows-side tooling that turn a pile of parts into a finished device.
 
 ---
 
