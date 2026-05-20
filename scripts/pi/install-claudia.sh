@@ -2,7 +2,7 @@
 # install-claudia.sh — automate Parts 4 through 9 of the build guide.
 #
 # Run this on the Pi after a fresh Raspberry Pi OS 64-bit boot:
-#     scp scripts/install-claudia.sh pi@claudia.local:~
+#     scp scripts/pi/install-claudia.sh pi@claudia.local:~
 #     ssh pi@claudia.local 'bash ~/install-claudia.sh'
 #
 # The script is idempotent — re-running it is safe.
@@ -101,7 +101,7 @@ step "9  healthcheck"
 if [ -f "$HOME/healthcheck.sh" ]; then
     bash "$HOME/healthcheck.sh" || warn "healthcheck reported failures — review before enabling boot"
 else
-    warn "healthcheck.sh not present — skipping (upload it from the repo's scripts/ folder)"
+    warn "healthcheck.sh not present — skipping (upload it from the repo's scripts/pi/ folder)"
 fi
 
 step "10  register on-boot service"

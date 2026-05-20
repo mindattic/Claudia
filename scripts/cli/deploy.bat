@@ -1,6 +1,6 @@
 @echo off
 REM Build Claudia.htm and FTP-upload Claudia.md / Claudia.htm / index.htm
-REM to the target configured in scripts\deploy.settings.json.
+REM to the target configured in scripts\cli\deploy.settings.json.
 
 setlocal
 set "SCRIPT_DIR=%~dp0"

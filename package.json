@@ -4,8 +4,8 @@
   "private": true,
   "description": "Local builder deps for the Claudia voice assistant box guide (markdown -> self-contained HTML).",
   "scripts": {
-    "build:html": "node scripts/build-html.js",
-    "bump": "powershell -ExecutionPolicy Bypass -File scripts/bump-version.ps1"
+    "build:html": "node scripts/cli/build-html.js",
+    "bump": "powershell -ExecutionPolicy Bypass -File scripts/cli/bump-version.ps1"
   },
   "dependencies": {
     "marked": "^4.3.0",

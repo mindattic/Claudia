@@ -22,7 +22,7 @@ $path = $json.tool_input.file_path
 if (-not $path) { exit 0 }
 
 # Only react to Claudia.md edits inside this repo.
-$repoRoot = Split-Path -Parent $PSScriptRoot
+$repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $leaf = Split-Path -Leaf $path
 if ($leaf -ne 'Claudia.md') { exit 0 }
 

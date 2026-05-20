@@ -13,7 +13,7 @@ Claudia/
 ├── Claudia.md              # The build guide (canonical source of truth)
 ├── Claudia.htm             # Auto-generated self-contained page (inlined CSS+JS+images, light/dark theme)
 ├── README.md                  # ← you are here
-├── Claudia.Console.bat        # Top-level shortcut to scripts/Claudia.Console.bat
+├── Claudia.Console.bat        # Top-level shortcut to scripts/cli/Claudia.Console.bat
 ├── package.json               # Two deps: marked (markdown) + highlight.js (syntax)
 │
 ├── .claude/
@@ -31,17 +31,19 @@ Claudia/
 ├── index.htm                  # Byte-identical clone of Claudia.htm (so /claudia/ serves it directly — no redirect)
 │
 └── scripts/
-    ├── Claudia.Console.ps1    # Multi-command console (local + remote Pi)
-    ├── Claudia.Console.bat    # Launcher
-    ├── build-html.js          # Node: markdown -> self-contained .htm with theme toggle
-    ├── build-html.ps1 / .bat  # PowerShell wrapper for build-html.js
-    ├── bump-version.ps1 / .bat# Stamp Claudia.md with a new date + rebuild .htm
-    ├── deploy.ps1 / .bat      # Build + FTP upload to /mindattic.com/claudia/
-    ├── deploy.settings.json.template # Copy to deploy.settings.json (gitignored)
-    ├── on-md-change.ps1       # Hook handler - auto-rebuild .htm on .md edits
-    ├── pull-latest-finisher.ps1 # Detached helper for self-update (locked-file safe)
-    ├── healthcheck.sh         # End-to-end smoke test (runs on the Pi)
-    └── install-claudia.sh     # Automates Parts 4-9 (runs on the Pi)
+    ├── cli/                       # Windows builder-side tooling
+    │   ├── Claudia.Console.ps1    # Multi-command console (local + remote Pi)
+    │   ├── Claudia.Console.bat    # Launcher
+    │   ├── build-html.js          # Node: markdown -> self-contained .htm with theme toggle
+    │   ├── build-html.ps1 / .bat  # PowerShell wrapper for build-html.js
+    │   ├── bump-version.ps1 / .bat# Stamp Claudia.md with a new date + rebuild .htm
+    │   ├── deploy.ps1 / .bat      # Build + FTP upload to /mindattic.com/claudia/
+    │   ├── deploy.settings.json.template # Copy to deploy.settings.json (gitignored)
+    │   ├── on-md-change.ps1       # Hook handler - auto-rebuild .htm on .md edits
+    │   └── pull-latest-finisher.ps1 # Detached helper for self-update (locked-file safe)
+    └── pi/                        # Scripts that run on the Raspberry Pi
+        ├── healthcheck.sh         # End-to-end smoke test (runs on the Pi)
+        └── install-claudia.sh     # Automates Parts 4-9 (runs on the Pi)
 ```
 
 ---
@@ -52,7 +54,7 @@ You need **Node.js** ([nodejs.org](https://nodejs.org)) and **PowerShell 5+** (s
 
 ```powershell
 # 1. one-time: install the local deps the HTML build uses
-.\scripts\Claudia.Console.bat update
+.\scripts\cli\Claudia.Console.bat update
 
 # 2. open the interactive console
 .\Claudia.Console.bat
@@ -73,7 +75,7 @@ You'll see something like:
     status         Show chatbot.service status on Claudia.
     restart        Restart chatbot.service on Claudia.
     logs           Tail Claudia chatbot logs.
-    healthcheck    Copy scripts/healthcheck.sh to Claudia and run it.
+    healthcheck    Copy scripts/pi/healthcheck.sh to Claudia and run it.
     set-wakeword   Set the openWakeWord model on the Pi (e.g. hey_jarvis, claudia).
     set-model      Set ANTHROPIC_MODEL on the Pi.
     set-prompt     Set SYSTEM_PROMPT on the Pi.
@@ -112,7 +114,7 @@ You pick the best URL, paste it back into the prompt, and `apply-deals` rewrites
 
 ### Self-update (`pull-latest` + `self-update`)
 
-- **`pull-latest`** — `git fetch` then mirror `origin/<branch>` into the working tree. Because Windows keeps the running `Claudia.Console.ps1` open, the command stages the new files into `%TEMP%` and spawns a detached helper (`scripts/pull-latest-finisher.ps1`) that waits for *this* PowerShell to exit before robocopying the temp tree over the repo. Progress goes to `.claude/pull-latest.log`.
+- **`pull-latest`** — `git fetch` then mirror `origin/<branch>` into the working tree. Because Windows keeps the running `Claudia.Console.ps1` open, the command stages the new files into `%TEMP%` and spawns a detached helper (`scripts/cli/pull-latest-finisher.ps1`) that waits for *this* PowerShell to exit before robocopying the temp tree over the repo. Progress goes to `.claude/pull-latest.log`.
 - **`self-update`** — runs `npm outdated` / `npm update` / `npm audit fix`, then opens "is there a newer version of \<part\>?" searches for every catalog entry, then opens the official Claude model catalog. Use it monthly to catch silently-aging dependencies, deprecated parts, and new model IDs.
 
 You can also call commands directly:
@@ -132,7 +134,7 @@ You can also call commands directly:
 2. Follow Parts 1–3 to buy parts, assemble, and flash the SD card.
 3. SSH in. Then either:
    - **Manual path:** follow Parts 4–9 by hand.
-   - **Scripted path:** copy `scripts/install-claudia.sh` to the Pi and run it. It walks the same steps end-to-end and prompts you when it needs a reboot or your API key.
+   - **Scripted path:** copy `scripts/pi/install-claudia.sh` to the Pi and run it. It walks the same steps end-to-end and prompts you when it needs a reboot or your API key.
 4. Once it's running, plug Claudia onto your LAN and run `Claudia.Console detect` from this machine — every command after that targets it over SSH.
 
 ---
@@ -143,12 +145,12 @@ The `.htm` is **derived**: never hand-edit `Claudia.htm`, always edit the `.md`.
 
 Two ways the page gets refreshed:
 
-1. **Automatic** — `.claude/settings.json` registers a `PostToolUse` hook that fires `scripts/on-md-change.ps1` whenever Claude Code edits `Claudia.md`. The hook re-renders `Claudia.htm`, mirrors it to `index.htm`, and logs to `.claude/html-rebuild.log`. No-op for any other file edit.
+1. **Automatic** — `.claude/settings.json` registers a `PostToolUse` hook that fires `scripts/cli/on-md-change.ps1` whenever Claude Code edits `Claudia.md`. The hook re-renders `Claudia.htm`, mirrors it to `index.htm`, and logs to `.claude/html-rebuild.log`. No-op for any other file edit.
 
 2. **Manual** —
    ```powershell
-   .\scripts\build-html.bat              # latest version
-   .\scripts\build-html.bat -Source .\Claudia.md
+   .\scripts\cli\build-html.bat              # latest version
+   .\scripts\cli\build-html.bat -Source .\Claudia.md
    ```
 
 ### Theming
@@ -164,8 +166,8 @@ The page ships with both palettes and **defaults to dark**. The toggle button (t
 The file path is **stable** — `Claudia.md` and `Claudia.htm` never get renamed, so external links to them never rot. The revision date lives *inside* the file (in the H1, the "What's new in <date>" heading, and the footer). Bumping means rewriting those dates in place; historical revisions are recoverable from git history.
 
 ```powershell
-.\scripts\bump-version.bat                    # stamp today's date (YYYY.MM.DD)
-.\scripts\bump-version.bat -To 2026.06.01     # forward-date explicitly
+.\scripts\cli\bump-version.bat                # stamp today's date (YYYY.MM.DD)
+.\scripts\cli\bump-version.bat -To 2026.06.01 # forward-date explicitly
 ```
 
 The bumper finds the current date from the H1, replaces it everywhere it appears in the file, then regenerates `Claudia.htm`.
@@ -176,11 +178,11 @@ The repo includes an FTP deploy that mirrors mindattic.com's pattern.
 
 ```powershell
 # one-time setup
-copy scripts\deploy.settings.json.template scripts\deploy.settings.json
+copy scripts\cli\deploy.settings.json.template scripts\cli\deploy.settings.json
 # edit deploy.settings.json with real FTP creds (it's gitignored)
 
 # every release
-.\scripts\deploy.bat
+.\scripts\cli\deploy.bat
 # or, from the Console:
 .\Claudia.Console.bat deploy
 ```
@@ -191,7 +193,7 @@ What `deploy.ps1` does, in order:
 2. **Stamps + clones** — inserts/replaces a `<!-- Last Updated: ISO8601 -->` comment at the top of `Claudia.htm`, then writes that same byte stream out to `index.htm`. Both files are identical post-deploy, so `mindattic.com/claudia/` serves the full page directly with no redirect hop.
 3. **Uploads** — `curl.exe --ssl-reqd --ftp-pasv` pushes `Claudia.md`, `Claudia.htm`, and `index.htm` to `FtpRemotePath` (defaults to `/mindattic.com/claudia`).
 
-Credentials never leave your machine: `scripts/deploy.settings.json` is in `.gitignore`. Only the placeholder template gets committed.
+Credentials never leave your machine: `scripts/cli/deploy.settings.json` is in `.gitignore`. Only the placeholder template gets committed.
 
 ---
 

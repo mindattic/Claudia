@@ -10,7 +10,7 @@
  * and footer), not in the filename, so external links never rot.
  *
  * Usage:
- *   node scripts/build-html.js [source.md]
+ *   node scripts/cli/build-html.js [source.md]
  */
 
 'use strict';
@@ -20,7 +20,7 @@ const path  = require('path');
 const { marked } = require('marked');
 const hljs  = require('highlight.js');
 
-const repoRoot         = path.resolve(__dirname, '..');
+const repoRoot         = path.resolve(__dirname, '..', '..');
 const configDir        = path.join(repoRoot, 'config');
 const partsJsonPath    = path.join(configDir, 'parts.json');
 const versionsJsonPath = path.join(configDir, 'versions.json');

@@ -5,8 +5,8 @@
 # 3. Uploads Claudia.md, Claudia.htm, and index.htm to the FTP target
 #    (defaults to /mindattic.com/claudia/) via curl.exe.
 #
-# Credentials live in scripts/deploy.settings.json (gitignored). Start from
-# scripts/deploy.settings.json.template if you don't have one yet.
+# Credentials live in scripts/cli/deploy.settings.json (gitignored). Start from
+# scripts/cli/deploy.settings.json.template if you don't have one yet.
 
 param (
     [string]$SettingsFile = "$PSScriptRoot\deploy.settings.json",
@@ -16,7 +16,7 @@ param (
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-$repoRoot = Split-Path -Parent $PSScriptRoot
+$repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 
 # ---------------------------------------------------------------------------
 # Load settings
@@ -24,7 +24,7 @@ $repoRoot = Split-Path -Parent $PSScriptRoot
 if (-not (Test-Path $SettingsFile)) {
     Write-Error @"
 deploy.settings.json not found at: $SettingsFile
-Copy scripts\deploy.settings.json.template -> scripts\deploy.settings.json
+Copy scripts\cli\deploy.settings.json.template -> scripts\cli\deploy.settings.json
 and fill in your FTP credentials. The .gitignore already excludes the real file.
 "@
     exit 1

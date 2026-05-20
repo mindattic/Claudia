@@ -16,8 +16,8 @@
     Target date in YYYY.MM.DD form. Defaults to today.
 
 .EXAMPLE
-    .\scripts\bump-version.ps1
-    .\scripts\bump-version.ps1 -To 2026.06.01
+    .\scripts\cli\bump-version.ps1
+    .\scripts\cli\bump-version.ps1 -To 2026.06.01
 #>
 [CmdletBinding()]
 param(
@@ -25,7 +25,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$repoRoot = Split-Path -Parent $PSScriptRoot
+$repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $mdPath = Join-Path $repoRoot 'Claudia.md'
 
 if (-not (Test-Path $mdPath)) { Write-Error "Claudia.md not found at $mdPath" }

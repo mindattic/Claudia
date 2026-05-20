@@ -3,7 +3,7 @@
     Render Claudia.md to a self-contained Claudia.htm.
 
 .DESCRIPTION
-    Thin wrapper around scripts/build-html.js. The Node script produces ONE
+    Thin wrapper around scripts/cli/build-html.js. The Node script produces ONE
     file with inlined CSS, inlined JS, and a light/dark theme toggle - no
     external CDN, no <link>, no <script src>. Modeled on mindattic.com's
     single-file site convention.
@@ -17,7 +17,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$repoRoot = Split-Path -Parent $PSScriptRoot
+$repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 
 if (-not (Get-Command node -ErrorAction SilentlyContinue)) {
     Write-Error "Node.js not found on PATH. Install from https://nodejs.org, then run Claudia.Console update."

@@ -19,7 +19,7 @@ Thumbs.db
 .env
 config/.env
 config/*.local.*
-scripts/deploy.settings.json
+scripts/cli/deploy.settings.json
 
 # Editor
 .vscode/

@@ -20,11 +20,11 @@
     Positional arguments for the command.
 
 .EXAMPLE
-    .\scripts\Claudia.Console.ps1                       # interactive menu
-    .\scripts\Claudia.Console.ps1 detect                # find the Pi on the LAN
-    .\scripts\Claudia.Console.ps1 set-wakeword "hey claudia"
-    .\scripts\Claudia.Console.ps1 set-model claude-sonnet-4-6
-    .\scripts\Claudia.Console.ps1 logs
+    .\scripts\cli\Claudia.Console.ps1                       # interactive menu
+    .\scripts\cli\Claudia.Console.ps1 detect                # find the Pi on the LAN
+    .\scripts\cli\Claudia.Console.ps1 set-wakeword "hey claudia"
+    .\scripts\cli\Claudia.Console.ps1 set-model claude-sonnet-4-6
+    .\scripts\cli\Claudia.Console.ps1 logs
 #>
 [CmdletBinding()]
 param(
@@ -163,7 +163,7 @@ function Cmd-Logs    { Invoke-Pi 'journalctl -u chatbot.service -f -n 50' }
 function Cmd-Healthcheck {
     Require-Ssh
     $state = Get-State
-    $local = Join-Path $PSScriptRoot 'healthcheck.sh'
+    $local = Join-Path (Split-Path -Parent $PSScriptRoot) 'pi\healthcheck.sh'
     if (-not (Test-Path $local)) { throw "healthcheck.sh not found at $local" }
     Write-Info "uploading healthcheck.sh"
     & scp $local ($state.user + '@' + $state.host + ':/home/' + $state.user + '/healthcheck.sh')
@@ -262,8 +262,8 @@ function Cmd-Update($a) {
   "private": true,
   "description": "Local builder deps for the Claudia voice assistant box guide (markdown -> self-contained HTML).",
   "scripts": {
-    "build:html": "node scripts/build-html.js",
-    "bump":       "powershell -ExecutionPolicy Bypass -File scripts/bump-version.ps1"
+    "build:html": "node scripts/cli/build-html.js",
+    "bump":       "powershell -ExecutionPolicy Bypass -File scripts/cli/bump-version.ps1"
   },
   "dependencies": {
     "marked": "^4.3.0",
@@ -296,7 +296,7 @@ function Cmd-BuildHtml($a) {
 
 function Cmd-Deploy($a) {
     # Build Claudia.htm fresh and FTP-upload it + Claudia.md + index.htm to
-    # the target configured in scripts/deploy.settings.json. Pass --no-build
+    # the target configured in scripts/cli/deploy.settings.json. Pass --no-build
     # to skip the rebuild step (handy if you just ran build-html).
     $script = Join-Path $PSScriptRoot 'deploy.ps1'
     if (-not (Test-Path $script)) { throw "Missing deploy.ps1 at $script" }
@@ -616,7 +616,7 @@ $commands = [ordered]@{
     'status'       = @{ Help = 'Show chatbot.service status on Claudia.';                                                     Action = { Cmd-Status } }
     'restart'      = @{ Help = 'Restart chatbot.service on Claudia.';                                                         Action = { Cmd-Restart } }
     'logs'         = @{ Help = 'Tail Claudia chatbot logs (Ctrl+C to stop).';                                                 Action = { Cmd-Logs } }
-    'healthcheck'  = @{ Help = 'Copy scripts/healthcheck.sh to Claudia and run it.';                                          Action = { Cmd-Healthcheck } }
+    'healthcheck'  = @{ Help = 'Copy scripts/pi/healthcheck.sh to Claudia and run it.';                                       Action = { Cmd-Healthcheck } }
     'set-wakeword' = @{ Help = 'Set the openWakeWord model on the Pi (writes WAKE_WORDS + enables it). Usage: set-wakeword hey_jarvis | claudia';  Action = { param($a) Cmd-SetWakeword $a } }
     'set-model'    = @{ Help = 'Set ANTHROPIC_MODEL on the Pi. Usage: set-model <model-id>';                                  Action = { param($a) Cmd-SetModel $a } }
     'set-prompt'   = @{ Help = 'Set SYSTEM_PROMPT on the Pi. Usage: set-prompt "<text>"';                                     Action = { param($a) Cmd-SetPrompt $a } }
@@ -627,7 +627,7 @@ $commands = [ordered]@{
     'show-config'  = @{ Help = 'Print the remote .env (api key masked).';                                                     Action = { Cmd-ShowConfig } }
     'update'       = @{ Help = 'Install/refresh local Node deps. Add --clean to wipe node_modules.';                          Action = { param($a) Cmd-Update $a } }
     'build-html'   = @{ Help = 'Render Claudia.md to Claudia.htm (self-contained).';                                          Action = { param($a) Cmd-BuildHtml $a } }
-    'deploy'       = @{ Help = 'Build Claudia.htm and FTP-upload .md/.htm/index.htm (uses scripts/deploy.settings.json). Add --no-build to skip the rebuild.'; Action = { param($a) Cmd-Deploy $a } }
+    'deploy'       = @{ Help = 'Build Claudia.htm and FTP-upload .md/.htm/index.htm (uses scripts/cli/deploy.settings.json). Add --no-build to skip the rebuild.'; Action = { param($a) Cmd-Deploy $a } }
     'bump'         = @{ Help = 'Stamp Claudia.md with today''s revision date (or -To <YYYY.MM.DD>) and rebuild Claudia.htm.';  Action = { param($a) Cmd-Bump $a } }
     'list-parts'   = @{ Help = 'List parts catalog + which have a chosen URL.';                                               Action = { Cmd-ListParts } }
     'find-deals'   = @{ Help = 'Open Amazon/official/reputable tabs per part; save your picks. [core|mic|portable|smarthome|wakeword|--all]'; Action = { param($a) Cmd-FindDeals $a } }
