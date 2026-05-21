@@ -288,12 +288,13 @@ function build(srcPath) {
                 const priceHtml = (typeof p.price === 'number')
                     ? `<div class="part-price">~$${p.price}</div>`
                     : '';
-                // Per-part spec table. Keys/values are author-controlled in
-                // parts.json so each part can list whatever's load-bearing for
-                // identification (SKU, chipset, interface, max load, etc.).
+                // Per-part spec table. Each spec is wrapped in its own
+                // <div class="part-spec"> so the outer .part-specs grid can
+                // flow them into multiple columns (auto-fit minmax) while the
+                // inner div keeps label + value on one line.
                 const specsHtml = (Array.isArray(p.specs) && p.specs.length)
                     ? `<dl class="part-specs">${p.specs.map(s => (
-                        `<dt>${escapeHtml(s.label)}</dt><dd>${escapeHtml(s.value)}</dd>`
+                        `<div class="part-spec"><dt>${escapeHtml(s.label)}</dt><dd>${escapeHtml(s.value)}</dd></div>`
                     )).join('')}</dl>`
                     : '';
                 const img = loadPartImageLocal(p);
@@ -745,13 +746,15 @@ img { max-width: 100%; height: auto; border-radius: 6px; }
 #parts-gallery h3 { margin-top: 1.6em; }
 .part-cat-blurb { color: var(--text3); font-weight: 400; font-size: 0.8em; }
 .parts-grid {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 14px;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   margin: 0.8em 0 2em;
 }
 .part-card {
-  display: flex; flex-direction: column;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
   background: var(--bg2);
   border: 1px solid var(--border);
   border-radius: 10px;
@@ -767,34 +770,49 @@ img { max-width: 100%; height: auto; border-radius: 6px; }
   text-decoration: none;
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.10);
 }
-.part-body { padding: 14px 14px 16px; }
-.part-name { font-weight: 600; color: var(--text); font-size: 0.95em; line-height: 1.3; }
-.part-price { color: var(--accent); font-weight: 600; font-size: 0.95em; margin-top: 6px; font-variant-numeric: tabular-nums; }
-.part-note { color: var(--text2); font-size: 0.82em; margin-top: 8px; line-height: 1.4; }
+.part-body {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 14px 18px 16px;
+  display: flex;
+  flex-direction: column;
+}
+.part-name { font-weight: 600; color: var(--text); font-size: 1em; line-height: 1.3; }
+.part-price { color: var(--accent); font-weight: 600; font-size: 0.95em; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.part-note { color: var(--text2); font-size: 0.82em; margin-top: 10px; line-height: 1.45; font-style: italic; }
 
 .part-specs {
   display: grid;
-  grid-template-columns: max-content 1fr;
-  gap: 3px 10px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 5px 22px;
   margin: 10px 0 0;
   padding-top: 10px;
   border-top: 1px solid var(--border);
-  font-size: 0.78em;
+  font-size: 0.8em;
   line-height: 1.4;
 }
-.part-specs > dt {
+.part-spec {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 10px;
+  align-items: baseline;
+}
+.part-spec dt {
   color: var(--text3);
   font-weight: 600;
   letter-spacing: 0.02em;
   white-space: nowrap;
+  margin: 0;
 }
-.part-specs > dd { color: var(--text2); margin: 0; }
+.part-spec dd { color: var(--text2); margin: 0; }
 
 .part-links {
   display: flex;
-  flex-direction: column;
-  gap: 3px;
-  margin-top: 10px;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 14px;
+  margin-top: 12px;
 }
 .part-links-label {
   font-size: 0.74em;
@@ -802,7 +820,6 @@ img { max-width: 100%; height: auto; border-radius: 6px; }
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text3);
-  margin-bottom: 2px;
 }
 .part-link {
   color: var(--accent);
@@ -813,13 +830,27 @@ img { max-width: 100%; height: auto; border-radius: 6px; }
 .part-link:hover { text-decoration: underline; }
 
 .part-image {
-  width: 100%;
-  aspect-ratio: 4 / 3;
+  flex: 0 0 200px;
+  align-self: stretch;
+  min-height: 150px;
   background-color: var(--bg3);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+}
+
+@media (max-width: 720px) {
+  .part-card { flex-direction: column; }
+  .part-image {
+    flex: 0 0 auto;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    min-height: 0;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .part-specs { grid-template-columns: 1fr; }
 }
 ${imageCss}
 
