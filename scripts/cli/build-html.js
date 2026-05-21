@@ -288,15 +288,25 @@ function build(srcPath) {
                 const priceHtml = (typeof p.price === 'number')
                     ? `<div class="part-price">~$${p.price}</div>`
                     : '';
-                // Per-part spec table. Each spec is wrapped in its own
-                // <div class="part-spec"> so the outer .part-specs grid can
-                // flow them into multiple columns (auto-fit minmax) while the
-                // inner div keeps label + value on one line.
-                const specsHtml = (Array.isArray(p.specs) && p.specs.length)
-                    ? `<dl class="part-specs">${p.specs.map(s => (
-                        `<div class="part-spec"><dt>${escapeHtml(s.label)}</dt><dd>${escapeHtml(s.value)}</dd></div>`
-                    )).join('')}</dl>`
-                    : '';
+                // Per-part spec table. We render into a single grid with four
+                // columns (label · value · label · value) so labels in column 1
+                // align by max-content across every row, and labels in column 3
+                // align by max-content across every row. To get column-major
+                // VISUAL flow (first half of specs reads top-to-bottom on the
+                // left, second half top-to-bottom on the right) we interleave
+                // the array here before emitting.
+                let specsHtml = '';
+                if (Array.isArray(p.specs) && p.specs.length) {
+                    const half = Math.ceil(p.specs.length / 2);
+                    const pairs = [];
+                    for (let i = 0; i < half; i++) {
+                        pairs.push(p.specs[i]);
+                        if (p.specs[i + half]) pairs.push(p.specs[i + half]);
+                    }
+                    specsHtml = `<dl class="part-specs">${pairs.map(s => (
+                        `<dt>${escapeHtml(s.label)}</dt><dd>${escapeHtml(s.value)}</dd>`
+                    )).join('')}</dl>`;
+                }
                 const img = loadPartImageLocal(p);
                 let imageDiv = '';
                 let cls = whenAttrs ? 'part-card when' : 'part-card';
@@ -783,28 +793,22 @@ img { max-width: 100%; height: auto; border-radius: 6px; }
 
 .part-specs {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 5px 22px;
+  grid-template-columns: max-content minmax(0, 1fr) max-content minmax(0, 1fr);
+  gap: 6px 32px;
   margin: 10px 0 0;
   padding-top: 10px;
   border-top: 1px solid var(--border);
   font-size: 0.8em;
   line-height: 1.4;
 }
-.part-spec {
-  display: grid;
-  grid-template-columns: max-content 1fr;
-  gap: 10px;
-  align-items: baseline;
-}
-.part-spec dt {
+.part-specs > dt {
   color: var(--text3);
   font-weight: 600;
   letter-spacing: 0.02em;
   white-space: nowrap;
   margin: 0;
 }
-.part-spec dd { color: var(--text2); margin: 0; }
+.part-specs > dd { color: var(--text2); margin: 0; }
 
 .part-links {
   display: flex;
@@ -834,7 +838,7 @@ img { max-width: 100%; height: auto; border-radius: 6px; }
   align-self: stretch;
   min-height: 150px;
   background-color: var(--bg3);
-  background-size: cover;
+  background-size: contain;
   background-position: center;
   background-repeat: no-repeat;
   border-right: 1px solid var(--border);
@@ -850,7 +854,7 @@ img { max-width: 100%; height: auto; border-radius: 6px; }
     border-right: none;
     border-bottom: 1px solid var(--border);
   }
-  .part-specs { grid-template-columns: 1fr; }
+  .part-specs { grid-template-columns: max-content minmax(0, 1fr); }
 }
 ${imageCss}
 
