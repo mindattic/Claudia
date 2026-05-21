@@ -771,12 +771,10 @@ img { max-width: 100%; height: auto; border-radius: 6px; }
   overflow: hidden;
   text-decoration: none;
   color: inherit;
-  transition: transform 0.18s, border-color 0.18s, box-shadow 0.18s;
+  transition: box-shadow 0.18s;
   box-shadow: var(--shadow);
 }
 .part-card:hover {
-  transform: translateY(-2px);
-  border-color: var(--accent);
   text-decoration: none;
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.10);
 }
@@ -837,7 +835,7 @@ img { max-width: 100%; height: auto; border-radius: 6px; }
   flex: 0 0 200px;
   align-self: stretch;
   min-height: 150px;
-  background-color: var(--bg3);
+  background-color: white;
   background-size: contain;
   background-position: center;
   background-repeat: no-repeat;

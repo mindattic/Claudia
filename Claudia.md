@@ -6,7 +6,7 @@ Build your own always-on voice assistant in an afternoon — a Raspberry Pi Zero
 
 [github.com/mindattic/Claudia](https://github.com/mindattic/Claudia)
 
-*Last updated: 2026.05.20f*
+*Last updated: 2026.05.20h*
 
 ---
 
