@@ -1,4 +1,3 @@
-﻿<!-- Last Updated: 2026-05-21T00:18:46Z -->
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
@@ -382,6 +381,24 @@ img { max-width: 100%; height: auto; border-radius: 6px; }
 .part-price { color: var(--accent); font-weight: 600; font-size: 0.95em; margin-top: 6px; font-variant-numeric: tabular-nums; }
 .part-note { color: var(--text2); font-size: 0.82em; margin-top: 8px; line-height: 1.4; }
 
+.part-specs {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 3px 10px;
+  margin: 10px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  font-size: 0.78em;
+  line-height: 1.4;
+}
+.part-specs > dt {
+  color: var(--text3);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.part-specs > dd { color: var(--text2); margin: 0; }
+
 .part-links {
   display: flex;
   flex-direction: column;
@@ -550,6 +567,7 @@ img { max-width: 100%; height: auto; border-radius: 6px; }
         <div class="part-body">
           <div class="part-name">Raspberry Pi Zero 2 WH</div>
           <div class="part-price">~$22</div>
+          <dl class="part-specs"><dt>SKU</dt><dd>SC0511 (RPi Foundation) · Adafruit 6008 · SparkFun DEV-26256</dd><dt>CPU</dt><dd>Quad-core Arm Cortex-A53 @ 1 GHz, 64-bit ARMv8</dd><dt>SoC</dt><dd>Raspberry Pi RP3A0 SiP (Broadcom BCM2710A1 die)</dd><dt>RAM</dt><dd>512 MB LPDDR2</dd><dt>Wireless</dt><dd>Wi-Fi 802.11 b/g/n 2.4 GHz · Bluetooth 4.2 / BLE</dd><dt>GPIO</dt><dd>40-pin pre-soldered header (the “H” suffix)</dd><dt>Power in</dt><dd>5 V via micro-USB (the corner port labeled “PWR IN”)</dd><dt>Form</dt><dd>65 × 30 mm</dd></dl>
           <div class="part-links"><span class="part-links-label">Buy:</span><a class="part-link" href="https://www.google.com/search?udm=28&amp;q=Raspberry+Pi+Zero+2+WH+with+headers" target="_blank" rel="noopener noreferrer">Google</a><a class="part-link" href="https://www.adafruit.com/product/6008" target="_blank" rel="noopener noreferrer">Reputable #1</a><a class="part-link" href="https://www.sparkfun.com/raspberry-pi-zero-2-w-with-headers.html" target="_blank" rel="noopener noreferrer">Reputable #2</a><a class="part-link" href="https://www.pishop.us/product/raspberry-pi-zero-2w-with-headers/" target="_blank" rel="noopener noreferrer">Reputable #3</a></div>
           <div class="part-note">Must be the WH (with pre-soldered headers). The plain W has no GPIO pins and would need 40 pins soldered before the WonderEcho&#39;s 4-pin cable can connect. Most retailers list WH as a dropdown variant of the W product page — pick &#39;with headers&#39; before adding to cart.</div>
         </div>
@@ -559,6 +577,7 @@ img { max-width: 100%; height: auto; border-radius: 6px; }
         <div class="part-body">
           <div class="part-name">microSD card, 32 GB Class 10 (SanDisk Ultra)</div>
           <div class="part-price">~$9</div>
+          <dl class="part-specs"><dt>SKU</dt><dd>SDSQUA4-032G-AN6MA (SanDisk Ultra microSDHC 32 GB)</dd><dt>Capacity</dt><dd>32 GB</dd><dt>Speed</dt><dd>Class 10, UHS-I U1, A1 app-rated · up to 120 MB/s read</dd><dt>Used for</dt><dd>Raspberry Pi OS 64-bit (full image) — flashed in Part 04 via Raspberry Pi Imager</dd><dt>Substitutes</dt><dd>Any reputable 32 GB Class 10 / A1 microSD works (Samsung EVO Plus, Kingston Canvas Select, etc.)</dd></dl>
           <div class="part-links"><span class="part-links-label">Buy:</span><a class="part-link" href="https://shop.sandisk.com/products/memory-cards/microsd-cards/sandisk-ultra-uhs-i-microsd?sku=SDSQUA4-032G-AN6MA" target="_blank" rel="noopener noreferrer">Official</a><a class="part-link" href="https://www.google.com/search?udm=28&amp;q=SanDisk+Ultra+32GB+microSD" target="_blank" rel="noopener noreferrer">Google</a><a class="part-link" href="https://www.bhphotovideo.com/c/search?Ntt=sandisk+ultra+microsd+32gb&amp;N=0&amp;InitialSearch=yes" target="_blank" rel="noopener noreferrer">Reputable #1</a><a class="part-link" href="https://www.newegg.com/p/pl?d=sandisk+ultra+32gb+microsd" target="_blank" rel="noopener noreferrer">Reputable #2</a></div>
           
         </div>
@@ -568,8 +587,9 @@ img { max-width: 100%; height: auto; border-radius: 6px; }
         <div class="part-body">
           <div class="part-name">Official Raspberry Pi 12.5W micro-USB power supply (5V/2.5A)</div>
           <div class="part-price">~$10</div>
+          <dl class="part-specs"><dt>Output</dt><dd>5.1 V / 2.5 A DC (12.5 W nominal, 12.75 W actual)</dd><dt>Connector</dt><dd>micro-USB-B (captive) — NOT USB-C</dd><dt>Cable</dt><dd>1.5 m, 18 AWG</dd><dt>Plugs into</dt><dd>Pi Zero 2 W “PWR IN” port (corner micro-USB, not the middle “USB” port)</dd><dt>Regions</dt><dd>US / UK / EU / AU / IN plug variants — pick at retailer checkout</dd></dl>
           <div class="part-links"><span class="part-links-label">Buy:</span><a class="part-link" href="https://www.raspberrypi.com/products/micro-usb-power-supply/" target="_blank" rel="noopener noreferrer">Official</a><a class="part-link" href="https://www.google.com/search?udm=28&amp;q=Raspberry+Pi+12.5W+micro-USB+power+supply" target="_blank" rel="noopener noreferrer">Google</a><a class="part-link" href="https://thepihut.com/products/raspberry-pi-universal-power-supply" target="_blank" rel="noopener noreferrer">Reputable #1</a><a class="part-link" href="https://www.adafruit.com/product/1995" target="_blank" rel="noopener noreferrer">Reputable #2</a></div>
-          
+          <div class="part-note">The Pi Zero 2 W is micro-USB, NOT USB-C. A USB-C-only PSU will not fit. Plugs into the corner port labeled “PWR IN” on the silkscreen, not the middle “USB” port.</div>
         </div>
       </div>
 <div class="part-card has-image" data-pid="hiwonder-wonderecho" data-price="25">
@@ -577,6 +597,7 @@ img { max-width: 100%; height: auto; border-radius: 6px; }
         <div class="part-body">
           <div class="part-name">Hiwonder WonderEcho voice module (I2C wake-word frontend)</div>
           <div class="part-price">~$25</div>
+          <dl class="part-specs"><dt>SKU</dt><dd>Hiwonder 21090150 · Amazon ASIN B0F7RR983M</dd><dt>Voice chip</dt><dd>CI1302 (on-device CNN wake-word + recognition firmware)</dd><dt>Interface</dt><dd>I²C bus 1, default address 0x52 — verify with “i2cdetect -y 1”</dd><dt>Connector</dt><dd>4-pin cable: SDA → BCM 2 (pin 3), SCL → BCM 3 (pin 5), 5V → pin 2, GND → pin 6</dd><dt>On-board</dt><dd>Microphone (noise-reducing) + speaker + red/blue status LEDs</dd><dt>Memory</dt><dd>2 MB Flash, 640 KB SRAM</dd><dt>Range</dt><dd>~5 m quiet / ~1 m noisy · up to 255 phrases</dd><dt>Size</dt><dd>48 × 24 × 10.5 mm, 10 g</dd><dt>Languages</dt><dd>English + Chinese</dd></dl>
           <div class="part-links"><span class="part-links-label">Buy:</span><a class="part-link" href="https://www.hiwonder.com/products/wonderecho" target="_blank" rel="noopener noreferrer">Official</a><a class="part-link" href="https://www.google.com/search?udm=28&amp;q=Hiwonder+WonderEcho+voice+module" target="_blank" rel="noopener noreferrer">Google</a><a class="part-link" href="https://thinkrobotics.com/products/hiwonder-wonderecho-ai-voice-recognition-module" target="_blank" rel="noopener noreferrer">Reputable #1</a></div>
           
         </div>
@@ -591,8 +612,9 @@ img { max-width: 100%; height: auto; border-radius: 6px; }
         <div class="part-body">
           <div class="part-name">PiSugar 3 1200 mAh battery</div>
           <div class="part-price">~$40</div>
+          <dl class="part-specs"><dt>Capacity</dt><dd>1200 mAh Li-Po</dd><dt>Fits</dt><dd>Raspberry Pi Zero / Zero 2 W (NOT the larger “Plus” for Pi 4)</dd><dt>Mount</dt><dd>Magnetic pogo pins — no soldering, snaps to the underside of the Pi</dd><dt>Extras</dt><dd>On-board RTC, USB-C charge port, power button, IRQ button</dd><dt>Software</dt><dd>PiSugar Power Manager (Python service) — optional for OS-level battery awareness</dd></dl>
           <div class="part-links"><span class="part-links-label">Buy:</span><a class="part-link" href="https://www.pisugar.com/" target="_blank" rel="noopener noreferrer">Official</a><a class="part-link" href="https://www.google.com/search?udm=28&amp;q=PiSugar+3+1200mAh+battery" target="_blank" rel="noopener noreferrer">Google</a><a class="part-link" href="https://www.tindie.com/search/?q=pisugar+3" target="_blank" rel="noopener noreferrer">Reputable #1</a><a class="part-link" href="https://www.aliexpress.us/wholesale-pisugar-3.html" target="_blank" rel="noopener noreferrer">Reputable #2</a></div>
-          
+          <div class="part-note">Pick the “PiSugar 3” for the Pi Zero form factor — NOT the larger “PiSugar 3 Plus” (which is sized for the full Pi 4). The 1200 mAh variant is the standard one.</div>
         </div>
       </div>
 </div>
@@ -605,6 +627,7 @@ img { max-width: 100%; height: auto; border-radius: 6px; }
         <div class="part-body">
           <div class="part-name">TP-Link Kasa HS103 / KP125M smart plug (local control via python-kasa)</div>
           <div class="part-price">~$10</div>
+          <dl class="part-specs"><dt>Model</dt><dd>HS103 (single) / HS103P2 (2-pack). KP125M is the newer Matter-capable equivalent and also works with python-kasa.</dd><dt>Max load</dt><dd>10 A resistive @ 120 VAC (1200 W typical, general-use rating)</dd><dt>Wi-Fi</dt><dd>2.4 GHz only · 802.11 b/g/n (Pi Zero 2 W also 2.4 GHz only)</dd><dt>Form</dt><dd>“Mini” single outlet, 66.5 × 40 × 38 mm</dd><dt>Local API</dt><dd>TP-Link Smart Home LAN protocol — “kasa --host &lt;ip&gt; on/off” via python-kasa, no Kasa cloud account required</dd></dl>
           <div class="part-links"><span class="part-links-label">Buy:</span><a class="part-link" href="https://www.kasasmart.com/us/products/smart-plugs/kasa-smart-wi-fi-plug-mini-hs103" target="_blank" rel="noopener noreferrer">Official</a><a class="part-link" href="https://www.google.com/search?udm=28&amp;q=TP-Link+Kasa+HS103+smart+plug" target="_blank" rel="noopener noreferrer">Google</a><a class="part-link" href="https://www.bestbuy.com/site/searchpage.jsp?st=tp-link+kasa+smart+plug" target="_blank" rel="noopener noreferrer">Reputable #1</a><a class="part-link" href="https://www.target.com/s?searchTerm=tp-link+kasa+smart+plug" target="_blank" rel="noopener noreferrer">Reputable #2</a></div>
           <div class="part-note">Works locally over the LAN with the python-kasa library — no cloud round-trip. Tell Claudia &#39;turn on the living room&#39; and a one-line shell call flips it.</div>
         </div>
@@ -614,6 +637,7 @@ img { max-width: 100%; height: auto; border-radius: 6px; }
         <div class="part-body">
           <div class="part-name">Shelly Plug US (local HTTP / MQTT, no cloud required)</div>
           <div class="part-price">~$20</div>
+          <dl class="part-specs"><dt>Generation</dt><dd>Current “Shelly Plug US” (Gen 2 firmware family — exposes both the new /rpc/ JSON-RPC and the legacy /relay/ endpoints)</dd><dt>Max load</dt><dd>12 A continuous / 15 A peak (1440 W @ 120 VAC)</dd><dt>Wi-Fi</dt><dd>2.4 GHz · 802.11 b/g/n</dd><dt>Local API</dt><dd>HTTP REST + MQTT + WebSocket. Guide uses GET /relay/0?turn=on|off (works on every Shelly generation).</dd><dt>Extras</dt><dd>On-board energy metering · no vendor account needed for local control</dd></dl>
           <div class="part-links"><span class="part-links-label">Buy:</span><a class="part-link" href="https://www.shelly.com/products/shop/shelly-plug-us" target="_blank" rel="noopener noreferrer">Official</a><a class="part-link" href="https://www.google.com/search?udm=28&amp;q=Shelly+Plug+US" target="_blank" rel="noopener noreferrer">Google</a><a class="part-link" href="https://www.aliexpress.us/wholesale-shelly-plug-us.html" target="_blank" rel="noopener noreferrer">Reputable #1</a></div>
           <div class="part-note">REST endpoint at http://&lt;ip&gt;/relay/0?turn=on — Claudia can flip it with a single curl. No vendor account needed.</div>
         </div>
@@ -623,8 +647,9 @@ img { max-width: 100%; height: auto; border-radius: 6px; }
         <div class="part-body">
           <div class="part-name">Sonoff S31 (re-flashable with Tasmota for local MQTT control)</div>
           <div class="part-price">~$13</div>
+          <dl class="part-specs"><dt>Model</dt><dd>S31 (with power monitoring) — NOT S31 Lite</dd><dt>MCU</dt><dd>Espressif ESP8266</dd><dt>Energy chip</dt><dd>CSE7766 (UART-attached power meter on GPIO01/03)</dd><dt>Max load</dt><dd>15 A / 1800 W @ 120 VAC</dd><dt>Stock firmware</dt><dd>eWeLink (cloud-dependent — does NOT meet the “local only” goal as-shipped)</dd><dt>Re-flashable</dt><dd>Yes — Tasmota via serial header inside the case (no soldering needed for the S31)</dd><dt>Reference</dt><dd>Tasmota template + flash steps: templates.blakadder.com/sonoff_S31.html</dd></dl>
           <div class="part-links"><span class="part-links-label">Buy:</span><a class="part-link" href="https://itead.cc/product/sonoff-s31/" target="_blank" rel="noopener noreferrer">Official</a><a class="part-link" href="https://www.google.com/search?udm=28&amp;q=Sonoff+S31+smart+plug" target="_blank" rel="noopener noreferrer">Google</a><a class="part-link" href="https://www.aliexpress.us/wholesale-sonoff-s31.html" target="_blank" rel="noopener noreferrer">Reputable #1</a><a class="part-link" href="https://templates.blakadder.com/sonoff_S31.html" target="_blank" rel="noopener noreferrer">Reputable #2</a></div>
-          <div class="part-note">Out-of-the-box uses the eWeLink cloud; flash with Tasmota to get fully local MQTT/HTTP control.</div>
+          <div class="part-note">Out-of-the-box uses the eWeLink cloud; flash with Tasmota to get fully local MQTT/HTTP control. Pick the S31 (with energy monitoring) — NOT the S31 Lite, which omits the power meter.</div>
         </div>
       </div>
 </div>

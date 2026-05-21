@@ -288,6 +288,14 @@ function build(srcPath) {
                 const priceHtml = (typeof p.price === 'number')
                     ? `<div class="part-price">~$${p.price}</div>`
                     : '';
+                // Per-part spec table. Keys/values are author-controlled in
+                // parts.json so each part can list whatever's load-bearing for
+                // identification (SKU, chipset, interface, max load, etc.).
+                const specsHtml = (Array.isArray(p.specs) && p.specs.length)
+                    ? `<dl class="part-specs">${p.specs.map(s => (
+                        `<dt>${escapeHtml(s.label)}</dt><dd>${escapeHtml(s.value)}</dd>`
+                    )).join('')}</dl>`
+                    : '';
                 const img = loadPartImageLocal(p);
                 let imageDiv = '';
                 let cls = whenAttrs ? 'part-card when' : 'part-card';
@@ -322,6 +330,7 @@ function build(srcPath) {
         <div class="part-body">
           <div class="part-name">${escapeHtml(p.name)}</div>
           ${priceHtml}
+          ${specsHtml}
           ${linksHtml}
           ${note}
         </div>
@@ -762,6 +771,24 @@ img { max-width: 100%; height: auto; border-radius: 6px; }
 .part-name { font-weight: 600; color: var(--text); font-size: 0.95em; line-height: 1.3; }
 .part-price { color: var(--accent); font-weight: 600; font-size: 0.95em; margin-top: 6px; font-variant-numeric: tabular-nums; }
 .part-note { color: var(--text2); font-size: 0.82em; margin-top: 8px; line-height: 1.4; }
+
+.part-specs {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 3px 10px;
+  margin: 10px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  font-size: 0.78em;
+  line-height: 1.4;
+}
+.part-specs > dt {
+  color: var(--text3);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.part-specs > dd { color: var(--text2); margin: 0; }
 
 .part-links {
   display: flex;
