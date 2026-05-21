@@ -68,12 +68,12 @@
       "name": "Official Raspberry Pi 12.5W micro-USB power supply (5V/2.5A)",
       "match": "**Official Raspberry Pi 12.5W micro-USB power supply (5V/2.5A)**",
       "price": 10,
-      "note": "The Pi Zero 2 W is micro-USB, NOT USB-C. A USB-C-only PSU will not fit. Plugs into the corner port labeled “PWR IN” on the silkscreen, not the middle “USB” port.",
+      "note": "The Pi Zero 2 WH is micro-USB, NOT USB-C. A USB-C-only PSU will not fit. Plugs into the corner port labeled “PWR IN” on the silkscreen, not the middle “USB” port.",
       "specs": [
         { "label": "Output",    "value": "5.1 V / 2.5 A DC (12.5 W nominal, 12.75 W actual)" },
         { "label": "Connector", "value": "micro-USB-B (captive) — NOT USB-C" },
         { "label": "Cable",     "value": "1.5 m, 18 AWG" },
-        { "label": "Plugs into","value": "Pi Zero 2 W “PWR IN” port (corner micro-USB, not the middle “USB” port)" },
+        { "label": "Plugs into","value": "Pi Zero 2 WH “PWR IN” port (corner micro-USB, not the middle “USB” port)" },
         { "label": "Regions",   "value": "US / UK / EU / AU / IN plug variants — pick at retailer checkout" }
       ],
       "imageFile": "part-images/pi-power-supply.png",
