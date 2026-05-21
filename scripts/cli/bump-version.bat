@@ -1,5 +1,5 @@
 @echo off
-REM Launcher for bump-version.ps1 — copies Claudia_vN.md to Claudia_v(N+1).md and rebuilds the PDF.
+REM Launcher for bump-version.ps1 — stamps Claudia.md with today's revision date and rebuilds Claudia.htm.
 
 setlocal
 set "SCRIPT_DIR=%~dp0"

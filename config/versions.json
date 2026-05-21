@@ -1,6 +1,6 @@
 {
   "_description": "External dependency versions referenced in the build guide. Update these when upstream releases new majors. build-html.js injects these into Claudia.md wherever placeholders like {{NODE_LABEL}} appear (compile-time substitution, AFTER marked renders).",
-  "versionsAsOf": "2026-05-19",
+  "versionsAsOf": "2026-05-20",
 
   "NODE_MAJOR": "24",
   "NODE_LABEL": "v24.x",

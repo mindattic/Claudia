@@ -2,7 +2,7 @@
   "_description": "Parts catalog for the Claudia build. Each part has a 'searchFor' Google Shopping URL plus at least 3 direct tier links (amazon -> official -> reputable). The 'find-deals' console command opens these in order so you can pick the best price; 'apply-deals' stamps the chosen URL back into Claudia.md by replacing 'match' with a Markdown link. Prices are NON-AUTHORITATIVE estimates - they go stale fast. Refresh by querying current Google Shopping results (per part) and updating both 'price' (USD, integer dollars) and 'pricesAsOf' (date last verified, top-level).",
   "_priorityOrder": ["amazon", "official", "reputable"],
 
-  "pricesAsOf": "2026-05-19",
+  "pricesAsOf": "2026-05-20",
   "pricesNote": "Approximate USD retail at the date above. Click any part card to verify against current Google Shopping results.",
 
   "categories": {
@@ -18,15 +18,15 @@
       "name": "Raspberry Pi Zero 2 WH",
       "match": "**Raspberry Pi Zero 2 WH**",
       "price": 22,
+      "note": "Must be the WH (with pre-soldered headers). The plain W has no GPIO pins and would need 40 pins soldered before the WonderEcho's 4-pin cable can connect. Most retailers list WH as a dropdown variant of the W product page — pick 'with headers' before adding to cart.",
       "imageFile": "part-images/pi-zero-2-wh.png",
-      "imageSource": "https://www.raspberrypi.com/products/raspberry-pi-zero-2-w/",
-      "searchFor": "https://www.google.com/search?udm=28&q=Raspberry+Pi+Zero+2+WH",
+      "imageSource": "https://www.adafruit.com/product/6008",
+      "searchFor": "https://www.google.com/search?udm=28&q=Raspberry+Pi+Zero+2+WH+with+headers",
       "tiers": [
-        { "tier": "amazon",    "url": "https://www.amazon.com/s?k=raspberry+pi+zero+2+wh&i=electronics&s=price-asc-rank&rh=p_72%3A2661618011" },
-        { "tier": "official",  "url": "https://www.raspberrypi.com/products/raspberry-pi-zero-2-w/" },
+        { "tier": "amazon",    "url": "https://www.amazon.com/s?k=raspberry+pi+zero+2+wh+headers&i=electronics&s=price-asc-rank&rh=p_72%3A2661618011" },
         { "tier": "reputable", "url": "https://www.adafruit.com/product/6008" },
-        { "tier": "reputable", "url": "https://thepihut.com/products/raspberry-pi-zero-2" },
-        { "tier": "reputable", "url": "https://www.sparkfun.com/raspberry-pi-zero-2-w.html" }
+        { "tier": "reputable", "url": "https://www.sparkfun.com/raspberry-pi-zero-2-w-with-headers.html" },
+        { "tier": "reputable", "url": "https://www.pishop.us/product/raspberry-pi-zero-2w-with-headers/" }
       ]
     },
     {

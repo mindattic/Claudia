@@ -1,10 +1,12 @@
 # Claudia
 
-Build your own always-on voice assistant in an afternoon — a Raspberry Pi Zero 2 W with the Hiwonder WonderEcho voice module, wired straight to the Claude API. Sits on your shelf, listens for **"Claudia"**, and Claude answers out loud in seconds. No Alexa account, no surveillance, no subscription — just a Claude API key and hardware you own.
+Build your own always-on voice assistant in an afternoon — a Raspberry Pi Zero 2 WH with the Hiwonder WonderEcho voice module, wired straight to the Claude API. Sits on your shelf, listens for **"Claudia"**, and Claude answers out loud in seconds. No Alexa account, no surveillance, no subscription — just a Claude API key and hardware you own.
+
+> **WH, not W.** The WonderEcho connects to four GPIO pins (SDA / SCL / 5V / GND), so the build needs the **WH** variant with pre-soldered headers. Buying the plain "W" means soldering 40 pins yourself before anything works.
 
 [github.com/mindattic/Claudia](https://github.com/mindattic/Claudia)
 
-*Last updated: 2026.05.19g*
+*Last updated: 2026.05.20c*
 
 ---
 
@@ -50,7 +52,7 @@ Download from **raspberrypi.com/software** (Windows, macOS, Linux).
 ### 4.2 Flash
 
 1. Open Raspberry Pi Imager.
-2. **Choose Device** → `Raspberry Pi Zero 2 W`.
+2. **Choose Device** → `Raspberry Pi Zero 2 W` *(Imager doesn't distinguish W from WH — the OS image is the same)*.
 3. **Choose OS** → `Raspberry Pi OS (other)` → **Raspberry Pi OS (64-bit)** (the full version, *not* Lite).
    - The chatbot repo's install script expects packages from the full image. Lite will work but you'll need extra apt installs and may hit surprises.
 4. **Choose Storage** → your microSD card.
@@ -409,27 +411,25 @@ step() { printf "\n%s\n" "── $1 ──"; }
 ok()   { printf "  $PASS %s\n" "$1"; }
 bad()  { printf "  $FAIL %s\n" "$1"; exit_code=1; }
 
-step "1. Audio devices"
-aplay -l | grep -q wm8960 && ok "wm8960 playback card detected" || bad "wm8960 NOT detected (driver issue?)"
-arecord -l | grep -q card && ok "at least one capture card detected" || bad "no capture card detected"
+step "1. WonderEcho module on I2C"
+# The WonderEcho carries both mic and speaker on-board and talks to the Pi
+# over I2C bus 1. We don't expect a standalone ALSA card.
+if command -v i2cdetect >/dev/null 2>&1; then
+    if i2cdetect -y 1 2>/dev/null | grep -qE '52|53|54'; then
+        ok "WonderEcho detected on I2C bus 1"
+    else
+        bad "WonderEcho NOT detected on I2C bus 1 (check 4-pin wiring + 'sudo raspi-config nonint do_i2c 0')"
+    fi
+else
+    bad "i2c-tools not installed - run 'sudo apt install -y i2c-tools' (see Part 5.4)"
+fi
 
-step "2. Speaker test (1s beep)"
-speaker-test -t sine -f 440 -l 1 -s 1 >/dev/null 2>&1 \
-  && ok "speaker-test completed (did you hear a beep?)" \
-  || bad "speaker-test failed"
-
-step "3. Mic test (3s record-and-replay)"
-echo "  (speak for 3 seconds now…)"
-arecord -d 3 -f cd /tmp/hc_mic.wav >/dev/null 2>&1
-[ -s /tmp/hc_mic.wav ] && ok "captured audio file written" || bad "no audio captured"
-aplay /tmp/hc_mic.wav >/dev/null 2>&1 && ok "playback OK (did you hear yourself?)" || bad "playback failed"
-
-step "4. Network reachability"
+step "2. Network reachability"
 ping -c 1 -W 3 api.anthropic.com >/dev/null 2>&1 \
   && ok "api.anthropic.com is reachable" \
   || bad "cannot reach api.anthropic.com (Wi-Fi or DNS issue)"
 
-step "5. Claude API call"
+step "3. Claude API call"
 if [ ! -f "$ENV_FILE" ]; then
   bad "$ENV_FILE not found — finish Part 8 first"
 else
@@ -471,7 +471,7 @@ chmod +x ~/healthcheck.sh
 bash ~/healthcheck.sh
 ```
 
-✅ **Checkpoint:** All five sections print green check marks. If anything fails, fix that piece before moving on — running the full chatbot before this passes just makes debugging harder.
+✅ **Checkpoint:** All three sections print green check marks. If anything fails, fix that piece before moving on — running the full chatbot before this passes just makes debugging harder.
 
 ---
 
@@ -602,12 +602,12 @@ No printer? Upload the STL to a print service like [JLC3DP](https://jlc3dp.com) 
 ## 12. Troubleshooting
 
 ### Nothing plays through the speaker
-- `aplay -l` should list `wm8960`. If not, re-run the driver install in Part 5.4.
-- Run `alsamixer` → F6 → wm8960 card → confirm `Speaker` is unmuted (no `MM` label) and above 0%.
+- The WonderEcho carries the speaker on-board and is driven over I²C — it does **not** show up in `aplay -l`. If you hear nothing, run `i2cdetect -y 1` and confirm the module's address still answers; if not, the 4-pin cable has come loose.
+- Check `journalctl -u chatbot.service -f` for "TTS" or "speak" lines — if Claude is replying but the WonderEcho doesn't render, the I²C write path is failing.
 
 ### Mic captures silence or garbage
-- Run `arecord -l`, confirm the card you expect is listed.
-- Run `alsamixer` → F6 → mic card → F4 (Capture) → raise to ~80%.
+- The mic is on the WonderEcho too — its input is occluded if the module is face-down or covered. Reposition it speaker-side up.
+- If the wake event never fires (`journalctl -u chatbot.service -f` stays silent when you speak), the wake word may have been reset on cold boot; re-run the I²C programming snippet from Part 8.3.
 
 ### Build fails out of memory
 - The Pi Zero 2 W only has 512 MB. Add swap if `build.sh` gets OOM-killed:
@@ -633,7 +633,7 @@ Look for the first ERROR line — usually a missing `.env` key or a wrong path.
 
 ### WonderEcho doesn't respond
 - Run `i2cdetect -y 1` and confirm the module's address still shows up.
-- Re-run the wake-word programming script in 9.3 — flashes can be lost on cold boots.
+- Re-run the wake-word programming script in Part 8.3 — flashes can be lost on cold boots.
 - Check `journalctl -u chatbot.service -f` while you speak — if the wake event never fires, the I²C interrupt line may be miswired or the module's mic input is occluded.
 
 ### Wake word triggers on TV / unrelated speech
@@ -686,6 +686,13 @@ Only Claude (and your chosen TTS, if cloud) runs in the cloud. Everything else c
 ---
 
 ## Update Notes
+
+### 2026.05.20a
+
+- **Pi Zero 2 WH callout.** Added a top-of-guide note clarifying the build needs the **WH** (with pre-soldered headers) variant — the plain "W" has no GPIO pins and would require 40 pins soldered before the WonderEcho's 4-pin cable can connect. The parts-catalog buy links now point at verified WH product pages (Sparkfun direct WH page; The Pi Hut and CanaKit pages that carry the WH variant) and the part card carries an inline reminder to pick "with headers" on retailers that list it as a dropdown variant. Dropped the Adafruit link since they don't currently stock the Pi Zero 2 WH.
+- **Healthcheck pivoted to I²C.** The audio-card checks in Part 09 (`aplay -l | grep wm8960`, `arecord` smoke test) were stale — `wm8960` was the dropped Whisplay HAT chip, and the WonderEcho carries its mic and speaker on-board over I²C rather than appearing as an ALSA card. Replaced with an `i2cdetect` check for the module's I²C address.
+- **Troubleshooting refresh.** "Nothing plays through the speaker" / "Mic captures silence" now point at the WonderEcho's I²C plumbing instead of the dropped `alsamixer` / `wm8960` flow.
+- **Cross-reference fix.** "Re-run the wake-word programming script in 9.3" → Part 8.3.
 
 ### 2026.05.19f
 

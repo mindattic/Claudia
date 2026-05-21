@@ -4,14 +4,19 @@
 
 .DESCRIPTION
     Single entry point for both:
-      - Local dev: install Node deps, render PDFs, bump guide versions.
+      - Local dev: install Node deps, render Claudia.htm, bump guide versions,
+        FTP-deploy to mindattic.com/claudia/.
       - Remote Pi: auto-detect "claudia" on the LAN, then edit its .env
-        (wake word, Claude model, system prompt), tail logs, restart the
-        chatbot service, or run the on-device healthcheck.
+        (Claude model, system prompt, ASR/TTS/LLM provider, API key), tail
+        logs, restart the chatbot service, or run the on-device healthcheck.
+
+    Wake-word config is NOT in scope here — it lives in the WonderEcho's own
+    firmware over I2C and is set with the one-shot Python snippet in Part 8.3
+    of the build guide, not via an env var.
 
     Run without arguments to get an interactive menu. Run with a command name
-    to dispatch directly. Commands are dispatch-table-driven so adding new
-    ones (set-tts, set-stt, update-image) is one entry away.
+    to dispatch directly. Commands are dispatch-table-driven so adding a new
+    one (e.g. set-foo) is one entry away.
 
 .PARAMETER Command
     The command to run. See 'help' for the current list.
@@ -22,7 +27,6 @@
 .EXAMPLE
     .\scripts\cli\Claudia.Console.ps1                       # interactive menu
     .\scripts\cli\Claudia.Console.ps1 detect                # find the Pi on the LAN
-    .\scripts\cli\Claudia.Console.ps1 set-wakeword "hey claudia"
     .\scripts\cli\Claudia.Console.ps1 set-model claude-sonnet-4-6
     .\scripts\cli\Claudia.Console.ps1 logs
 #>
@@ -36,7 +40,8 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$repoRoot   = Split-Path -Parent $PSScriptRoot
+# $PSScriptRoot is scripts/cli; the repo root is two levels up.
+$repoRoot   = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $configDir  = Join-Path $repoRoot 'config'
 $statePath  = Join-Path $configDir 'console.json'
 
@@ -163,28 +168,12 @@ function Cmd-Logs    { Invoke-Pi 'journalctl -u chatbot.service -f -n 50' }
 function Cmd-Healthcheck {
     Require-Ssh
     $state = Get-State
-    $local = Join-Path (Split-Path -Parent $PSScriptRoot) 'pi\healthcheck.sh'
+    $local = Join-Path $repoRoot 'scripts\pi\healthcheck.sh'
     if (-not (Test-Path $local)) { throw "healthcheck.sh not found at $local" }
     Write-Info "uploading healthcheck.sh"
     & scp $local ($state.user + '@' + $state.host + ':/home/' + $state.user + '/healthcheck.sh')
     if ($LASTEXITCODE -ne 0) { throw "scp failed" }
     Invoke-Pi "chmod +x ~/healthcheck.sh && bash ~/healthcheck.sh"
-}
-
-function Cmd-SetWakeword($a) {
-    # openWakeWord uses the WAKE_WORDS env key (plural, underscore-separated).
-    # Built-in models include: hey_jarvis, hey_mycroft, alexa, hey_rhasspy.
-    # For the custom 'claudia' model, set WAKE_WORDS=claudia AND
-    # WAKE_WORD_MODEL_PATHS=/home/pi/wakeword/claudia.tflite (handled by hand
-    # since it requires the trained model file to already be on the Pi).
-    if (-not $a -or $a.Count -lt 1) { throw 'Usage: set-wakeword <name>  (e.g. hey_jarvis, claudia)' }
-    $word = ($a -join ' ').Trim('"').Trim() -replace '\s+', '_'
-    Set-RemoteEnv 'WAKE_WORDS' $word
-    Set-RemoteEnv 'WAKE_WORD_ENABLED' 'true'
-    Write-Warn2 'restart the service for it to take effect:  Claudia.Console restart'
-    if ($word -eq 'claudia') {
-        Write-Warn2 'reminder: custom "claudia" model also needs WAKE_WORD_MODEL_PATHS set to the .tflite path.'
-    }
 }
 
 function Cmd-SetModel($a) {
@@ -210,7 +199,7 @@ function Cmd-SetTts($a) {
     # Built-in handlers: test, openai, gemini, tencent, volcengine, piper,
     # piper-http, espeak-ng, llm8850melotts, supertonic, picovoice.
     # 'elevenlabs' is only valid AFTER applying the patch documented in
-    # Claudia.md section 09 (Configure the chatbot - TTS subsection).
+    # Claudia.md Part 08 (Configure chatbot - TTS subsection).
     if (-not $a -or $a.Count -lt 1) { throw 'Usage: set-tts <server>  (e.g. openai, piper, elevenlabs)' }
     $val = ($a[0] -as [string]).ToLower()
     Set-RemoteEnv 'TTS_SERVER' $val
@@ -254,24 +243,7 @@ function Cmd-Update($a) {
 
     $pkgPath = Join-Path $repoRoot 'package.json'
     if (-not (Test-Path $pkgPath)) {
-        Write-Info 'creating package.json'
-        $pkgJson = @'
-{
-  "name": "claudia-build-tools",
-  "version": "1.0.0",
-  "private": true,
-  "description": "Local builder deps for the Claudia voice assistant box guide (markdown -> self-contained HTML).",
-  "scripts": {
-    "build:html": "node scripts/cli/build-html.js",
-    "bump":       "powershell -ExecutionPolicy Bypass -File scripts/cli/bump-version.ps1"
-  },
-  "dependencies": {
-    "marked": "^4.3.0",
-    "highlight.js": "^11.9.0"
-  }
-}
-'@
-        Write-Utf8NoBom -Path $pkgPath -Content $pkgJson
+        throw "package.json missing at $pkgPath. The file is checked into the repo; re-run 'pull-latest' to restore it."
     }
 
     Push-Location $repoRoot
@@ -617,7 +589,6 @@ $commands = [ordered]@{
     'restart'      = @{ Help = 'Restart chatbot.service on Claudia.';                                                         Action = { Cmd-Restart } }
     'logs'         = @{ Help = 'Tail Claudia chatbot logs (Ctrl+C to stop).';                                                 Action = { Cmd-Logs } }
     'healthcheck'  = @{ Help = 'Copy scripts/pi/healthcheck.sh to Claudia and run it.';                                       Action = { Cmd-Healthcheck } }
-    'set-wakeword' = @{ Help = 'Set the openWakeWord model on the Pi (writes WAKE_WORDS + enables it). Usage: set-wakeword hey_jarvis | claudia';  Action = { param($a) Cmd-SetWakeword $a } }
     'set-model'    = @{ Help = 'Set ANTHROPIC_MODEL on the Pi. Usage: set-model <model-id>';                                  Action = { param($a) Cmd-SetModel $a } }
     'set-prompt'   = @{ Help = 'Set SYSTEM_PROMPT on the Pi. Usage: set-prompt "<text>"';                                     Action = { param($a) Cmd-SetPrompt $a } }
     'set-apikey'   = @{ Help = 'Set ANTHROPIC_API_KEY on the Pi. Usage: set-apikey sk-ant-...';                               Action = { param($a) Cmd-SetApiKey $a } }
@@ -630,7 +601,7 @@ $commands = [ordered]@{
     'deploy'       = @{ Help = 'Build Claudia.htm and FTP-upload .md/.htm/index.htm (uses scripts/cli/deploy.settings.json). Add --no-build to skip the rebuild.'; Action = { param($a) Cmd-Deploy $a } }
     'bump'         = @{ Help = 'Stamp Claudia.md with today''s revision date (or -To <YYYY.MM.DD>) and rebuild Claudia.htm.';  Action = { param($a) Cmd-Bump $a } }
     'list-parts'   = @{ Help = 'List parts catalog + which have a chosen URL.';                                               Action = { Cmd-ListParts } }
-    'find-deals'   = @{ Help = 'Open Amazon/official/reputable tabs per part; save your picks. [core|mic|portable|smarthome|wakeword|--all]'; Action = { param($a) Cmd-FindDeals $a } }
+    'find-deals'   = @{ Help = 'Open Amazon/official/reputable tabs per part; save your picks. [core|portable|smarthome|--all]'; Action = { param($a) Cmd-FindDeals $a } }
     'apply-deals'  = @{ Help = 'Stamp chosen URLs into Claudia.md.';                                                          Action = { Cmd-ApplyDeals } }
     'pull-latest'  = @{ Help = 'git fetch + overlay latest source. Add --force if working tree is dirty.';                    Action = { param($a) Cmd-PullLatest $a } }
     'self-update'  = @{ Help = 'Refresh node_modules + open "is there a newer version?" searches for every part / Claude model.'; Action = { param($a) Cmd-SelfUpdate $a } }

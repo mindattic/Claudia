@@ -1,8 +1,10 @@
 # Claudia
 
-> **Build your own Claude-powered voice assistant.** Claudia is a palm-sized, hackable smart speaker on a Raspberry Pi Zero 2 W + PiSugar Whisplay HAT — no soldering, ~$77 to start, ready in an afternoon. Say a wake word, ask anything, and Claude talks back. This repo is the complete builder kit: an illustrated build guide, a parts catalog with price-comparison shopping, an automated Pi installer, and a Windows console that flashes, configures, and updates your device over the LAN.
+> **Build your own Claude-powered voice assistant.** Claudia is a palm-sized, hackable smart speaker on a Raspberry Pi Zero 2 **WH** + Hiwonder WonderEcho voice module — no soldering, ready in an afternoon. Say **"Claudia"**, ask anything, and Claude answers out loud. This repo is the complete builder kit: an illustrated build guide, a parts catalog with price-comparison shopping, an automated Pi installer, and a Windows console that configures and updates your device over the LAN.
 
-Wake on **"Hey Jarvis"** out of the box, or train your own **"Claudia"** wake word (Appendix A in the guide). There's an on-board button as a fallback. The chatbot runtime is the upstream [`PiSugar/whisplay-ai-chatbot`](https://github.com/PiSugar/whisplay-ai-chatbot); this repo doesn't fork it — it's the guide, configs, and Windows-side tooling that turn a pile of parts into a finished device.
+> The build requires the **WH** variant (pre-soldered headers). The plain "W" has no headers and would need 40 pins soldered before the WonderEcho's 4-pin cable can connect.
+
+Wake-word detection runs in the WonderEcho's own firmware over I²C — no Pi-side listener, no openWakeWord, no training. You program **"Claudia"** once with a one-shot I²C write (Part 8.3 of the guide). The chatbot runtime is the upstream [`PiSugar/whisplay-ai-chatbot`](https://github.com/PiSugar/whisplay-ai-chatbot); this repo doesn't fork it — it's the guide, configs, and Windows-side tooling that turn a pile of parts into a finished device.
 
 ---
 
@@ -10,9 +12,11 @@ Wake on **"Hey Jarvis"** out of the box, or train your own **"Claudia"** wake wo
 
 ```
 Claudia/
-├── Claudia.md              # The build guide (canonical source of truth)
-├── Claudia.htm             # Auto-generated self-contained page (inlined CSS+JS+images, light/dark theme)
+├── Claudia.md                 # The build guide (canonical source of truth)
+├── Claudia.htm                # Auto-generated self-contained page (inlined CSS+JS+images, light/dark theme)
+├── index.htm                  # Byte-identical clone of Claudia.htm (so /claudia/ serves it directly — no redirect)
 ├── README.md                  # ← you are here
+├── CLAUDE.md                  # Project rules for Claude Code agents
 ├── Claudia.Console.bat        # Top-level shortcut to scripts/cli/Claudia.Console.bat
 ├── package.json               # Two deps: marked (markdown) + highlight.js (syntax)
 │
@@ -20,30 +24,31 @@ Claudia/
 │   ├── settings.json          # Hook: regenerate .htm on every .md edit
 │   └── commands/
 │       ├── commit.md          # /commit slash command
+│       ├── deploy.md          # /deploy slash command (FTP-upload to mindattic.com/claudia)
 │       └── do.md              # /do slash command (continue current task)
 │
 ├── config/
 │   ├── env.template           # Example .env for the Pi
-│   ├── asoundrc.usbmic        # ~/.asoundrc for USB-mic builds
+│   ├── asoundrc.usbmic        # ~/.asoundrc for legacy USB-mic builds (current build doesn't need it)
 │   ├── parts.json             # Parts catalog (Amazon/official/reputable URLs per part)
-│   └── console.json           # Saved Pi host/user (created on first detect)
-│
-├── index.htm                  # Byte-identical clone of Claudia.htm (so /claudia/ serves it directly — no redirect)
+│   ├── versions.json          # Compile-time {{VAR}} substitutions injected into the .md
+│   ├── part-images/           # PNGs that build-html.js base64-inlines into Claudia.htm
+│   └── console.json           # Saved Pi host/user (created on first 'detect'; gitignored value)
 │
 └── scripts/
-    ├── cli/                       # Windows builder-side tooling
-    │   ├── Claudia.Console.ps1    # Multi-command console (local + remote Pi)
-    │   ├── Claudia.Console.bat    # Launcher
-    │   ├── build-html.js          # Node: markdown -> self-contained .htm with theme toggle
-    │   ├── build-html.ps1 / .bat  # PowerShell wrapper for build-html.js
-    │   ├── bump-version.ps1 / .bat# Stamp Claudia.md with a new date + rebuild .htm
-    │   ├── deploy.ps1 / .bat      # Build + FTP upload to /mindattic.com/claudia/
-    │   ├── deploy.settings.json.template # Copy to deploy.settings.json (gitignored)
-    │   ├── on-md-change.ps1       # Hook handler - auto-rebuild .htm on .md edits
-    │   └── pull-latest-finisher.ps1 # Detached helper for self-update (locked-file safe)
-    └── pi/                        # Scripts that run on the Raspberry Pi
-        ├── healthcheck.sh         # End-to-end smoke test (runs on the Pi)
-        └── install-claudia.sh     # Automates Parts 4-9 (runs on the Pi)
+    ├── cli/                          # Windows builder-side tooling
+    │   ├── Claudia.Console.ps1       # Multi-command console (local + remote Pi)
+    │   ├── Claudia.Console.bat       # Launcher
+    │   ├── build-html.js             # Node: markdown -> self-contained .htm with theme toggle
+    │   ├── build-html.ps1 / .bat     # PowerShell wrapper for build-html.js
+    │   ├── bump-version.ps1 / .bat   # Stamp Claudia.md with a new date + rebuild .htm
+    │   ├── deploy.ps1 / .bat         # Build + FTP upload to /mindattic.com/claudia/
+    │   ├── deploy.settings.json.template  # Copy to deploy.settings.json (gitignored) with real FTP creds
+    │   ├── on-md-change.ps1          # Hook handler - auto-rebuild .htm on .md edits
+    │   └── pull-latest-finisher.ps1  # Detached helper for self-update (locked-file safe)
+    └── pi/                           # Scripts that run on the Raspberry Pi
+        ├── healthcheck.sh            # End-to-end smoke test (I²C + network + Claude API)
+        └── install-claudia.sh        # Automates Parts 5-10 of the guide
 ```
 
 ---
@@ -76,7 +81,6 @@ You'll see something like:
     restart        Restart chatbot.service on Claudia.
     logs           Tail Claudia chatbot logs.
     healthcheck    Copy scripts/pi/healthcheck.sh to Claudia and run it.
-    set-wakeword   Set the openWakeWord model on the Pi (e.g. hey_jarvis, claudia).
     set-model      Set ANTHROPIC_MODEL on the Pi.
     set-prompt     Set SYSTEM_PROMPT on the Pi.
     set-apikey     Set ANTHROPIC_API_KEY on the Pi.
@@ -95,19 +99,22 @@ You'll see something like:
     self-update    Refresh node_modules + open "newer version?" searches per part.
 ```
 
+> The wake word lives in the WonderEcho's own firmware over I²C — there's no Pi-side env knob for it, so the Console no longer exposes a `set-wakeword` command. Re-program it with the one-shot I²C script from Part 8.3 of the guide.
+
 ### Shopping flow (find-deals → apply-deals)
 
 The Console doubles as a price-comparison assistant for the parts in `config/parts.json`. For every part it opens browser tabs in this order:
 
-1. **Search for** a Google query (broad fallback)
+1. **Search for** a Google Shopping query (broad fallback)
 2. **Amazon** (filtered for price-asc)
-3. **Official retailer** (raspberrypi.com, pisugar.com, seeedstudio.com, etc.)
-4. **Reputable** secondaries (Adafruit, Pi Hut, Sparkfun, Mouser, DigiKey, B&H, Tindie)
+3. **Official retailer** (raspberrypi.com, pisugar.com, hiwonder.com, etc.)
+4. **Reputable** secondaries (Adafruit, Pi Hut, Sparkfun, Best Buy, Target, Tindie)
 
 You pick the best URL, paste it back into the prompt, and `apply-deals` rewrites the latest `Claudia.md` so each part line becomes a Markdown link to the URL you chose. The hook then auto-regenerates `Claudia.htm`.
 
 ```powershell
 .\Claudia.Console.bat find-deals               # walk the whole catalog
+.\Claudia.Console.bat find-deals core          # just the must-have parts (Pi, SD, PSU, WonderEcho)
 .\Claudia.Console.bat find-deals smarthome     # just the smart-plug category
 .\Claudia.Console.bat apply-deals              # write the chosen URLs into the .md
 ```
@@ -131,11 +138,11 @@ You can also call commands directly:
 ## Build the device
 
 1. Open **`Claudia.md`** (or `Claudia.htm` for the styled, offline-ready version).
-2. Follow Parts 1–3 to buy parts, assemble, and flash the SD card.
+2. Follow Parts 01–04 to configure your build, buy parts, assemble, and flash the SD card.
 3. SSH in. Then either:
-   - **Manual path:** follow Parts 4–9 by hand.
+   - **Manual path:** follow Parts 05–10 by hand.
    - **Scripted path:** copy `scripts/pi/install-claudia.sh` to the Pi and run it. It walks the same steps end-to-end and prompts you when it needs a reboot or your API key.
-4. Once it's running, plug Claudia onto your LAN and run `Claudia.Console detect` from this machine — every command after that targets it over SSH.
+4. Once it's running, run `Claudia.Console detect` from this machine — every command after that targets it over SSH.
 
 ---
 
@@ -159,7 +166,9 @@ The page ships with both palettes and **defaults to dark**. The toggle button (t
 
 ### Parts gallery
 
-`build-html.js` builds a text-only "Parts gallery" section from `config/parts.json`. Each card links to the buy URL chosen by `find-deals` (or the Amazon-tier URL as a fallback). No images are fetched or embedded — vendor CDNs rot too fast for that to be worth the maintenance.
+`build-html.js` builds a "Parts gallery" section from `config/parts.json`. Each card lists every tier link (Official / Google Shopping / reputable secondaries) plus a per-part price estimate, and the running total at the bottom updates live as the user changes the Configure-your-build widget above.
+
+Images are read from `config/part-images/*.png` and base64-inlined into `Claudia.htm` at build time — no `<img src>`, no CDN dependency. Vendor CDNs rot too fast to trust; local PNGs in the repo are version-pinned with the rest of the build. To add an image for a new part, drop a PNG into `config/part-images/` and set `"imageFile": "part-images/<file>.png"` on the part entry in `parts.json`.
 
 ### Bumping the version
 
@@ -211,16 +220,15 @@ Any of these can be hoisted to your global `~/.claude/commands/` later if you wa
 
 ## Cost / time / parts
 
-The full breakdown lives in `Claudia.md` (Part 1). At a glance:
+The interactive Parts gallery in `Claudia.md` (Part 02) sums the live total based on your configuration. At a glance:
 
 | Build | What you get | Total |
 |-------|--------------|-------|
-| Desktop          | Core + Whisplay's mics + wall power      | ~$77  |
-| Desktop + budget mic | + SunFounder USB mic + OTG           | ~$97  |
-| Desktop + premium mic | + reSpeaker XVF3800 + OTG           | ~$144 |
-| Portable + premium mic | All of the above + PiSugar 3 battery | ~$184 |
+| Desktop  | Pi Zero 2 WH + 32 GB microSD + 12.5 W PSU + WonderEcho  | ~$66 |
+| Portable | Desktop + PiSugar 3 1200 mAh battery                    | ~$106 |
+| + smart plug | Add one of Kasa HS103 / Shelly Plug US / Sonoff S31 + Tasmota | +$10–$20 |
 
-Assembly is ~5 minutes (no soldering); first-boot software install is ~30–60 minutes wall-clock (most of it `apt` and `npm` chugging on a 512 MB Pi).
+Assembly is ~3 minutes — one 4-pin I²C cable from the WonderEcho to the Pi's GPIO header, no soldering. First-boot software install is ~30–60 minutes wall-clock (mostly `apt` and `npm` chugging on a 512 MB Pi).
 
 ---
 
@@ -228,9 +236,9 @@ Assembly is ~5 minutes (no soldering); first-boot software install is ~30–60 m
 
 - Build guide: **`Claudia.md`** in this repo
 - Chatbot runtime: <https://github.com/PiSugar/whisplay-ai-chatbot>
-- Whisplay driver: <https://github.com/PiSugar/Whisplay>
-- Wake-word wiki: <https://github.com/PiSugar/whisplay-ai-chatbot/wiki/Wakeword>
+- WonderEcho voice module: <https://www.hiwonder.com/products/wonderecho>
 - Claude API docs: <https://docs.claude.com>
+- Claude model catalog: <https://docs.claude.com/en/docs/about-claude/models/overview>
 - Claude pricing: <https://anthropic.com/pricing>
 
 ---
