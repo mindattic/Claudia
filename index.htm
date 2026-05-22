@@ -1,4 +1,4 @@
-﻿<!-- Last Updated: 2026-05-22T17:30:35Z -->
+﻿<!-- Last Updated: 2026-05-22T17:33:45Z -->
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
@@ -657,7 +657,7 @@ img { max-width: 100%; height: auto; border-radius: 6px; }
 <p><strong>Stock check.</strong> The Pi Zero 2 WH is supply-constrained; if all the US retailers on the cards below show out-of-stock, <a href="https://rpilocator.com">rpilocator.com</a> tracks live availability across the official reseller network.</p>
 </blockquote>
 <p><a href="https://github.com/mindattic/Claudia">github.com/mindattic/Claudia</a></p>
-<p><em>Last updated: 2026.05.22c</em></p>
+<p><em>Last updated: 2026.05.22d</em></p>
 <hr>
 <h2 id="01-configure">01. Configure <a class="heading-anchor" href="#01-configure" aria-label="link to this section">#</a></h2>
 <div class="config-widget" id="config-widget">
@@ -1386,6 +1386,10 @@ journalctl -u chatbot.service -n 60 --no-pager
 <p>Only Claude (and your chosen TTS, if cloud) runs in the cloud. Everything else can run on-device.</p>
 <hr>
 <h2 id="update-notes">Update Notes <a class="heading-anchor" href="#update-notes" aria-label="link to this section">#</a></h2>
+<h3 id="20260522d">2026.05.22d <a class="heading-anchor" href="#20260522d" aria-label="link to this section">#</a></h3>
+<ul>
+<li>Routine re-deploy after committing 2026.05.22c&#39;s 10 doc fixes. No source changes — letter-suffix bump only.</li>
+</ul>
 <h3 id="20260522c">2026.05.22c <a class="heading-anchor" href="#20260522c" aria-label="link to this section">#</a></h3>
 <ul>
 <li><strong>Build-pipeline placeholder leak fixed.</strong> Part 06&#39;s Node-version checkpoint was rendering the literal <code>v24.x</code> template token instead of a real version. Replaced with <code>v20.x</code> (current Node LTS that upstream&#39;s installer pulls).</li>

@@ -4,13 +4,13 @@ Build your own always-on voice assistant in an afternoon — a Raspberry Pi Zero
 
 > **WH, not W.** The WonderEcho connects to four GPIO pins (SDA / SCL / 5V / GND), so the build needs the **WH** variant with pre-soldered headers. Buying the plain "W" means soldering 40 pins yourself before anything works.
 
-> **Before you start, gather:** a Windows / macOS / Linux computer to flash the microSD and SSH in, a way to plug a microSD into it (the SanDisk Ultra ships with a full-size SD adapter but no USB reader — most modern ultrabooks and MacBooks need a USB microSD reader, ~$8), and a **2.4 GHz** Wi-Fi network (the Pi Zero 2 WH has no 5 GHz radio). The smart-plug options below are US-outlet variants — if you're outside North America, Shelly and Kasa have EU/UK equivalents that work with the same local API. **No soldering iron needed**, and **no extra jumper wires** — the WonderEcho ships with the 4-pin Dupont cable already.
+> **Before you start, gather:** a Windows / macOS / Linux computer to flash the microSD and SSH in, a way to plug a microSD into it (the SanDisk Ultra ships with a full-size SD adapter but no USB reader — most modern ultrabooks and MacBooks need a USB microSD reader, ~$8), and a **2.4 GHz** Wi-Fi network (the Pi Zero 2 WH has no 5 GHz radio). The smart-plug options below ship with US plugs; each vendor (Kasa, Shelly, Sonoff) also sells EU/UK/AU variants that speak the same local API — pick your region at checkout. **No soldering iron needed**, and **no extra jumper wires** — the WonderEcho ships with the 4-pin Dupont cable already.
 
 > **Stock check.** The Pi Zero 2 WH is supply-constrained; if all the US retailers on the cards below show out-of-stock, [rpilocator.com](https://rpilocator.com) tracks live availability across the official reseller network.
 
 [github.com/mindattic/Claudia](https://github.com/mindattic/Claudia)
 
-*Last updated: 2026.05.22c*
+*Last updated: 2026.05.22d*
 
 ---
 
@@ -98,7 +98,7 @@ Run these from the SSH session. One at a time. Wait for each to finish.
 sudo apt update && sudo apt full-upgrade -y
 ```
 
-This takes 5–15 minutes on a Pi Zero. Be patient.
+This takes 5–15 minutes on a Pi Zero 2 WH. Be patient.
 
 ### 5.2 Free up RAM (Pi Zero only has 512 MB)
 
@@ -267,11 +267,10 @@ ElevenLabs has the most natural voices on the market right now, but the upstream
 
 ```typescript
 import mp3Duration from "mp3-duration";
-import dotenv from "dotenv";
 import { TTSResult } from "../../type";
 
-dotenv.config();
-
+// The chatbot already loads .env at startup, so process.env is populated
+// by the time this plugin's activate() runs — no need to call dotenv here.
 const apiKey     = process.env.ELEVENLABS_API_KEY     || "";
 const voiceId    = process.env.ELEVENLABS_VOICE_ID    || "EXAVITQu4vr4xnSDxMaL"; // "Bella"
 const modelId    = process.env.ELEVENLABS_MODEL_ID    || "eleven_turbo_v2_5";    // low-latency
@@ -306,7 +305,9 @@ const elevenLabsTTS = async (text: string): Promise<TTSResult> => {
   }
   const buffer = Buffer.from(await res.arrayBuffer());
   const duration = await mp3Duration(buffer);
-  return { buffer, duration: duration * 1000 };
+  // mp3-duration returns undefined if it can't parse the stream; coerce to
+  // 0 so downstream code never sees NaN.
+  return { buffer, duration: (duration ?? 0) * 1000 };
 };
 
 export default elevenLabsTTS;
@@ -389,13 +390,13 @@ The chatbot service polls the WonderEcho's wake-event register over I²C and sta
 
 ✅ **Checkpoint:** speak "Claudia" near the module — `journalctl -u chatbot.service -f` shows a wake event within ~300 ms.
 
-> Hiwonder ships the module with a fixed register map; if your unit reports a different I²C address or uses a different "set-trigger" opcode, check the [WonderEcho wiki](https://www.hiwonder.com/products/wonderecho) for your firmware revision.
+> The exact register map can vary by firmware revision. If your unit reports a different I²C address (verify with `i2cdetect -y 1`) or uses a different "set-trigger" opcode, check the [WonderEcho wiki](https://www.hiwonder.com/products/wonderecho) for the map matching your firmware.
 
 ---
 
 ## 09. Healthcheck
 
-Before launching the full chatbot, run a 90-second healthcheck that verifies every layer end-to-end: speaker, mic, network, Claude API.
+Before launching the full chatbot, run a 90-second healthcheck that verifies three layers: the WonderEcho is present on the I²C bus, the network can reach Anthropic, and your API key + chosen model actually return a response. (The audio path itself — speaker out, mic in — is exercised by the manual launch in Part 10.)
 
 Create the script:
 
@@ -434,9 +435,14 @@ else
 fi
 
 step "2. Network reachability"
-ping -c 1 -W 3 api.anthropic.com >/dev/null 2>&1 \
-  && ok "api.anthropic.com is reachable" \
-  || bad "cannot reach api.anthropic.com (Wi-Fi or DNS issue)"
+# Use HTTPS instead of ping — many networks/APIs drop ICMP but pass TLS.
+# A 4xx response still proves we got a real reply from api.anthropic.com.
+net_code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 5 https://api.anthropic.com/ 2>/dev/null || echo "000")
+if [ "$net_code" != "000" ]; then
+  ok "api.anthropic.com responded (HTTP $net_code)"
+else
+  bad "cannot reach api.anthropic.com (Wi-Fi, DNS, or TLS issue)"
+fi
 
 step "3. Claude API call"
 if [ ! -f "$ENV_FILE" ]; then
@@ -456,7 +462,15 @@ else
     body=$(echo "$response" | sed '$d')
     if [ "$http_code" = "200" ]; then
       ok "Claude API responded HTTP 200"
-      echo "  Reply: $(echo "$body" | grep -o '"text":"[^"]*"' | head -1 | sed 's/"text":"//;s/"$//')"
+      # Prefer jq if available — it handles escaped quotes correctly. Fall
+      # back to a grep+sed that breaks on escapes but is good enough for a
+      # smoke-test "did Claude reply" sanity check.
+      if command -v jq >/dev/null 2>&1; then
+        reply=$(echo "$body" | jq -r '.content[0].text // empty' 2>/dev/null)
+      else
+        reply=$(echo "$body" | grep -o '"text":"[^"]*"' | head -1 | sed 's/"text":"//;s/"$//')
+      fi
+      echo "  Reply: $reply"
     else
       bad "Claude API returned HTTP $http_code"
       echo "  $body" | head -3
@@ -643,7 +657,7 @@ Look for the first ERROR line — usually a missing `.env` key or a wrong path.
 ### WonderEcho doesn't respond
 - Run `i2cdetect -y 1` and confirm the module's address still shows up.
 - Re-run the wake-word programming script in Part 08.3 — flashes can be lost on cold boots.
-- Check `journalctl -u chatbot.service -f` while you speak — if the wake event never fires, the I²C interrupt line may be miswired or the module's mic input is occluded.
+- Check `journalctl -u chatbot.service -f` while you speak — if the wake event never fires, the 4-pin I²C cable may have come loose or the module's mic input is occluded.
 
 ### Wake word triggers on TV / unrelated speech
 - Increase the WonderEcho's detection threshold via I²C — see the [Hiwonder wiki](https://www.hiwonder.com/products/wonderecho) for the register address on your firmware revision.
@@ -651,7 +665,7 @@ Look for the first ERROR line — usually a missing `.env` key or a wrong path.
 ### Responses feel slow
 - Use `claude-haiku-4-5-20251001` (Part 07 — it's the recommended default for this reason).
 - The Pi Zero 2 WH's Wi-Fi antenna is weak. Move it closer to the router.
-- Local Whisper STT is the slowest step on a Pi Zero. If you have a cloud STT key (OpenAI, Google), switching to one of those in `.env` cuts perceived latency dramatically.
+- Local Whisper STT is the slowest step on a Pi Zero 2 WH. If you have a cloud STT key (OpenAI, Google), switching to one of those in `.env` cuts perceived latency dramatically.
 
 ### Need to re-run the healthcheck
 ```bash
@@ -695,6 +709,23 @@ Only Claude (and your chosen TTS, if cloud) runs in the cloud. Everything else c
 ---
 
 ## Update Notes
+
+### 2026.05.22e
+
+- **TOC absolutely positioned.** Added `position: absolute; top: 60px` to `.toc` in `build-html.js` so the table-of-contents lifts out of normal sidebar flow.
+- **Wake mechanism: last "interrupt line" mention purged.** The 22c sweep unified Parts 08 / 08.3 / 10 around "polls the WonderEcho's wake-event register over I²C", but the matching troubleshooting bullet still said "the I²C interrupt line may be miswired". Now says "the 4-pin I²C cable may have come loose" — consistent with the actual wiring (SDA/SCL/5V/GND, no interrupt GPIO).
+- **Register-map stability contradiction resolved.** Part 08.3 had two adjacent notes that disagreed — one said the layout "depends on your WonderEcho firmware revision", the other said Hiwonder ships a "fixed register map". Both now point at the wiki as the source of truth and acknowledge revision drift.
+- **Healthcheck intro now matches what the script actually tests.** Used to claim "speaker, mic, network, Claude API"; the script never exercises the speaker or mic. Updated to "WonderEcho on I²C, network, Claude API" — and notes the audio path itself is verified by the manual launch in Part 10.
+- **Network check no longer relies on ICMP.** Replaced `ping api.anthropic.com` (which silently fails on networks that drop ICMP) with an HTTPS probe via `curl` — a 4xx still proves reachability without needing valid auth.
+- **JSON reply extraction prefers `jq` when available.** The `grep '"text":"…"'` pattern breaks on responses containing escaped quotes. The healthcheck now uses `jq -r '.content[0].text'` if installed, and falls back to the grep/sed pattern for hosts that don't have jq.
+- **Last two "Pi Zero" stragglers normalized.** Parts 05.1 and 12 ("This takes 5–15 minutes on a Pi Zero", "Local Whisper STT is the slowest step on a Pi Zero") joined the rest of the body in saying "Pi Zero 2 WH".
+- **ElevenLabs handler no longer returns NaN duration.** `mp3-duration` can return `undefined` on parse failure, and `undefined * 1000 = NaN`. Coerced with `(duration ?? 0) * 1000` so the caller always sees a real number.
+- **Redundant `dotenv.config()` removed from the ElevenLabs plugin.** The chatbot already loads `.env` at startup; calling `dotenv.config()` on plugin import was an unconditional side effect that ran whether or not the plugin was activated.
+- **Smart-plug regional note covers all three vendors.** The "Before you start" callout used to single out Shelly and Kasa for international plug variants; Sonoff (the third option) has them too. Now framed as "each vendor sells EU/UK/AU variants — pick your region at checkout."
+
+### 2026.05.22d
+
+- Routine re-deploy after committing 2026.05.22c's 10 doc fixes. No source changes — letter-suffix bump only.
 
 ### 2026.05.22c
 

@@ -728,6 +728,8 @@ img { max-width: 100%; height: auto; border-radius: 6px; }
    §  TOC (sticky sidebar on desktop, hidden on mobile)
    ────────────────────────────────────────────────────────────────────── */
 .toc {
+  position: absolute;
+  top: 60px;
   font-size: 0.9em;
   color: var(--text2);
   padding: 14px 16px 16px;
