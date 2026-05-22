@@ -224,9 +224,9 @@ The interactive Parts gallery in `Claudia.md` (Part 02) sums the live total base
 
 | Build | What you get | Total |
 |-------|--------------|-------|
-| Desktop  | Pi Zero 2 WH + 32 GB microSD + 12.5 W PSU + WonderEcho  | ~$66 |
-| Portable | Desktop + PiSugar 3 1200 mAh battery                    | ~$106 |
-| + smart plug | Add one of Kasa HS103 / Shelly Plug US / Sonoff S31 + Tasmota | +$10–$20 |
+| Desktop  | Pi Zero 2 WH + 32 GB microSD + 12.5 W PSU + WonderEcho  | ~$62 |
+| Portable | Desktop + PiSugar 3 1200 mAh battery                    | ~$102 |
+| + smart plug | Add one of Kasa HS103 / Shelly Plug US Gen4 / Sonoff S31 + Tasmota | +$10–$20 |
 
 Assembly is ~3 minutes — one 4-pin I²C cable from the WonderEcho to the Pi's GPIO header, no soldering. First-boot software install is ~30–60 minutes wall-clock (mostly `apt` and `npm` chugging on a 512 MB Pi).
 

@@ -4,9 +4,13 @@ Build your own always-on voice assistant in an afternoon — a Raspberry Pi Zero
 
 > **WH, not W.** The WonderEcho connects to four GPIO pins (SDA / SCL / 5V / GND), so the build needs the **WH** variant with pre-soldered headers. Buying the plain "W" means soldering 40 pins yourself before anything works.
 
+> **Before you start, gather:** a Windows / macOS / Linux computer to flash the microSD and SSH in, a way to plug a microSD into it (the SanDisk Ultra ships with a full-size SD adapter but no USB reader — most modern ultrabooks and MacBooks need a USB microSD reader, ~$8), and a **2.4 GHz** Wi-Fi network (the Pi Zero 2 W has no 5 GHz radio). The smart-plug options below are US-outlet variants — if you're outside North America, Shelly and Kasa have EU/UK equivalents that work with the same local API. **No soldering iron needed**, and **no extra jumper wires** — the WonderEcho ships with the 4-pin Dupont cable already.
+
+> **Stock check.** The Pi Zero 2 WH is supply-constrained; if all the US retailers on the cards below show out-of-stock, [rpilocator.com](https://rpilocator.com) tracks live availability across the official reseller network.
+
 [github.com/mindattic/Claudia](https://github.com/mindattic/Claudia)
 
-*Last updated: 2026.05.20h*
+*Last updated: 2026.05.20k*
 
 ---
 
@@ -27,7 +31,7 @@ Build your own always-on voice assistant in an afternoon — a Raspberry Pi Zero
 **Total time:** ~3 minutes. No soldering.
 
 1. **Do not insert the microSD yet.** Flash it first in section 04.
-2. Connect the WonderEcho to the Pi's I²C header pins via its 4-pin cable: **`SDA → BCM 2 (pin 3)`**, **`SCL → BCM 3 (pin 5)`**, **`5V → pin 2`**, **`GND → pin 6`**.
+2. Connect the WonderEcho to the Pi's I²C header pins via the **4-pin Dupont cable that ships in the WonderEcho box** (Hiwonder includes it — you should not need to source one separately): **`SDA → BCM 2 (pin 3)`**, **`SCL → BCM 3 (pin 5)`**, **`5V → pin 2`**, **`GND → pin 6`**.
 3. Make sure the WonderEcho's speaker face is unobstructed (it doubles as the mic intake).
 
 <!-- when: battery=yes -->
@@ -48,6 +52,8 @@ Build your own always-on voice assistant in an afternoon — a Raspberry Pi Zero
 ### 4.1 Install Raspberry Pi Imager
 
 Download from **raspberrypi.com/software** (Windows, macOS, Linux).
+
+> If your laptop has no SD-card slot — common on recent ultrabooks and every modern MacBook — plug in a **USB microSD reader** now. The card itself ships with a full-size SD adapter, but that only helps you if the host has a full-size SD slot.
 
 ### 4.2 Flash
 
@@ -686,6 +692,13 @@ Only Claude (and your chosen TTS, if cloud) runs in the cloud. Everything else c
 ---
 
 ## Update Notes
+
+### 2026.05.20k
+
+- **"Before you start" callout.** Added explicit prerequisites near the top — host computer, microSD reader caveat (the SanDisk Ultra ships with a full-size SD adapter only — no USB reader; most modern laptops lack any SD slot), 2.4 GHz Wi-Fi requirement (the Pi Zero 2 W has no 5 GHz radio), regional note for the smart-plug options, and a stock-check pointer to rpilocator.com for the Pi Zero 2 WH.
+- **WonderEcho cable confirmation.** Hiwonder's packing list confirms the 4-pin Dupont cable ships in the WonderEcho box — added that fact to the part card spec table, the assembly step, and the prerequisites callout so builders don't go hunting for jumper wires.
+- **Store-link refresh.** Replaced three broken or stale "Official" URLs in the parts catalog: TP-Link Kasa HS103 (the old slug now 500s, swapped to `kasa-smart-wifi-mini-plug-hs103`), Shelly Plug US (the old URL 404s — moved to the current Gen 4 product at `us.shelly.com`), and the Pi Hut power-supply page (redirected to its homepage — swapped to the power-supply collection page so it survives future SKU rotation).
+- **Prices refreshed (2026-05-22):** Pi Zero 2 WH $22 → $20, PSU $10 → $9, WonderEcho $25 → $24, Sonoff S31 $13 → $10. Desktop total now ~$62, portable ~$102.
 
 ### 2026.05.20a
 

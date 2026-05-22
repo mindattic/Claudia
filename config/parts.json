@@ -2,7 +2,7 @@
   "_description": "Parts catalog for the Claudia build. Each part has a 'searchFor' Google Shopping URL plus at least 3 direct tier links (amazon -> official -> reputable). The 'find-deals' console command opens these in order so you can pick the best price; 'apply-deals' stamps the chosen URL back into Claudia.md by replacing 'match' with a Markdown link. Prices are NON-AUTHORITATIVE estimates - they go stale fast. Refresh by querying current Google Shopping results (per part) and updating both 'price' (USD, integer dollars) and 'pricesAsOf' (date last verified, top-level).",
   "_priorityOrder": ["amazon", "official", "reputable"],
 
-  "pricesAsOf": "2026-05-20",
+  "pricesAsOf": "2026-05-22",
   "pricesNote": "Approximate USD retail at the date above. Click any part card to verify against current Google Shopping results.",
 
   "categories": {
@@ -17,8 +17,8 @@
       "category": "core",
       "name": "Raspberry Pi Zero 2 WH",
       "match": "**Raspberry Pi Zero 2 WH**",
-      "price": 22,
-      "note": "Must be the WH (with pre-soldered headers). The plain W has no GPIO pins and would need 40 pins soldered before the WonderEcho's 4-pin cable can connect. Most retailers list WH as a dropdown variant of the W product page — pick 'with headers' before adding to cart.",
+      "price": 20,
+      "note": "Must be the WH (with pre-soldered headers). The plain W has no GPIO pins and would need 40 pins soldered before the WonderEcho's 4-pin cable can connect. Most retailers list WH as a dropdown variant of the W product page — pick 'with headers' before adding to cart. Supply is intermittent — if all US retailers show out-of-stock, rpilocator.com tracks live availability.",
       "specs": [
         { "label": "SKU",       "value": "SC0511 (RPi Foundation) · Adafruit 6008 · SparkFun DEV-26256" },
         { "label": "CPU",       "value": "Quad-core Arm Cortex-A53 @ 1 GHz, 64-bit ARMv8" },
@@ -45,11 +45,13 @@
       "name": "microSD card, 32 GB Class 10 (SanDisk Ultra)",
       "match": "**microSD card, 32 GB Class 10** (SanDisk Ultra or equivalent)",
       "price": 9,
+      "note": "Ships with a full-size SD-card adapter only — no USB reader. If your laptop has no SD slot (most modern ultrabooks/MacBooks don't), grab a USB microSD reader too (~$8).",
       "specs": [
         { "label": "SKU",      "value": "SDSQUA4-032G-AN6MA (SanDisk Ultra microSDHC 32 GB)" },
         { "label": "Capacity", "value": "32 GB" },
         { "label": "Speed",    "value": "Class 10, UHS-I U1, A1 app-rated · up to 120 MB/s read" },
         { "label": "Used for", "value": "Raspberry Pi OS 64-bit (full image) — flashed in Part 04 via Raspberry Pi Imager" },
+        { "label": "In the box", "value": "microSD card + full-size SD adapter. No USB reader included." },
         { "label": "Substitutes", "value": "Any reputable 32 GB Class 10 / A1 microSD works (Samsung EVO Plus, Kingston Canvas Select, etc.)" }
       ],
       "imageFile": "part-images/microsd-32gb.png",
@@ -67,8 +69,8 @@
       "category": "core",
       "name": "Official Raspberry Pi 12.5W micro-USB power supply (5V/2.5A)",
       "match": "**Official Raspberry Pi 12.5W micro-USB power supply (5V/2.5A)**",
-      "price": 10,
-      "note": "The Pi Zero 2 WH is micro-USB, NOT USB-C. A USB-C-only PSU will not fit. Plugs into the corner port labeled “PWR IN” on the silkscreen, not the middle “USB” port.",
+      "price": 9,
+      "note": "The Pi Zero 2 WH is micro-USB, NOT USB-C. A USB-C-only PSU will not fit. Plugs into the corner port labeled “PWR IN” on the silkscreen, not the middle “USB” port. Any clean 5 V / 2.5 A micro-USB supply works — the official one is recommended because it has a thick captive cable and won't brown out under load.",
       "specs": [
         { "label": "Output",    "value": "5.1 V / 2.5 A DC (12.5 W nominal, 12.75 W actual)" },
         { "label": "Connector", "value": "micro-USB-B (captive) — NOT USB-C" },
@@ -82,7 +84,7 @@
       "tiers": [
         { "tier": "amazon",    "url": "https://www.amazon.com/s?k=official+raspberry+pi+power+supply+12.5W+micro+usb&s=price-asc-rank" },
         { "tier": "official",  "url": "https://www.raspberrypi.com/products/micro-usb-power-supply/" },
-        { "tier": "reputable", "url": "https://thepihut.com/products/raspberry-pi-universal-power-supply" },
+        { "tier": "reputable", "url": "https://thepihut.com/collections/raspberry-pi-power-supplies" },
         { "tier": "reputable", "url": "https://www.adafruit.com/product/1995" }
       ]
     },
@@ -128,7 +130,7 @@
       "searchFor": "https://www.google.com/search?udm=28&q=TP-Link+Kasa+HS103+smart+plug",
       "tiers": [
         { "tier": "amazon",    "url": "https://www.amazon.com/s?k=tp-link+kasa+hs103+smart+plug&s=price-asc-rank" },
-        { "tier": "official",  "url": "https://www.kasasmart.com/us/products/smart-plugs/kasa-smart-wi-fi-plug-mini-hs103" },
+        { "tier": "official",  "url": "https://www.kasasmart.com/us/products/smart-plugs/kasa-smart-wifi-mini-plug-hs103" },
         { "tier": "reputable", "url": "https://www.bestbuy.com/site/searchpage.jsp?st=tp-link+kasa+smart+plug" },
         { "tier": "reputable", "url": "https://www.target.com/s?searchTerm=tp-link+kasa+smart+plug" }
       ]
@@ -140,18 +142,18 @@
       "match": "**Shelly Plug US smart plug**",
       "price": 20,
       "when": { "smarthome": "shelly" },
-      "note": "REST endpoint at http://<ip>/relay/0?turn=on — Claudia can flip it with a single curl. No vendor account needed.",
+      "note": "REST endpoint at http://<ip>/relay/0?turn=on — Claudia can flip it with a single curl. No vendor account needed. Current model is Shelly Plug US Gen4; the legacy /relay/ endpoint still works alongside the new /rpc/ JSON-RPC.",
       "specs": [
-        { "label": "Generation","value": "Current “Shelly Plug US” (Gen 2 firmware family — exposes both the new /rpc/ JSON-RPC and the legacy /relay/ endpoints)" },
+        { "label": "Generation","value": "Shelly Plug US Gen4 (current model) — exposes the new /rpc/ JSON-RPC and the legacy /relay/ endpoints" },
         { "label": "Max load",  "value": "12 A continuous / 15 A peak (1440 W @ 120 VAC)" },
         { "label": "Wi-Fi",     "value": "2.4 GHz · 802.11 b/g/n" },
         { "label": "Local API", "value": "HTTP REST + MQTT + WebSocket. Guide uses GET /relay/0?turn=on|off (works on every Shelly generation)." },
         { "label": "Extras",    "value": "On-board energy metering · no vendor account needed for local control" }
       ],
-      "searchFor": "https://www.google.com/search?udm=28&q=Shelly+Plug+US",
+      "searchFor": "https://www.google.com/search?udm=28&q=Shelly+Plug+US+Gen4",
       "tiers": [
-        { "tier": "amazon",    "url": "https://www.amazon.com/s?k=shelly+plug+us&s=price-asc-rank" },
-        { "tier": "official",  "url": "https://www.shelly.com/products/shop/shelly-plug-us" },
+        { "tier": "amazon",    "url": "https://www.amazon.com/s?k=shelly+plug+us+gen4&s=price-asc-rank" },
+        { "tier": "official",  "url": "https://us.shelly.com/products/shelly-plug-us-gen4-black" },
         { "tier": "reputable", "url": "https://www.aliexpress.us/wholesale-shelly-plug-us.html" }
       ]
     },
@@ -160,9 +162,11 @@
       "category": "core",
       "name": "Hiwonder WonderEcho voice module (I2C wake-word frontend)",
       "match": "**Hiwonder WonderEcho voice module**",
-      "price": 25,
+      "price": 24,
+      "note": "Ships with the 4-pin Dupont cable used to connect to the Pi's GPIO header — no extra wires to buy. Verify the box contains 1× WonderEcho + 1× 4-pin cable before assembling.",
       "specs": [
         { "label": "SKU",        "value": "Hiwonder 21090150 · Amazon ASIN B0F7RR983M" },
+        { "label": "In the box", "value": "1× WonderEcho module + 1× 4-pin Dupont cable (per Hiwonder packing list)" },
         { "label": "Voice chip", "value": "CI1302 (on-device CNN wake-word + recognition firmware)" },
         { "label": "Interface",  "value": "I²C bus 1, default address 0x52 — verify with “i2cdetect -y 1”" },
         { "label": "Connector",  "value": "4-pin cable: SDA → BCM 2 (pin 3), SCL → BCM 3 (pin 5), 5V → pin 2, GND → pin 6" },
@@ -186,7 +190,7 @@
       "category": "smarthome",
       "name": "Sonoff S31 (re-flashable with Tasmota for local MQTT control)",
       "match": "**Sonoff S31 smart plug**",
-      "price": 13,
+      "price": 10,
       "when": { "smarthome": "sonoff" },
       "note": "Out-of-the-box uses the eWeLink cloud; flash with Tasmota to get fully local MQTT/HTTP control. Pick the S31 (with energy monitoring) — NOT the S31 Lite, which omits the power meter.",
       "specs": [

@@ -1,4 +1,3 @@
-﻿<!-- Last Updated: 2026-05-21T04:18:02Z -->
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
@@ -370,11 +369,10 @@ img { max-width: 100%; height: auto; border-radius: 6px; }
   overflow: hidden;
   text-decoration: none;
   color: inherit;
-  transition: border-color 0.18s, box-shadow 0.18s;
+  transition: box-shadow 0.18s;
   box-shadow: var(--shadow);
 }
 .part-card:hover {
-  border-color: var(--accent);
   text-decoration: none;
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.10);
 }
@@ -548,8 +546,14 @@ img { max-width: 100%; height: auto; border-radius: 6px; }
 <blockquote>
 <p><strong>WH, not W.</strong> The WonderEcho connects to four GPIO pins (SDA / SCL / 5V / GND), so the build needs the <strong>WH</strong> variant with pre-soldered headers. Buying the plain &quot;W&quot; means soldering 40 pins yourself before anything works.</p>
 </blockquote>
+<blockquote>
+<p><strong>Before you start, gather:</strong> a Windows / macOS / Linux computer to flash the microSD and SSH in, a way to plug a microSD into it (the SanDisk Ultra ships with a full-size SD adapter but no USB reader — most modern ultrabooks and MacBooks need a USB microSD reader, ~$8), and a <strong>2.4 GHz</strong> Wi-Fi network (the Pi Zero 2 W has no 5 GHz radio). The smart-plug options below are US-outlet variants — if you&#39;re outside North America, Shelly and Kasa have EU/UK equivalents that work with the same local API. <strong>No soldering iron needed</strong>, and <strong>no extra jumper wires</strong> — the WonderEcho ships with the 4-pin Dupont cable already.</p>
+</blockquote>
+<blockquote>
+<p><strong>Stock check.</strong> The Pi Zero 2 WH is supply-constrained; if all the US retailers on the cards below show out-of-stock, <a href="https://rpilocator.com">rpilocator.com</a> tracks live availability across the official reseller network.</p>
+</blockquote>
 <p><a href="https://github.com/mindattic/Claudia">github.com/mindattic/Claudia</a></p>
-<p><em>Last updated: 2026.05.20h</em></p>
+<p><em>Last updated: 2026.05.20k</em></p>
 <hr>
 <h2 id="01-configure">01. Configure <a class="heading-anchor" href="#01-configure" aria-label="link to this section">#</a></h2>
 <div class="config-widget" id="config-widget">
@@ -586,14 +590,14 @@ img { max-width: 100%; height: auto; border-radius: 6px; }
 <div class="parts-category">
 <h3 id="gallery-core">core <span class="part-cat-blurb">— Required for every build.</span></h3>
 <div class="parts-grid">
-<div class="part-card has-image" data-pid="pi-zero-2-wh" data-price="22">
+<div class="part-card has-image" data-pid="pi-zero-2-wh" data-price="20">
         <div class="part-image" aria-hidden="true"></div>
         <div class="part-body">
           <div class="part-name">Raspberry Pi Zero 2 WH</div>
-          <div class="part-price">~$22</div>
+          <div class="part-price">~$20</div>
           <dl class="part-specs"><dt>SKU</dt><dd>SC0511 (RPi Foundation) · Adafruit 6008 · SparkFun DEV-26256</dd><dt>Wireless</dt><dd>Wi-Fi 802.11 b/g/n 2.4 GHz · Bluetooth 4.2 / BLE</dd><dt>CPU</dt><dd>Quad-core Arm Cortex-A53 @ 1 GHz, 64-bit ARMv8</dd><dt>GPIO</dt><dd>40-pin pre-soldered header (the “H” suffix)</dd><dt>SoC</dt><dd>Raspberry Pi RP3A0 SiP (Broadcom BCM2710A1 die)</dd><dt>Power in</dt><dd>5 V via micro-USB (the corner port labeled “PWR IN”)</dd><dt>RAM</dt><dd>512 MB LPDDR2</dd><dt>Form</dt><dd>65 × 30 mm</dd></dl>
           <div class="part-links"><span class="part-links-label">Buy:</span><a class="part-link" href="https://www.google.com/search?udm=28&amp;q=Raspberry+Pi+Zero+2+WH+with+headers" target="_blank" rel="noopener noreferrer">Google</a><a class="part-link" href="https://www.adafruit.com/product/6008" target="_blank" rel="noopener noreferrer">Reputable #1</a><a class="part-link" href="https://www.sparkfun.com/raspberry-pi-zero-2-w-with-headers.html" target="_blank" rel="noopener noreferrer">Reputable #2</a><a class="part-link" href="https://www.pishop.us/product/raspberry-pi-zero-2w-with-headers/" target="_blank" rel="noopener noreferrer">Reputable #3</a></div>
-          <div class="part-note">Must be the WH (with pre-soldered headers). The plain W has no GPIO pins and would need 40 pins soldered before the WonderEcho&#39;s 4-pin cable can connect. Most retailers list WH as a dropdown variant of the W product page — pick &#39;with headers&#39; before adding to cart.</div>
+          <div class="part-note">Must be the WH (with pre-soldered headers). The plain W has no GPIO pins and would need 40 pins soldered before the WonderEcho&#39;s 4-pin cable can connect. Most retailers list WH as a dropdown variant of the W product page — pick &#39;with headers&#39; before adding to cart. Supply is intermittent — if all US retailers show out-of-stock, rpilocator.com tracks live availability.</div>
         </div>
       </div>
 <div class="part-card has-image" data-pid="microsd-32gb" data-price="9">
@@ -601,29 +605,29 @@ img { max-width: 100%; height: auto; border-radius: 6px; }
         <div class="part-body">
           <div class="part-name">microSD card, 32 GB Class 10 (SanDisk Ultra)</div>
           <div class="part-price">~$9</div>
-          <dl class="part-specs"><dt>SKU</dt><dd>SDSQUA4-032G-AN6MA (SanDisk Ultra microSDHC 32 GB)</dd><dt>Used for</dt><dd>Raspberry Pi OS 64-bit (full image) — flashed in Part 04 via Raspberry Pi Imager</dd><dt>Capacity</dt><dd>32 GB</dd><dt>Substitutes</dt><dd>Any reputable 32 GB Class 10 / A1 microSD works (Samsung EVO Plus, Kingston Canvas Select, etc.)</dd><dt>Speed</dt><dd>Class 10, UHS-I U1, A1 app-rated · up to 120 MB/s read</dd></dl>
+          <dl class="part-specs"><dt>SKU</dt><dd>SDSQUA4-032G-AN6MA (SanDisk Ultra microSDHC 32 GB)</dd><dt>Used for</dt><dd>Raspberry Pi OS 64-bit (full image) — flashed in Part 04 via Raspberry Pi Imager</dd><dt>Capacity</dt><dd>32 GB</dd><dt>In the box</dt><dd>microSD card + full-size SD adapter. No USB reader included.</dd><dt>Speed</dt><dd>Class 10, UHS-I U1, A1 app-rated · up to 120 MB/s read</dd><dt>Substitutes</dt><dd>Any reputable 32 GB Class 10 / A1 microSD works (Samsung EVO Plus, Kingston Canvas Select, etc.)</dd></dl>
           <div class="part-links"><span class="part-links-label">Buy:</span><a class="part-link" href="https://shop.sandisk.com/products/memory-cards/microsd-cards/sandisk-ultra-uhs-i-microsd?sku=SDSQUA4-032G-AN6MA" target="_blank" rel="noopener noreferrer">Official</a><a class="part-link" href="https://www.google.com/search?udm=28&amp;q=SanDisk+Ultra+32GB+microSD" target="_blank" rel="noopener noreferrer">Google</a><a class="part-link" href="https://www.bhphotovideo.com/c/search?Ntt=sandisk+ultra+microsd+32gb&amp;N=0&amp;InitialSearch=yes" target="_blank" rel="noopener noreferrer">Reputable #1</a><a class="part-link" href="https://www.newegg.com/p/pl?d=sandisk+ultra+32gb+microsd" target="_blank" rel="noopener noreferrer">Reputable #2</a></div>
-          
+          <div class="part-note">Ships with a full-size SD-card adapter only — no USB reader. If your laptop has no SD slot (most modern ultrabooks/MacBooks don&#39;t), grab a USB microSD reader too (~$8).</div>
         </div>
       </div>
-<div class="part-card has-image" data-pid="pi-power-supply" data-price="10">
+<div class="part-card has-image" data-pid="pi-power-supply" data-price="9">
         <div class="part-image" aria-hidden="true"></div>
         <div class="part-body">
           <div class="part-name">Official Raspberry Pi 12.5W micro-USB power supply (5V/2.5A)</div>
-          <div class="part-price">~$10</div>
-          <dl class="part-specs"><dt>Output</dt><dd>5.1 V / 2.5 A DC (12.5 W nominal, 12.75 W actual)</dd><dt>Plugs into</dt><dd>Pi Zero 2 W “PWR IN” port (corner micro-USB, not the middle “USB” port)</dd><dt>Connector</dt><dd>micro-USB-B (captive) — NOT USB-C</dd><dt>Regions</dt><dd>US / UK / EU / AU / IN plug variants — pick at retailer checkout</dd><dt>Cable</dt><dd>1.5 m, 18 AWG</dd></dl>
-          <div class="part-links"><span class="part-links-label">Buy:</span><a class="part-link" href="https://www.raspberrypi.com/products/micro-usb-power-supply/" target="_blank" rel="noopener noreferrer">Official</a><a class="part-link" href="https://www.google.com/search?udm=28&amp;q=Raspberry+Pi+12.5W+micro-USB+power+supply" target="_blank" rel="noopener noreferrer">Google</a><a class="part-link" href="https://thepihut.com/products/raspberry-pi-universal-power-supply" target="_blank" rel="noopener noreferrer">Reputable #1</a><a class="part-link" href="https://www.adafruit.com/product/1995" target="_blank" rel="noopener noreferrer">Reputable #2</a></div>
-          <div class="part-note">The Pi Zero 2 W is micro-USB, NOT USB-C. A USB-C-only PSU will not fit. Plugs into the corner port labeled “PWR IN” on the silkscreen, not the middle “USB” port.</div>
+          <div class="part-price">~$9</div>
+          <dl class="part-specs"><dt>Output</dt><dd>5.1 V / 2.5 A DC (12.5 W nominal, 12.75 W actual)</dd><dt>Plugs into</dt><dd>Pi Zero 2 WH “PWR IN” port (corner micro-USB, not the middle “USB” port)</dd><dt>Connector</dt><dd>micro-USB-B (captive) — NOT USB-C</dd><dt>Regions</dt><dd>US / UK / EU / AU / IN plug variants — pick at retailer checkout</dd><dt>Cable</dt><dd>1.5 m, 18 AWG</dd></dl>
+          <div class="part-links"><span class="part-links-label">Buy:</span><a class="part-link" href="https://www.raspberrypi.com/products/micro-usb-power-supply/" target="_blank" rel="noopener noreferrer">Official</a><a class="part-link" href="https://www.google.com/search?udm=28&amp;q=Raspberry+Pi+12.5W+micro-USB+power+supply" target="_blank" rel="noopener noreferrer">Google</a><a class="part-link" href="https://thepihut.com/collections/raspberry-pi-power-supplies" target="_blank" rel="noopener noreferrer">Reputable #1</a><a class="part-link" href="https://www.adafruit.com/product/1995" target="_blank" rel="noopener noreferrer">Reputable #2</a></div>
+          <div class="part-note">The Pi Zero 2 WH is micro-USB, NOT USB-C. A USB-C-only PSU will not fit. Plugs into the corner port labeled “PWR IN” on the silkscreen, not the middle “USB” port. Any clean 5 V / 2.5 A micro-USB supply works — the official one is recommended because it has a thick captive cable and won&#39;t brown out under load.</div>
         </div>
       </div>
-<div class="part-card has-image" data-pid="hiwonder-wonderecho" data-price="25">
+<div class="part-card has-image" data-pid="hiwonder-wonderecho" data-price="24">
         <div class="part-image" aria-hidden="true"></div>
         <div class="part-body">
           <div class="part-name">Hiwonder WonderEcho voice module (I2C wake-word frontend)</div>
-          <div class="part-price">~$25</div>
-          <dl class="part-specs"><dt>SKU</dt><dd>Hiwonder 21090150 · Amazon ASIN B0F7RR983M</dd><dt>Memory</dt><dd>2 MB Flash, 640 KB SRAM</dd><dt>Voice chip</dt><dd>CI1302 (on-device CNN wake-word + recognition firmware)</dd><dt>Range</dt><dd>~5 m quiet / ~1 m noisy · up to 255 phrases</dd><dt>Interface</dt><dd>I²C bus 1, default address 0x52 — verify with “i2cdetect -y 1”</dd><dt>Size</dt><dd>48 × 24 × 10.5 mm, 10 g</dd><dt>Connector</dt><dd>4-pin cable: SDA → BCM 2 (pin 3), SCL → BCM 3 (pin 5), 5V → pin 2, GND → pin 6</dd><dt>Languages</dt><dd>English + Chinese</dd><dt>On-board</dt><dd>Microphone (noise-reducing) + speaker + red/blue status LEDs</dd></dl>
+          <div class="part-price">~$24</div>
+          <dl class="part-specs"><dt>SKU</dt><dd>Hiwonder 21090150 · Amazon ASIN B0F7RR983M</dd><dt>On-board</dt><dd>Microphone (noise-reducing) + speaker + red/blue status LEDs</dd><dt>In the box</dt><dd>1× WonderEcho module + 1× 4-pin Dupont cable (per Hiwonder packing list)</dd><dt>Memory</dt><dd>2 MB Flash, 640 KB SRAM</dd><dt>Voice chip</dt><dd>CI1302 (on-device CNN wake-word + recognition firmware)</dd><dt>Range</dt><dd>~5 m quiet / ~1 m noisy · up to 255 phrases</dd><dt>Interface</dt><dd>I²C bus 1, default address 0x52 — verify with “i2cdetect -y 1”</dd><dt>Size</dt><dd>48 × 24 × 10.5 mm, 10 g</dd><dt>Connector</dt><dd>4-pin cable: SDA → BCM 2 (pin 3), SCL → BCM 3 (pin 5), 5V → pin 2, GND → pin 6</dd><dt>Languages</dt><dd>English + Chinese</dd></dl>
           <div class="part-links"><span class="part-links-label">Buy:</span><a class="part-link" href="https://www.hiwonder.com/products/wonderecho" target="_blank" rel="noopener noreferrer">Official</a><a class="part-link" href="https://www.google.com/search?udm=28&amp;q=Hiwonder+WonderEcho+voice+module" target="_blank" rel="noopener noreferrer">Google</a><a class="part-link" href="https://thinkrobotics.com/products/hiwonder-wonderecho-ai-voice-recognition-module" target="_blank" rel="noopener noreferrer">Reputable #1</a></div>
-          
+          <div class="part-note">Ships with the 4-pin Dupont cable used to connect to the Pi&#39;s GPIO header — no extra wires to buy. Verify the box contains 1× WonderEcho + 1× 4-pin cable before assembling.</div>
         </div>
       </div>
 </div>
@@ -652,7 +656,7 @@ img { max-width: 100%; height: auto; border-radius: 6px; }
           <div class="part-name">TP-Link Kasa HS103 / KP125M smart plug (local control via python-kasa)</div>
           <div class="part-price">~$10</div>
           <dl class="part-specs"><dt>Model</dt><dd>HS103 (single) / HS103P2 (2-pack). KP125M is the newer Matter-capable equivalent and also works with python-kasa.</dd><dt>Form</dt><dd>“Mini” single outlet, 66.5 × 40 × 38 mm</dd><dt>Max load</dt><dd>10 A resistive @ 120 VAC (1200 W typical, general-use rating)</dd><dt>Local API</dt><dd>TP-Link Smart Home LAN protocol — “kasa --host &lt;ip&gt; on/off” via python-kasa, no Kasa cloud account required</dd><dt>Wi-Fi</dt><dd>2.4 GHz only · 802.11 b/g/n (Pi Zero 2 W also 2.4 GHz only)</dd></dl>
-          <div class="part-links"><span class="part-links-label">Buy:</span><a class="part-link" href="https://www.kasasmart.com/us/products/smart-plugs/kasa-smart-wi-fi-plug-mini-hs103" target="_blank" rel="noopener noreferrer">Official</a><a class="part-link" href="https://www.google.com/search?udm=28&amp;q=TP-Link+Kasa+HS103+smart+plug" target="_blank" rel="noopener noreferrer">Google</a><a class="part-link" href="https://www.bestbuy.com/site/searchpage.jsp?st=tp-link+kasa+smart+plug" target="_blank" rel="noopener noreferrer">Reputable #1</a><a class="part-link" href="https://www.target.com/s?searchTerm=tp-link+kasa+smart+plug" target="_blank" rel="noopener noreferrer">Reputable #2</a></div>
+          <div class="part-links"><span class="part-links-label">Buy:</span><a class="part-link" href="https://www.kasasmart.com/us/products/smart-plugs/kasa-smart-wifi-mini-plug-hs103" target="_blank" rel="noopener noreferrer">Official</a><a class="part-link" href="https://www.google.com/search?udm=28&amp;q=TP-Link+Kasa+HS103+smart+plug" target="_blank" rel="noopener noreferrer">Google</a><a class="part-link" href="https://www.bestbuy.com/site/searchpage.jsp?st=tp-link+kasa+smart+plug" target="_blank" rel="noopener noreferrer">Reputable #1</a><a class="part-link" href="https://www.target.com/s?searchTerm=tp-link+kasa+smart+plug" target="_blank" rel="noopener noreferrer">Reputable #2</a></div>
           <div class="part-note">Works locally over the LAN with the python-kasa library — no cloud round-trip. Tell Claudia &#39;turn on the living room&#39; and a one-line shell call flips it.</div>
         </div>
       </div>
@@ -661,16 +665,16 @@ img { max-width: 100%; height: auto; border-radius: 6px; }
         <div class="part-body">
           <div class="part-name">Shelly Plug US (local HTTP / MQTT, no cloud required)</div>
           <div class="part-price">~$20</div>
-          <dl class="part-specs"><dt>Generation</dt><dd>Current “Shelly Plug US” (Gen 2 firmware family — exposes both the new /rpc/ JSON-RPC and the legacy /relay/ endpoints)</dd><dt>Local API</dt><dd>HTTP REST + MQTT + WebSocket. Guide uses GET /relay/0?turn=on|off (works on every Shelly generation).</dd><dt>Max load</dt><dd>12 A continuous / 15 A peak (1440 W @ 120 VAC)</dd><dt>Extras</dt><dd>On-board energy metering · no vendor account needed for local control</dd><dt>Wi-Fi</dt><dd>2.4 GHz · 802.11 b/g/n</dd></dl>
-          <div class="part-links"><span class="part-links-label">Buy:</span><a class="part-link" href="https://www.shelly.com/products/shop/shelly-plug-us" target="_blank" rel="noopener noreferrer">Official</a><a class="part-link" href="https://www.google.com/search?udm=28&amp;q=Shelly+Plug+US" target="_blank" rel="noopener noreferrer">Google</a><a class="part-link" href="https://www.aliexpress.us/wholesale-shelly-plug-us.html" target="_blank" rel="noopener noreferrer">Reputable #1</a></div>
-          <div class="part-note">REST endpoint at http://&lt;ip&gt;/relay/0?turn=on — Claudia can flip it with a single curl. No vendor account needed.</div>
+          <dl class="part-specs"><dt>Generation</dt><dd>Shelly Plug US Gen4 (current model) — exposes the new /rpc/ JSON-RPC and the legacy /relay/ endpoints</dd><dt>Local API</dt><dd>HTTP REST + MQTT + WebSocket. Guide uses GET /relay/0?turn=on|off (works on every Shelly generation).</dd><dt>Max load</dt><dd>12 A continuous / 15 A peak (1440 W @ 120 VAC)</dd><dt>Extras</dt><dd>On-board energy metering · no vendor account needed for local control</dd><dt>Wi-Fi</dt><dd>2.4 GHz · 802.11 b/g/n</dd></dl>
+          <div class="part-links"><span class="part-links-label">Buy:</span><a class="part-link" href="https://us.shelly.com/products/shelly-plug-us-gen4-black" target="_blank" rel="noopener noreferrer">Official</a><a class="part-link" href="https://www.google.com/search?udm=28&amp;q=Shelly+Plug+US+Gen4" target="_blank" rel="noopener noreferrer">Google</a><a class="part-link" href="https://www.aliexpress.us/wholesale-shelly-plug-us.html" target="_blank" rel="noopener noreferrer">Reputable #1</a></div>
+          <div class="part-note">REST endpoint at http://&lt;ip&gt;/relay/0?turn=on — Claudia can flip it with a single curl. No vendor account needed. Current model is Shelly Plug US Gen4; the legacy /relay/ endpoint still works alongside the new /rpc/ JSON-RPC.</div>
         </div>
       </div>
-<div class="part-card when" data-pid="sonoff-s31" data-when-smarthome="sonoff" data-price="13">
+<div class="part-card when" data-pid="sonoff-s31" data-when-smarthome="sonoff" data-price="10">
         
         <div class="part-body">
           <div class="part-name">Sonoff S31 (re-flashable with Tasmota for local MQTT control)</div>
-          <div class="part-price">~$13</div>
+          <div class="part-price">~$10</div>
           <dl class="part-specs"><dt>Model</dt><dd>S31 (with power monitoring) — NOT S31 Lite</dd><dt>Stock firmware</dt><dd>eWeLink (cloud-dependent — does NOT meet the “local only” goal as-shipped)</dd><dt>MCU</dt><dd>Espressif ESP8266</dd><dt>Re-flashable</dt><dd>Yes — Tasmota via serial header inside the case (no soldering needed for the S31)</dd><dt>Energy chip</dt><dd>CSE7766 (UART-attached power meter on GPIO01/03)</dd><dt>Reference</dt><dd>Tasmota template + flash steps: templates.blakadder.com/sonoff_S31.html</dd><dt>Max load</dt><dd>15 A / 1800 W @ 120 VAC</dd></dl>
           <div class="part-links"><span class="part-links-label">Buy:</span><a class="part-link" href="https://itead.cc/product/sonoff-s31/" target="_blank" rel="noopener noreferrer">Official</a><a class="part-link" href="https://www.google.com/search?udm=28&amp;q=Sonoff+S31+smart+plug" target="_blank" rel="noopener noreferrer">Google</a><a class="part-link" href="https://www.aliexpress.us/wholesale-sonoff-s31.html" target="_blank" rel="noopener noreferrer">Reputable #1</a><a class="part-link" href="https://templates.blakadder.com/sonoff_S31.html" target="_blank" rel="noopener noreferrer">Reputable #2</a></div>
           <div class="part-note">Out-of-the-box uses the eWeLink cloud; flash with Tasmota to get fully local MQTT/HTTP control. Pick the S31 (with energy monitoring) — NOT the S31 Lite, which omits the power meter.</div>
@@ -681,7 +685,7 @@ img { max-width: 100%; height: auto; border-radius: 6px; }
 <div class="parts-total" id="parts-total" aria-live="polite">
   <span class="parts-total-label">Your build estimate</span>
   <span class="parts-total-value" id="parts-total-value">~$0</span>
-  <span class="parts-total-asof">prices estimated 2026-05-20</span>
+  <span class="parts-total-asof">prices estimated 2026-05-22</span>
 </div>
 </div>
 
@@ -690,7 +694,7 @@ img { max-width: 100%; height: auto; border-radius: 6px; }
 <p><strong>Total time:</strong> ~3 minutes. No soldering.</p>
 <ol>
 <li><strong>Do not insert the microSD yet.</strong> Flash it first in section 04.</li>
-<li>Connect the WonderEcho to the Pi&#39;s I²C header pins via its 4-pin cable: <strong><code>SDA → BCM 2 (pin 3)</code></strong>, <strong><code>SCL → BCM 3 (pin 5)</code></strong>, <strong><code>5V → pin 2</code></strong>, <strong><code>GND → pin 6</code></strong>.</li>
+<li>Connect the WonderEcho to the Pi&#39;s I²C header pins via the <strong>4-pin Dupont cable that ships in the WonderEcho box</strong> (Hiwonder includes it — you should not need to source one separately): <strong><code>SDA → BCM 2 (pin 3)</code></strong>, <strong><code>SCL → BCM 3 (pin 5)</code></strong>, <strong><code>5V → pin 2</code></strong>, <strong><code>GND → pin 6</code></strong>.</li>
 <li>Make sure the WonderEcho&#39;s speaker face is unobstructed (it doubles as the mic intake).</li>
 </ol>
 <div class="when" data-when-battery="yes">
@@ -708,6 +712,9 @@ img { max-width: 100%; height: auto; border-radius: 6px; }
 <h2 id="04-flash-microsd">04. Flash microSD <a class="heading-anchor" href="#04-flash-microsd" aria-label="link to this section">#</a></h2>
 <h3 id="41-install-raspberry-pi-imager">4.1 Install Raspberry Pi Imager <a class="heading-anchor" href="#41-install-raspberry-pi-imager" aria-label="link to this section">#</a></h3>
 <p>Download from <strong>raspberrypi.com/software</strong> (Windows, macOS, Linux).</p>
+<blockquote>
+<p>If your laptop has no SD-card slot — common on recent ultrabooks and every modern MacBook — plug in a <strong>USB microSD reader</strong> now. The card itself ships with a full-size SD adapter, but that only helps you if the host has a full-size SD slot.</p>
+</blockquote>
 <h3 id="42-flash">4.2 Flash <a class="heading-anchor" href="#42-flash" aria-label="link to this section">#</a></h3>
 <ol>
 <li>Open Raspberry Pi Imager.</li>
@@ -1271,6 +1278,13 @@ journalctl -u chatbot.service -n 60 --no-pager
 <p>Only Claude (and your chosen TTS, if cloud) runs in the cloud. Everything else can run on-device.</p>
 <hr>
 <h2 id="update-notes">Update Notes <a class="heading-anchor" href="#update-notes" aria-label="link to this section">#</a></h2>
+<h3 id="20260520k">2026.05.20k <a class="heading-anchor" href="#20260520k" aria-label="link to this section">#</a></h3>
+<ul>
+<li><strong>&quot;Before you start&quot; callout.</strong> Added explicit prerequisites near the top — host computer, microSD reader caveat (the SanDisk Ultra ships with a full-size SD adapter only — no USB reader; most modern laptops lack any SD slot), 2.4 GHz Wi-Fi requirement (the Pi Zero 2 W has no 5 GHz radio), regional note for the smart-plug options, and a stock-check pointer to rpilocator.com for the Pi Zero 2 WH.</li>
+<li><strong>WonderEcho cable confirmation.</strong> Hiwonder&#39;s packing list confirms the 4-pin Dupont cable ships in the WonderEcho box — added that fact to the part card spec table, the assembly step, and the prerequisites callout so builders don&#39;t go hunting for jumper wires.</li>
+<li><strong>Store-link refresh.</strong> Replaced three broken or stale &quot;Official&quot; URLs in the parts catalog: TP-Link Kasa HS103 (the old slug now 500s, swapped to <code>kasa-smart-wifi-mini-plug-hs103</code>), Shelly Plug US (the old URL 404s — moved to the current Gen 4 product at <code>us.shelly.com</code>), and the Pi Hut power-supply page (redirected to its homepage — swapped to the power-supply collection page so it survives future SKU rotation).</li>
+<li><strong>Prices refreshed (2026-05-22):</strong> Pi Zero 2 WH $22 → $20, PSU $10 → $9, WonderEcho $25 → $24, Sonoff S31 $13 → $10. Desktop total now ~$62, portable ~$102.</li>
+</ul>
 <h3 id="20260520a">2026.05.20a <a class="heading-anchor" href="#20260520a" aria-label="link to this section">#</a></h3>
 <ul>
 <li><strong>Pi Zero 2 WH callout.</strong> Added a top-of-guide note clarifying the build needs the <strong>WH</strong> (with pre-soldered headers) variant — the plain &quot;W&quot; has no GPIO pins and would require 40 pins soldered before the WonderEcho&#39;s 4-pin cable can connect. The parts-catalog buy links now point at verified WH product pages (Sparkfun direct WH page; The Pi Hut and CanaKit pages that carry the WH variant) and the part card carries an inline reminder to pick &quot;with headers&quot; on retailers that list it as a dropdown variant. Dropped the Adafruit link since they don&#39;t currently stock the Pi Zero 2 WH.</li>
