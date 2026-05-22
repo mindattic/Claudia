@@ -1,8 +1,10 @@
 # deploy.ps1 - Claudia FTP deploy.
 #
-# 1. Regenerates Claudia.htm from Claudia.md (build-html.js).
-# 2. Stamps index.htm with a "Last Updated" comment.
-# 3. Uploads Claudia.md, Claudia.htm, and index.htm to the FTP target
+# 1. Pulls subscribed component CSS from the sibling MindAttic.Components
+#    repo into build-html.js via sync-claudia.ps1.
+# 2. Regenerates Claudia.htm from Claudia.md (build-html.js).
+# 3. Stamps index.htm with a "Last Updated" comment.
+# 4. Uploads Claudia.md, Claudia.htm, and index.htm to the FTP target
 #    (defaults to /mindattic.com/claudia/) via curl.exe.
 #
 # Credentials live in scripts/cli/deploy.settings.json (gitignored). Start from
@@ -10,7 +12,8 @@
 
 param (
     [string]$SettingsFile = "$PSScriptRoot\deploy.settings.json",
-    [switch]$NoBuild
+    [switch]$NoBuild,
+    [switch]$NoSync
 )
 
 Set-StrictMode -Version Latest
@@ -64,6 +67,31 @@ if (Test-Path $mdPath) {
         Write-Host "Bumped build: $oldDate$oldLetter -> $newVersion"
     } else {
         Write-Warning "No '*Last updated: YYYY.MM.DD<letter>*' line found in Claudia.md - skipping version bump."
+    }
+}
+
+# ---------------------------------------------------------------------------
+# Pull subscribed components from MindAttic.Components (skip with -NoSync if
+# you're deploying from a machine that doesn't have MindAttic.Components, or
+# you've already synced manually). The Components repo is expected as a
+# sibling of the Claudia repo (i.e. D:\Projects\MindAttic\MindAttic.Components
+# next to D:\Projects\MindAttic\Claudia); override by setting the
+# MINDATTIC_COMPONENTS_ROOT environment variable.
+# ---------------------------------------------------------------------------
+if (-not $NoSync) {
+    $componentsRoot = if ($env:MINDATTIC_COMPONENTS_ROOT) {
+        $env:MINDATTIC_COMPONENTS_ROOT
+    } else {
+        Join-Path (Split-Path -Parent $repoRoot) 'MindAttic.Components'
+    }
+    $syncScript = Join-Path $componentsRoot 'sync\sync-claudia.ps1'
+    if (-not (Test-Path $syncScript)) {
+        Write-Warning "MindAttic.Components sync script not found at: $syncScript"
+        Write-Warning "Skipping component sync. Set MINDATTIC_COMPONENTS_ROOT or pass -NoSync to silence this."
+    } else {
+        Write-Host "Syncing MindAttic.Components -> build-html.js ..."
+        & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $syncScript -ClaudiaRoot $repoRoot
+        if ($LASTEXITCODE -ne 0) { Write-Error "sync-claudia.ps1 failed (exit $LASTEXITCODE)" }
     }
 }
 

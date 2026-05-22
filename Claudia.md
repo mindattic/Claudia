@@ -10,7 +10,7 @@ Build your own always-on voice assistant in an afternoon — a Raspberry Pi Zero
 
 [github.com/mindattic/Claudia](https://github.com/mindattic/Claudia)
 
-*Last updated: 2026.05.22d*
+*Last updated: 2026.05.22f*
 
 ---
 
@@ -709,6 +709,10 @@ Only Claude (and your chosen TTS, if cloud) runs in the cloud. Everything else c
 ---
 
 ## Update Notes
+
+### 2026.05.22f
+
+- **`/deploy` now pulls MindAttic.Components first.** `scripts/cli/deploy.ps1` gained a sync stage between the version bump and the build: it invokes `MindAttic.Components/sync/sync-claudia.ps1` (looked up as a sibling of the Claudia repo, or overridden via `$env:MINDATTIC_COMPONENTS_ROOT`) to splice the latest subscribed component CSS (OutfitFont, AtticFont, BackHomeM) into `build-html.js` *before* `node build-html.js` runs. A new `-NoSync` switch skips it for machines that don't have the Components repo cloned, and a missing sibling folder produces a warning instead of a hard failure. The `.claude/commands/deploy.md` doc was updated to describe the new stage.
 
 ### 2026.05.22e
 

@@ -428,14 +428,14 @@ function renderTemplate({ title, body, toc, galleryHtml, configWidget, configAxe
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
-/* CSS custom property for ergonomic reuse. Consumers can write
+/* CSS custom property for ergonomic reuse. Subscribers can write
    "font-family: var(--font-outfit);" instead of repeating the full
    "'Outfit', system-ui, sans-serif" stack. Bare "font-family: Outfit;"
    (no quotes, no fallback) is a common gotcha that fails silently;
    the variable or the full stack are the reliable forms. */
 :root { --font-outfit: 'Outfit', system-ui, sans-serif; }
 
-/* applyToSelector for this consumer */
+/* applyToSelector for this subscriber */
 html, body { font-family: 'Outfit', system-ui, sans-serif; }
 
 /* == END MINDATTIC.COMPONENTS:OUTFITFONT.CSS == */
@@ -451,14 +451,14 @@ html, body { font-family: 'Outfit', system-ui, sans-serif; }
   font-display: swap;
 }
 
-/* CSS custom property for ergonomic reuse. Consumers can write
+/* CSS custom property for ergonomic reuse. Subscribers can write
    "font-family: var(--font-attic);" instead of repeating the full
    "'Attic', serif" stack. Bare "font-family: Attic;" is a common
    gotcha that fails silently; the variable or the full stack are
    the reliable forms. */
 :root { --font-attic: 'Attic', serif; }
 
-/* applyToSelector for this consumer */
+/* applyToSelector for this subscriber */
 #claudia { font-family: 'Attic', serif; }
 
 /* == END MINDATTIC.COMPONENTS:ATTICFONT.CSS == */
@@ -472,20 +472,20 @@ html, body { font-family: 'Outfit', system-ui, sans-serif; }
  * linking back to mindattic.com. Hosts opt in by adding an anchor of the
  * form <a class="back-home-m" href="https://mindattic.com">M</a> anywhere
  * inside the body. Requires AtticFont/ (the Attic @font-face) to also be
- * present in the consumer.
+ * present in the subscriber.
  * Avoid backticks and dollar-brace sequences in this file -- it gets
- * spliced into the JS template literals of build-html-js consumers
+ * spliced into the JS template literals of build-html-js subscribers
  * (Claudia, ChiMesh) where either would terminate or interpolate the literal.
  * Canonical source. DO NOT EDIT downstream copies - edit here and re-sync.
  * ==================================================================== */
 
 .back-home-m {
     position: fixed;
-    top: 8px;
-    left: 12px;
+    top: 5px;
+    left: 5px;
     z-index: 9999;
     font-family: 'Attic', serif;
-    font-size: 2.25rem;
+    font-size: 1.25rem;
     line-height: 1;
     color: inherit;
     text-decoration: none;
@@ -493,6 +493,10 @@ html, body { font-family: 'Outfit', system-ui, sans-serif; }
     cursor: pointer;
     user-select: none;
     transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.back-home-m::before {
+    content: '\\276E\\00a0M';
 }
 
 .back-home-m:hover,

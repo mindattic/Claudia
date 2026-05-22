@@ -1,4 +1,4 @@
-﻿<!-- Last Updated: 2026-05-22T17:33:45Z -->
+﻿<!-- Last Updated: 2026-05-22T18:32:48Z -->
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
@@ -27,14 +27,14 @@
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
-/* CSS custom property for ergonomic reuse. Consumers can write
+/* CSS custom property for ergonomic reuse. Subscribers can write
    "font-family: var(--font-outfit);" instead of repeating the full
    "'Outfit', system-ui, sans-serif" stack. Bare "font-family: Outfit;"
    (no quotes, no fallback) is a common gotcha that fails silently;
    the variable or the full stack are the reliable forms. */
 :root { --font-outfit: 'Outfit', system-ui, sans-serif; }
 
-/* applyToSelector for this consumer */
+/* applyToSelector for this subscriber */
 html, body { font-family: 'Outfit', system-ui, sans-serif; }
 
 /* == END MINDATTIC.COMPONENTS:OUTFITFONT.CSS == */
@@ -50,14 +50,14 @@ html, body { font-family: 'Outfit', system-ui, sans-serif; }
   font-display: swap;
 }
 
-/* CSS custom property for ergonomic reuse. Consumers can write
+/* CSS custom property for ergonomic reuse. Subscribers can write
    "font-family: var(--font-attic);" instead of repeating the full
    "'Attic', serif" stack. Bare "font-family: Attic;" is a common
    gotcha that fails silently; the variable or the full stack are
    the reliable forms. */
 :root { --font-attic: 'Attic', serif; }
 
-/* applyToSelector for this consumer */
+/* applyToSelector for this subscriber */
 #claudia { font-family: 'Attic', serif; }
 
 /* == END MINDATTIC.COMPONENTS:ATTICFONT.CSS == */
@@ -71,20 +71,20 @@ html, body { font-family: 'Outfit', system-ui, sans-serif; }
  * linking back to mindattic.com. Hosts opt in by adding an anchor of the
  * form <a class="back-home-m" href="https://mindattic.com">M</a> anywhere
  * inside the body. Requires AtticFont/ (the Attic @font-face) to also be
- * present in the consumer.
+ * present in the subscriber.
  * Avoid backticks and dollar-brace sequences in this file -- it gets
- * spliced into the JS template literals of build-html-js consumers
+ * spliced into the JS template literals of build-html-js subscribers
  * (Claudia, ChiMesh) where either would terminate or interpolate the literal.
  * Canonical source. DO NOT EDIT downstream copies - edit here and re-sync.
  * ==================================================================== */
 
 .back-home-m {
     position: fixed;
-    top: 8px;
-    left: 12px;
+    top: 5px;
+    left: 5px;
     z-index: 9999;
     font-family: 'Attic', serif;
-    font-size: 2.25rem;
+    font-size: 1.25rem;
     line-height: 1;
     color: inherit;
     text-decoration: none;
@@ -92,6 +92,10 @@ html, body { font-family: 'Outfit', system-ui, sans-serif; }
     cursor: pointer;
     user-select: none;
     transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.back-home-m::before {
+    content: '\276E\00a0M';
 }
 
 .back-home-m:hover,
@@ -327,6 +331,8 @@ img { max-width: 100%; height: auto; border-radius: 6px; }
    §  TOC (sticky sidebar on desktop, hidden on mobile)
    ────────────────────────────────────────────────────────────────────── */
 .toc {
+  position: absolute;
+  top: 60px;
   font-size: 0.9em;
   color: var(--text2);
   padding: 14px 16px 16px;
@@ -651,13 +657,13 @@ img { max-width: 100%; height: auto; border-radius: 6px; }
 <p><strong>WH, not W.</strong> The WonderEcho connects to four GPIO pins (SDA / SCL / 5V / GND), so the build needs the <strong>WH</strong> variant with pre-soldered headers. Buying the plain &quot;W&quot; means soldering 40 pins yourself before anything works.</p>
 </blockquote>
 <blockquote>
-<p><strong>Before you start, gather:</strong> a Windows / macOS / Linux computer to flash the microSD and SSH in, a way to plug a microSD into it (the SanDisk Ultra ships with a full-size SD adapter but no USB reader — most modern ultrabooks and MacBooks need a USB microSD reader, ~$8), and a <strong>2.4 GHz</strong> Wi-Fi network (the Pi Zero 2 WH has no 5 GHz radio). The smart-plug options below are US-outlet variants — if you&#39;re outside North America, Shelly and Kasa have EU/UK equivalents that work with the same local API. <strong>No soldering iron needed</strong>, and <strong>no extra jumper wires</strong> — the WonderEcho ships with the 4-pin Dupont cable already.</p>
+<p><strong>Before you start, gather:</strong> a Windows / macOS / Linux computer to flash the microSD and SSH in, a way to plug a microSD into it (the SanDisk Ultra ships with a full-size SD adapter but no USB reader — most modern ultrabooks and MacBooks need a USB microSD reader, ~$8), and a <strong>2.4 GHz</strong> Wi-Fi network (the Pi Zero 2 WH has no 5 GHz radio). The smart-plug options below ship with US plugs; each vendor (Kasa, Shelly, Sonoff) also sells EU/UK/AU variants that speak the same local API — pick your region at checkout. <strong>No soldering iron needed</strong>, and <strong>no extra jumper wires</strong> — the WonderEcho ships with the 4-pin Dupont cable already.</p>
 </blockquote>
 <blockquote>
 <p><strong>Stock check.</strong> The Pi Zero 2 WH is supply-constrained; if all the US retailers on the cards below show out-of-stock, <a href="https://rpilocator.com">rpilocator.com</a> tracks live availability across the official reseller network.</p>
 </blockquote>
 <p><a href="https://github.com/mindattic/Claudia">github.com/mindattic/Claudia</a></p>
-<p><em>Last updated: 2026.05.22d</em></p>
+<p><em>Last updated: 2026.05.22f</em></p>
 <hr>
 <h2 id="01-configure">01. Configure <a class="heading-anchor" href="#01-configure" aria-label="link to this section">#</a></h2>
 <div class="config-widget" id="config-widget">
@@ -860,7 +866,7 @@ img { max-width: 100%; height: auto; border-radius: 6px; }
 <h3 id="51-update">5.1 Update <a class="heading-anchor" href="#51-update" aria-label="link to this section">#</a></h3>
 <pre><code class="language-bash"><span class="hljs-built_in">sudo</span> apt update &amp;&amp; <span class="hljs-built_in">sudo</span> apt full-upgrade -y
 </code></pre>
-<p>This takes 5–15 minutes on a Pi Zero. Be patient.</p>
+<p>This takes 5–15 minutes on a Pi Zero 2 WH. Be patient.</p>
 <h3 id="52-free-up-ram-pi-zero-only-has-512-mb">5.2 Free up RAM (Pi Zero only has 512 MB) <a class="heading-anchor" href="#52-free-up-ram-pi-zero-only-has-512-mb" aria-label="link to this section">#</a></h3>
 <p>The Pi Zero 2 WH is RAM-constrained. Disable services you don&#39;t need:</p>
 <pre><code class="language-bash"><span class="hljs-comment"># Disable Bluetooth (not used by this build)</span>
@@ -1005,11 +1011,10 @@ nano .<span class="hljs-built_in">env</span>
 <p>ElevenLabs has the most natural voices on the market right now, but the upstream chatbot doesn&#39;t ship an ElevenLabs handler. You add one yourself — about 40 lines of TypeScript and a single registration entry.</p>
 <p><strong>Step 1 — handler.</strong> Create <code>~/whisplay-ai-chatbot/src/cloud-api/elevenlabs/elevenlabs-tts.ts</code> with:</p>
 <pre><code class="language-typescript"><span class="hljs-keyword">import</span> mp3Duration <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;mp3-duration&quot;</span>;
-<span class="hljs-keyword">import</span> dotenv <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;dotenv&quot;</span>;
 <span class="hljs-keyword">import</span> { <span class="hljs-title class_">TTSResult</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;../../type&quot;</span>;
 
-dotenv.<span class="hljs-title function_">config</span>();
-
+<span class="hljs-comment">// The chatbot already loads .env at startup, so process.env is populated</span>
+<span class="hljs-comment">// by the time this plugin&#x27;s activate() runs — no need to call dotenv here.</span>
 <span class="hljs-keyword">const</span> apiKey     = process.<span class="hljs-property">env</span>.<span class="hljs-property">ELEVENLABS_API_KEY</span>     || <span class="hljs-string">&quot;&quot;</span>;
 <span class="hljs-keyword">const</span> voiceId    = process.<span class="hljs-property">env</span>.<span class="hljs-property">ELEVENLABS_VOICE_ID</span>    || <span class="hljs-string">&quot;EXAVITQu4vr4xnSDxMaL&quot;</span>; <span class="hljs-comment">// &quot;Bella&quot;</span>
 <span class="hljs-keyword">const</span> modelId    = process.<span class="hljs-property">env</span>.<span class="hljs-property">ELEVENLABS_MODEL_ID</span>    || <span class="hljs-string">&quot;eleven_turbo_v2_5&quot;</span>;    <span class="hljs-comment">// low-latency</span>
@@ -1044,7 +1049,9 @@ dotenv.<span class="hljs-title function_">config</span>();
   }
   <span class="hljs-keyword">const</span> buffer = <span class="hljs-title class_">Buffer</span>.<span class="hljs-title function_">from</span>(<span class="hljs-keyword">await</span> res.<span class="hljs-title function_">arrayBuffer</span>());
   <span class="hljs-keyword">const</span> duration = <span class="hljs-keyword">await</span> <span class="hljs-title function_">mp3Duration</span>(buffer);
-  <span class="hljs-keyword">return</span> { buffer, <span class="hljs-attr">duration</span>: duration * <span class="hljs-number">1000</span> };
+  <span class="hljs-comment">// mp3-duration returns undefined if it can&#x27;t parse the stream; coerce to</span>
+  <span class="hljs-comment">// 0 so downstream code never sees NaN.</span>
+  <span class="hljs-keyword">return</span> { buffer, <span class="hljs-attr">duration</span>: (duration ?? <span class="hljs-number">0</span>) * <span class="hljs-number">1000</span> };
 };
 
 <span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> elevenLabsTTS;
@@ -1110,11 +1117,11 @@ PY
 <p>The chatbot service polls the WonderEcho&#39;s wake-event register over I²C and starts a recording session each time the word fires. No Python venv, no openWakeWord, no training.</p>
 <p>✅ <strong>Checkpoint:</strong> speak &quot;Claudia&quot; near the module — <code>journalctl -u chatbot.service -f</code> shows a wake event within ~300 ms.</p>
 <blockquote>
-<p>Hiwonder ships the module with a fixed register map; if your unit reports a different I²C address or uses a different &quot;set-trigger&quot; opcode, check the <a href="https://www.hiwonder.com/products/wonderecho">WonderEcho wiki</a> for your firmware revision.</p>
+<p>The exact register map can vary by firmware revision. If your unit reports a different I²C address (verify with <code>i2cdetect -y 1</code>) or uses a different &quot;set-trigger&quot; opcode, check the <a href="https://www.hiwonder.com/products/wonderecho">WonderEcho wiki</a> for the map matching your firmware.</p>
 </blockquote>
 <hr>
 <h2 id="09-healthcheck">09. Healthcheck <a class="heading-anchor" href="#09-healthcheck" aria-label="link to this section">#</a></h2>
-<p>Before launching the full chatbot, run a 90-second healthcheck that verifies every layer end-to-end: speaker, mic, network, Claude API.</p>
+<p>Before launching the full chatbot, run a 90-second healthcheck that verifies three layers: the WonderEcho is present on the I²C bus, the network can reach Anthropic, and your API key + chosen model actually return a response. (The audio path itself — speaker out, mic in — is exercised by the manual launch in Part 10.)</p>
 <p>Create the script:</p>
 <pre><code class="language-bash">nano ~/healthcheck.sh
 </code></pre>
@@ -1147,9 +1154,14 @@ step <span class="hljs-string">&quot;1. WonderEcho module on I2C&quot;</span>
 <span class="hljs-keyword">fi</span>
 
 step <span class="hljs-string">&quot;2. Network reachability&quot;</span>
-ping -c 1 -W 3 api.anthropic.com &gt;/dev/null 2&gt;&amp;1 \
-  &amp;&amp; ok <span class="hljs-string">&quot;api.anthropic.com is reachable&quot;</span> \
-  || bad <span class="hljs-string">&quot;cannot reach api.anthropic.com (Wi-Fi or DNS issue)&quot;</span>
+<span class="hljs-comment"># Use HTTPS instead of ping — many networks/APIs drop ICMP but pass TLS.</span>
+<span class="hljs-comment"># A 4xx response still proves we got a real reply from api.anthropic.com.</span>
+net_code=$(curl -sS -o /dev/null -w <span class="hljs-string">&#x27;%{http_code}&#x27;</span> --max-time 5 https://api.anthropic.com/ 2&gt;/dev/null || <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;000&quot;</span>)
+<span class="hljs-keyword">if</span> [ <span class="hljs-string">&quot;<span class="hljs-variable">$net_code</span>&quot;</span> != <span class="hljs-string">&quot;000&quot;</span> ]; <span class="hljs-keyword">then</span>
+  ok <span class="hljs-string">&quot;api.anthropic.com responded (HTTP <span class="hljs-variable">$net_code</span>)&quot;</span>
+<span class="hljs-keyword">else</span>
+  bad <span class="hljs-string">&quot;cannot reach api.anthropic.com (Wi-Fi, DNS, or TLS issue)&quot;</span>
+<span class="hljs-keyword">fi</span>
 
 step <span class="hljs-string">&quot;3. Claude API call&quot;</span>
 <span class="hljs-keyword">if</span> [ ! -f <span class="hljs-string">&quot;<span class="hljs-variable">$ENV_FILE</span>&quot;</span> ]; <span class="hljs-keyword">then</span>
@@ -1169,21 +1181,29 @@ step <span class="hljs-string">&quot;3. Claude API call&quot;</span>
     body=$(<span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;<span class="hljs-variable">$response</span>&quot;</span> | sed <span class="hljs-string">&#x27;$d&#x27;</span>)
     <span class="hljs-keyword">if</span> [ <span class="hljs-string">&quot;<span class="hljs-variable">$http_code</span>&quot;</span> = <span class="hljs-string">&quot;200&quot;</span> ]; <span class="hljs-keyword">then</span>
       ok <span class="hljs-string">&quot;Claude API responded HTTP 200&quot;</span>
-      <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;  Reply: <span class="hljs-subst">$(echo <span class="hljs-string">&quot;<span class="hljs-variable">$body</span>&quot;</span> | grep -o &#x27;<span class="hljs-string">&quot;text&quot;</span>:<span class="hljs-string">&quot;[^&quot;</span>]*<span class="hljs-string">&quot;&#x27; | head -1 | sed &#x27;s/&quot;</span>text<span class="hljs-string">&quot;:&quot;</span>//;s/<span class="hljs-string">&quot;$//&#x27;)&quot;</span>
-    else
+      <span class="hljs-comment"># Prefer jq if available — it handles escaped quotes correctly. Fall</span>
+      <span class="hljs-comment"># back to a grep+sed that breaks on escapes but is good enough for a</span>
+      <span class="hljs-comment"># smoke-test &quot;did Claude reply&quot; sanity check.</span>
+      <span class="hljs-keyword">if</span> <span class="hljs-built_in">command</span> -v jq &gt;/dev/null 2&gt;&amp;1; <span class="hljs-keyword">then</span>
+        reply=$(<span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;<span class="hljs-variable">$body</span>&quot;</span> | jq -r <span class="hljs-string">&#x27;.content[0].text // empty&#x27;</span> 2&gt;/dev/null)
+      <span class="hljs-keyword">else</span>
+        reply=$(<span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;<span class="hljs-variable">$body</span>&quot;</span> | grep -o <span class="hljs-string">&#x27;&quot;text&quot;:&quot;[^&quot;]*&quot;&#x27;</span> | <span class="hljs-built_in">head</span> -1 | sed <span class="hljs-string">&#x27;s/&quot;text&quot;:&quot;//;s/&quot;$//&#x27;</span>)
+      <span class="hljs-keyword">fi</span>
+      <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;  Reply: <span class="hljs-variable">$reply</span>&quot;</span>
+    <span class="hljs-keyword">else</span>
       bad <span class="hljs-string">&quot;Claude API returned HTTP <span class="hljs-variable">$http_code</span>&quot;</span>
-      echo <span class="hljs-string">&quot;  <span class="hljs-variable">$body</span>&quot;</span> | head -3
-    fi
-  fi
-fi
+      <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;  <span class="hljs-variable">$body</span>&quot;</span> | <span class="hljs-built_in">head</span> -3
+    <span class="hljs-keyword">fi</span>
+  <span class="hljs-keyword">fi</span>
+<span class="hljs-keyword">fi</span>
 
-echo
-if [ $exit_code -eq 0 ]; then
-  printf <span class="hljs-string">&quot;<span class="hljs-variable">$PASS</span> All checks passed. You&#x27;re ready for Part 10.\n&quot;</span>
-else
-  printf <span class="hljs-string">&quot;<span class="hljs-variable">$FAIL</span> One or more checks failed. Fix above before running the chatbot.\n&quot;</span>
-fi
-exit $exit_code</span></span>
+<span class="hljs-built_in">echo</span>
+<span class="hljs-keyword">if</span> [ <span class="hljs-variable">$exit_code</span> -eq 0 ]; <span class="hljs-keyword">then</span>
+  <span class="hljs-built_in">printf</span> <span class="hljs-string">&quot;<span class="hljs-variable">$PASS</span> All checks passed. You&#x27;re ready for Part 10.\n&quot;</span>
+<span class="hljs-keyword">else</span>
+  <span class="hljs-built_in">printf</span> <span class="hljs-string">&quot;<span class="hljs-variable">$FAIL</span> One or more checks failed. Fix above before running the chatbot.\n&quot;</span>
+<span class="hljs-keyword">fi</span>
+<span class="hljs-built_in">exit</span> <span class="hljs-variable">$exit_code</span>
 </code></pre>
 <p>Run it:</p>
 <pre><code class="language-bash"><span class="hljs-built_in">chmod</span> +x ~/healthcheck.sh
@@ -1315,7 +1335,7 @@ journalctl -u chatbot.service -n 60 --no-pager
 <ul>
 <li>Run <code>i2cdetect -y 1</code> and confirm the module&#39;s address still shows up.</li>
 <li>Re-run the wake-word programming script in Part 08.3 — flashes can be lost on cold boots.</li>
-<li>Check <code>journalctl -u chatbot.service -f</code> while you speak — if the wake event never fires, the I²C interrupt line may be miswired or the module&#39;s mic input is occluded.</li>
+<li>Check <code>journalctl -u chatbot.service -f</code> while you speak — if the wake event never fires, the 4-pin I²C cable may have come loose or the module&#39;s mic input is occluded.</li>
 </ul>
 <h3 id="wake-word-triggers-on-tv-unrelated-speech">Wake word triggers on TV / unrelated speech <a class="heading-anchor" href="#wake-word-triggers-on-tv-unrelated-speech" aria-label="link to this section">#</a></h3>
 <ul>
@@ -1325,7 +1345,7 @@ journalctl -u chatbot.service -n 60 --no-pager
 <ul>
 <li>Use <code>claude-haiku-4-5-20251001</code> (Part 07 — it&#39;s the recommended default for this reason).</li>
 <li>The Pi Zero 2 WH&#39;s Wi-Fi antenna is weak. Move it closer to the router.</li>
-<li>Local Whisper STT is the slowest step on a Pi Zero. If you have a cloud STT key (OpenAI, Google), switching to one of those in <code>.env</code> cuts perceived latency dramatically.</li>
+<li>Local Whisper STT is the slowest step on a Pi Zero 2 WH. If you have a cloud STT key (OpenAI, Google), switching to one of those in <code>.env</code> cuts perceived latency dramatically.</li>
 </ul>
 <h3 id="need-to-re-run-the-healthcheck">Need to re-run the healthcheck <a class="heading-anchor" href="#need-to-re-run-the-healthcheck" aria-label="link to this section">#</a></h3>
 <pre><code class="language-bash">bash ~/healthcheck.sh
@@ -1386,6 +1406,19 @@ journalctl -u chatbot.service -n 60 --no-pager
 <p>Only Claude (and your chosen TTS, if cloud) runs in the cloud. Everything else can run on-device.</p>
 <hr>
 <h2 id="update-notes">Update Notes <a class="heading-anchor" href="#update-notes" aria-label="link to this section">#</a></h2>
+<h3 id="20260522e">2026.05.22e <a class="heading-anchor" href="#20260522e" aria-label="link to this section">#</a></h3>
+<ul>
+<li><strong>TOC absolutely positioned.</strong> Added <code>position: absolute; top: 60px</code> to <code>.toc</code> in <code>build-html.js</code> so the table-of-contents lifts out of normal sidebar flow.</li>
+<li><strong>Wake mechanism: last &quot;interrupt line&quot; mention purged.</strong> The 22c sweep unified Parts 08 / 08.3 / 10 around &quot;polls the WonderEcho&#39;s wake-event register over I²C&quot;, but the matching troubleshooting bullet still said &quot;the I²C interrupt line may be miswired&quot;. Now says &quot;the 4-pin I²C cable may have come loose&quot; — consistent with the actual wiring (SDA/SCL/5V/GND, no interrupt GPIO).</li>
+<li><strong>Register-map stability contradiction resolved.</strong> Part 08.3 had two adjacent notes that disagreed — one said the layout &quot;depends on your WonderEcho firmware revision&quot;, the other said Hiwonder ships a &quot;fixed register map&quot;. Both now point at the wiki as the source of truth and acknowledge revision drift.</li>
+<li><strong>Healthcheck intro now matches what the script actually tests.</strong> Used to claim &quot;speaker, mic, network, Claude API&quot;; the script never exercises the speaker or mic. Updated to &quot;WonderEcho on I²C, network, Claude API&quot; — and notes the audio path itself is verified by the manual launch in Part 10.</li>
+<li><strong>Network check no longer relies on ICMP.</strong> Replaced <code>ping api.anthropic.com</code> (which silently fails on networks that drop ICMP) with an HTTPS probe via <code>curl</code> — a 4xx still proves reachability without needing valid auth.</li>
+<li><strong>JSON reply extraction prefers <code>jq</code> when available.</strong> The <code>grep &#39;&quot;text&quot;:&quot;…&quot;&#39;</code> pattern breaks on responses containing escaped quotes. The healthcheck now uses <code>jq -r &#39;.content[0].text&#39;</code> if installed, and falls back to the grep/sed pattern for hosts that don&#39;t have jq.</li>
+<li><strong>Last two &quot;Pi Zero&quot; stragglers normalized.</strong> Parts 05.1 and 12 (&quot;This takes 5–15 minutes on a Pi Zero&quot;, &quot;Local Whisper STT is the slowest step on a Pi Zero&quot;) joined the rest of the body in saying &quot;Pi Zero 2 WH&quot;.</li>
+<li><strong>ElevenLabs handler no longer returns NaN duration.</strong> <code>mp3-duration</code> can return <code>undefined</code> on parse failure, and <code>undefined * 1000 = NaN</code>. Coerced with <code>(duration ?? 0) * 1000</code> so the caller always sees a real number.</li>
+<li><strong>Redundant <code>dotenv.config()</code> removed from the ElevenLabs plugin.</strong> The chatbot already loads <code>.env</code> at startup; calling <code>dotenv.config()</code> on plugin import was an unconditional side effect that ran whether or not the plugin was activated.</li>
+<li><strong>Smart-plug regional note covers all three vendors.</strong> The &quot;Before you start&quot; callout used to single out Shelly and Kasa for international plug variants; Sonoff (the third option) has them too. Now framed as &quot;each vendor sells EU/UK/AU variants — pick your region at checkout.&quot;</li>
+</ul>
 <h3 id="20260522d">2026.05.22d <a class="heading-anchor" href="#20260522d" aria-label="link to this section">#</a></h3>
 <ul>
 <li>Routine re-deploy after committing 2026.05.22c&#39;s 10 doc fixes. No source changes — letter-suffix bump only.</li>
