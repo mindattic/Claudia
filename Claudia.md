@@ -4,13 +4,13 @@ Build your own always-on voice assistant in an afternoon — a Raspberry Pi Zero
 
 > **WH, not W.** The WonderEcho connects to four GPIO pins (SDA / SCL / 5V / GND), so the build needs the **WH** variant with pre-soldered headers. Buying the plain "W" means soldering 40 pins yourself before anything works.
 
-> **Before you start, gather:** a Windows / macOS / Linux computer to flash the microSD and SSH in, a way to plug a microSD into it (the SanDisk Ultra ships with a full-size SD adapter but no USB reader — most modern ultrabooks and MacBooks need a USB microSD reader, ~$8), and a **2.4 GHz** Wi-Fi network (the Pi Zero 2 W has no 5 GHz radio). The smart-plug options below are US-outlet variants — if you're outside North America, Shelly and Kasa have EU/UK equivalents that work with the same local API. **No soldering iron needed**, and **no extra jumper wires** — the WonderEcho ships with the 4-pin Dupont cable already.
+> **Before you start, gather:** a Windows / macOS / Linux computer to flash the microSD and SSH in, a way to plug a microSD into it (the SanDisk Ultra ships with a full-size SD adapter but no USB reader — most modern ultrabooks and MacBooks need a USB microSD reader, ~$8), and a **2.4 GHz** Wi-Fi network (the Pi Zero 2 WH has no 5 GHz radio). The smart-plug options below are US-outlet variants — if you're outside North America, Shelly and Kasa have EU/UK equivalents that work with the same local API. **No soldering iron needed**, and **no extra jumper wires** — the WonderEcho ships with the 4-pin Dupont cable already.
 
 > **Stock check.** The Pi Zero 2 WH is supply-constrained; if all the US retailers on the cards below show out-of-stock, [rpilocator.com](https://rpilocator.com) tracks live availability across the official reseller network.
 
 [github.com/mindattic/Claudia](https://github.com/mindattic/Claudia)
 
-*Last updated: 2026.05.20k*
+*Last updated: 2026.05.22c*
 
 ---
 
@@ -51,9 +51,9 @@ Build your own always-on voice assistant in an afternoon — a Raspberry Pi Zero
 
 ### 4.1 Install Raspberry Pi Imager
 
-Download from **raspberrypi.com/software** (Windows, macOS, Linux).
-
 > If your laptop has no SD-card slot — common on recent ultrabooks and every modern MacBook — plug in a **USB microSD reader** now. The card itself ships with a full-size SD adapter, but that only helps you if the host has a full-size SD slot.
+
+Download from **raspberrypi.com/software** (Windows, macOS, Linux).
 
 ### 4.2 Flash
 
@@ -64,11 +64,11 @@ Download from **raspberrypi.com/software** (Windows, macOS, Linux).
 4. **Choose Storage** → your microSD card.
 5. Click the gear icon (⚙) for **Edit Settings** and configure:
    - **Hostname:** `claudia`
-   - **Username:** `pi`
+   - **Username:** *anything other than* `pi` — Pi OS Bookworm deprecated the default `pi` user, and current Imager builds warn (or refuse) when you try to set it. Use `claudia`, your first name, or any other identifier you'll remember.
    - **Password:** *something secure*
    - **Enable SSH:** ✅ password auth
    - **Wireless LAN:** SSID + password for your home Wi-Fi
-   - **Locale:** `America/Chicago`, keyboard `us`
+   - **Locale:** *your timezone* (e.g. `America/Chicago`), keyboard *your layout* (e.g. `us`)
 6. **Save**, then **Write**. Takes 2–5 minutes.
 
 ### 4.3 First boot
@@ -79,12 +79,12 @@ Download from **raspberrypi.com/software** (Windows, macOS, Linux).
 4. From your PC:
 
    ```bash
-   ssh pi@claudia.local
+   ssh <your-username>@claudia.local
    ```
 
-   If `claudia.local` doesn't resolve, find the Pi's IP in your router's admin page and use `ssh pi@192.168.x.x`.
+   If `claudia.local` doesn't resolve, find the Pi's IP in your router's admin page and use `ssh <your-username>@192.168.x.x`.
 
-✅ **Checkpoint:** You see the `pi@claudia:~ $` prompt. Run `cat /etc/os-release` and confirm it says Debian/Raspberry Pi OS. Run `free -h` — you should see ~430 MB of `Mem:` (the Pi Zero 2 W has 512 MB total).
+✅ **Checkpoint:** You see the `<your-username>@claudia:~ $` prompt. Run `cat /etc/os-release` and confirm it says Debian/Raspberry Pi OS. Run `free -h` — you should see ~430 MB of `Mem:` (the Pi Zero 2 WH has 512 MB total).
 
 ---
 
@@ -102,7 +102,7 @@ This takes 5–15 minutes on a Pi Zero. Be patient.
 
 ### 5.2 Free up RAM (Pi Zero only has 512 MB)
 
-The Pi Zero 2 W is RAM-constrained. Disable services you don't need:
+The Pi Zero 2 WH is RAM-constrained. Disable services you don't need:
 
 ```bash
 # Disable Bluetooth (not used by this build)
@@ -157,7 +157,7 @@ bash install_dependencies.sh
 source ~/.bashrc
 ```
 
-The dependency install pulls Node.js, Python packages, and audio libraries. This takes **15–25 minutes** on a Pi Zero 2 W. Let it finish.
+The dependency install pulls Node.js, Python packages, and audio libraries. This takes **15–25 minutes** on a Pi Zero 2 WH. Let it finish.
 
 > The `source ~/.bashrc` line is important — the installer sets PATH entries you need in your current shell session.
 
@@ -167,7 +167,7 @@ The dependency install pulls Node.js, Python packages, and audio libraries. This
 node --version
 ```
 
-You should see `{{NODE_LABEL}}` or newer (upstream's installer pulls in the current Node LTS).
+You should see `v20.x` or newer (upstream's installer pulls in the current Node LTS).
 
 ---
 
@@ -215,12 +215,12 @@ ANTHROPIC_MODEL=claude-haiku-4-5-20251001
 SYSTEM_PROMPT=You are a concise, friendly voice assistant. Answer in plain spoken English — no markdown, no bullet lists, no headings. Keep responses to 1–3 sentences unless the user explicitly asks for more.
 ```
 
-The wake-word listener does **not** run on the Pi — it's handled in hardware by the WonderEcho (see section 08.3 below). The Pi only sees a wake-up signal over I²C, so no `WAKE_WORD_*` env keys are needed.
+The wake-word listener does **not** run on the Pi — it's handled in hardware by the WonderEcho (see section 08.3 below). The Pi only polls the WonderEcho's wake-event register over I²C, so no `WAKE_WORD_*` env keys are needed.
 
 > **Env-key naming:** upstream uses `LLM_SERVER`, `ASR_SERVER`, `TTS_SERVER` (not `*_PROVIDER`). The plugin registry switches on the lowercase value — see `src/cloud-api/server.ts` in the upstream repo.
 
 <!-- when: asr=whisper-cpp -->
-**ASR (speech-to-text): Whisper, local.** Already wired up by the template defaults. Slowest option on a Pi Zero 2 W (~3–6 s per utterance) but no API key required and works offline.
+**ASR (speech-to-text): Whisper, local.** Already wired up by the template defaults. Slowest option on a Pi Zero 2 WH (~3–6 s per utterance) but no API key required and works offline.
 <!-- end -->
 <!-- when: asr=openai -->
 **ASR (speech-to-text): OpenAI Whisper API.** Add to your `.env`:
@@ -346,7 +346,7 @@ bash build.sh
 sudo systemctl restart chatbot.service
 ```
 
-Voice IDs: log into [elevenlabs.io](https://elevenlabs.io), open VoiceLab, and copy the ID of any voice you've cloned or one of their stock voices. `eleven_turbo_v2_5` is recommended for the Pi Zero 2 W — it has the lowest latency. Cost is roughly $0.18 per 1000 chars (~7-8 cents per minute of speech).
+Voice IDs: log into [elevenlabs.io](https://elevenlabs.io), open VoiceLab, and copy the ID of any voice you've cloned or one of their stock voices. `eleven_turbo_v2_5` is recommended for the Pi Zero 2 WH — it has the lowest latency. Cost is roughly $0.18 per 1000 chars (~7-8 cents per minute of speech).
 <!-- end -->
 
 > The `.env.template` evolves. If your file looks different from this guide, the live template at [github.com/PiSugar/whisplay-ai-chatbot/blob/master/.env.template](https://github.com/PiSugar/whisplay-ai-chatbot/blob/master/.env.template) is the source of truth.
@@ -359,17 +359,20 @@ Save: `Ctrl+X`, `Y`, `Enter`.
 bash build.sh
 ```
 
-This compiles the TypeScript and prepares assets. ~5–10 minutes on a Pi Zero 2 W.
+This compiles the TypeScript and prepares assets. ~5–10 minutes on a Pi Zero 2 WH.
 
 ✅ **Checkpoint:** `build.sh` exits cleanly with no errors.
 
 ### 8.3 Configure the WonderEcho wake word
 
-The WonderEcho module runs its own on-device wake-word detector — the Pi doesn't have to listen. You program the trigger phrase (`"Claudia"`) once over I²C, then the module pulls a GPIO / sends an I²C event whenever it hears the word.
+The WonderEcho module runs its own on-device wake-word detector — the Pi doesn't have to listen. You program the trigger phrase (`"Claudia"`) once over I²C, then the module flags a wake event on the bus whenever it hears the word; the Pi polls that register and starts a recording session each time it fires.
+
+> **Verify before running.** The exact I²C register layout (`0x10` as the "set-trigger" opcode below) depends on your WonderEcho firmware revision. Check the [Hiwonder WonderEcho wiki](https://www.hiwonder.com/products/wonderecho) for the register map matching your unit before running this — the snippet is the canonical pattern, not a guaranteed copy-paste for every shipping firmware.
 
 ```bash
-# Tiny helper: writes the trigger word + wake-up callback to the module.
-# (See the Hiwonder wiki for the exact register set on your firmware revision.)
+# Reference snippet: writes the trigger word to the WonderEcho's "set-trigger"
+# register. Confirm the register/opcode against the Hiwonder wiki for your
+# firmware revision before relying on this in production.
 cd ~/whisplay-ai-chatbot
 python3 - <<'PY'
 import smbus2 as smbus, time
@@ -377,12 +380,12 @@ bus = smbus.SMBus(1)          # I²C bus 1 on the Pi Zero
 ADDR = 0x52                    # WonderEcho default — confirm with i2cdetect
 WORD = b"claudia"
 bus.write_i2c_block_data(ADDR, 0x10, list(WORD) + [0])   # 0x10 = set-trigger
-time.sleep(0.2)
+time.sleep(0.2)                                          # let the WonderEcho commit the trigger to its on-board flash before we close the bus
 print("Wake word programmed:", WORD.decode())
 PY
 ```
 
-The chatbot service watches the WonderEcho's interrupt line and starts a recording session each time the word fires. No Python venv, no openWakeWord, no training.
+The chatbot service polls the WonderEcho's wake-event register over I²C and starts a recording session each time the word fires. No Python venv, no openWakeWord, no training.
 
 ✅ **Checkpoint:** speak "Claudia" near the module — `journalctl -u chatbot.service -f` shows a wake event within ~300 ms.
 
@@ -421,13 +424,13 @@ step "1. WonderEcho module on I2C"
 # The WonderEcho carries both mic and speaker on-board and talks to the Pi
 # over I2C bus 1. We don't expect a standalone ALSA card.
 if command -v i2cdetect >/dev/null 2>&1; then
-    if i2cdetect -y 1 2>/dev/null | grep -qE '52|53|54'; then
+    if i2cdetect -y 1 2>/dev/null | grep -qE ' 5[234] '; then
         ok "WonderEcho detected on I2C bus 1"
     else
         bad "WonderEcho NOT detected on I2C bus 1 (check 4-pin wiring + 'sudo raspi-config nonint do_i2c 0')"
     fi
 else
-    bad "i2c-tools not installed - run 'sudo apt install -y i2c-tools' (see Part 5.4)"
+    bad "i2c-tools not installed - run 'sudo apt install -y i2c-tools' (see Part 05.4)"
 fi
 
 step "2. Network reachability"
@@ -437,7 +440,7 @@ ping -c 1 -W 3 api.anthropic.com >/dev/null 2>&1 \
 
 step "3. Claude API call"
 if [ ! -f "$ENV_FILE" ]; then
-  bad "$ENV_FILE not found — finish Part 8 first"
+  bad "$ENV_FILE not found — finish Part 08 first"
 else
   # shellcheck disable=SC1090
   set -a; source "$ENV_FILE"; set +a
@@ -613,10 +616,10 @@ No printer? Upload the STL to a print service like [JLC3DP](https://jlc3dp.com) 
 
 ### Mic captures silence or garbage
 - The mic is on the WonderEcho too — its input is occluded if the module is face-down or covered. Reposition it speaker-side up.
-- If the wake event never fires (`journalctl -u chatbot.service -f` stays silent when you speak), the wake word may have been reset on cold boot; re-run the I²C programming snippet from Part 8.3.
+- If the wake event never fires (`journalctl -u chatbot.service -f` stays silent when you speak), the wake word may have been reset on cold boot; re-run the I²C programming snippet from Part 08.3.
 
 ### Build fails out of memory
-- The Pi Zero 2 W only has 512 MB. Add swap if `build.sh` gets OOM-killed:
+- The Pi Zero 2 WH only has 512 MB. Add swap if `build.sh` gets OOM-killed:
   ```bash
   sudo dphys-swapfile swapoff
   sudo sed -i 's/^CONF_SWAPSIZE=.*/CONF_SWAPSIZE=1024/' /etc/dphys-swapfile
@@ -639,15 +642,15 @@ Look for the first ERROR line — usually a missing `.env` key or a wrong path.
 
 ### WonderEcho doesn't respond
 - Run `i2cdetect -y 1` and confirm the module's address still shows up.
-- Re-run the wake-word programming script in Part 8.3 — flashes can be lost on cold boots.
+- Re-run the wake-word programming script in Part 08.3 — flashes can be lost on cold boots.
 - Check `journalctl -u chatbot.service -f` while you speak — if the wake event never fires, the I²C interrupt line may be miswired or the module's mic input is occluded.
 
 ### Wake word triggers on TV / unrelated speech
 - Increase the WonderEcho's detection threshold via I²C — see the [Hiwonder wiki](https://www.hiwonder.com/products/wonderecho) for the register address on your firmware revision.
 
 ### Responses feel slow
-- Use `claude-haiku-4-5-20251001` (Part 7 — it's the recommended default for this reason).
-- The Pi Zero 2 W's Wi-Fi antenna is weak. Move it closer to the router.
+- Use `claude-haiku-4-5-20251001` (Part 07 — it's the recommended default for this reason).
+- The Pi Zero 2 WH's Wi-Fi antenna is weak. Move it closer to the router.
 - Local Whisper STT is the slowest step on a Pi Zero. If you have a cloud STT key (OpenAI, Google), switching to one of those in `.env` cuts perceived latency dramatically.
 
 ### Need to re-run the healthcheck
@@ -692,6 +695,23 @@ Only Claude (and your chosen TTS, if cloud) runs in the cloud. Everything else c
 ---
 
 ## Update Notes
+
+### 2026.05.22c
+
+- **Build-pipeline placeholder leak fixed.** Part 06's Node-version checkpoint was rendering the literal `{{NODE_LABEL}}` template token instead of a real version. Replaced with `v20.x` (current Node LTS that upstream's installer pulls).
+- **Default Pi OS username removed.** Part 04 used to recommend `Username: pi`, but Bookworm-era Imager warns or refuses that name. The guide now tells you to pick anything else (e.g. `claudia` or your first name) and downstream SSH commands + the checkpoint prompt use `<your-username>@claudia` instead of `pi@claudia`.
+- **Hardcoded timezone unmasked.** `America/Chicago` sat next to genuine placeholders in the Imager settings list, so international readers were copying a Central-US timezone verbatim. Now framed as "*your timezone* (e.g. `America/Chicago`)".
+- **Wake-trigger mechanism unified.** Parts 08 / 08.3 / 10 previously described the WonderEcho's wake signal three different ways ("wake-up signal over I²C" / "pulls a GPIO" / "watches the interrupt line"). All three now say the Pi polls a wake-event register over I²C — matches the 4-pin SDA/SCL/5V/GND wiring (no dedicated interrupt GPIO).
+- **i2cdetect regex tightened.** Part 09 healthcheck's `grep -qE '52|53|54'` matched those substrings anywhere on a line. Anchored to a matrix cell (`' 5[234] '`) so column-header lines can't false-positive.
+- **SD-reader callout moved before the Imager download line** in Part 04.1, so readers see "you might need a USB microSD reader" *before* they leave to download Imager rather than after.
+- **Cross-reference numbering normalized.** Section headings use two-digit prefixes (`## 04.`, `## 05.`, …), so cross-refs in the healthcheck script and troubleshooting section were standardized to match: "Part 5.4" → "Part 05.4", "Part 8" → "Part 08", "Part 8.3" → "Part 08.3", "Part 7" → "Part 07".
+- **Pi Zero 2 W → WH nomenclature aligned.** After the recent power-supply-card fix established WH as canonical, eight remaining body mentions of "Pi Zero 2 W" (RAM checkpoint, dependency-install time, ASR/TTS latency notes, OOM troubleshooting, Wi-Fi note) were converted. The Imager UI step keeps `Raspberry Pi Zero 2 W` since that's literally what Imager shows.
+- **WonderEcho I²C snippet labeled as a reference, not a guaranteed paste.** Part 08.3's `bus.write_i2c_block_data(ADDR, 0x10, …)` script now sits under a "verify before running" callout pointing at the Hiwonder wiki for the register map of the reader's specific firmware revision.
+- **`time.sleep(0.2)` annotated.** The unexplained 200 ms delay after writing the trigger word now has an inline comment explaining it lets the WonderEcho commit the trigger to its on-board flash before the bus closes.
+
+### 2026.05.22b
+
+- **Outfit variable font now embedded.** The build pipeline (via `MindAttic.Components/sync/sync-claudia.ps1`) now inlines the Outfit variable font (weights 100–900) directly into `Claudia.htm` as a base64 `data:` URL, so the live page no longer depends on Google Fonts and renders identically offline. No content changes — same words, same layout, just the typography source.
 
 ### 2026.05.20k
 
