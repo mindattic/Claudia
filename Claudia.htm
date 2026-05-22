@@ -1,4 +1,4 @@
-﻿<!-- Last Updated: 2026-05-22T18:32:48Z -->
+﻿<!-- Last Updated: 2026-05-22T18:33:37Z -->
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
@@ -663,7 +663,7 @@ img { max-width: 100%; height: auto; border-radius: 6px; }
 <p><strong>Stock check.</strong> The Pi Zero 2 WH is supply-constrained; if all the US retailers on the cards below show out-of-stock, <a href="https://rpilocator.com">rpilocator.com</a> tracks live availability across the official reseller network.</p>
 </blockquote>
 <p><a href="https://github.com/mindattic/Claudia">github.com/mindattic/Claudia</a></p>
-<p><em>Last updated: 2026.05.22f</em></p>
+<p><em>Last updated: 2026.05.22g</em></p>
 <hr>
 <h2 id="01-configure">01. Configure <a class="heading-anchor" href="#01-configure" aria-label="link to this section">#</a></h2>
 <div class="config-widget" id="config-widget">
@@ -1406,6 +1406,10 @@ journalctl -u chatbot.service -n 60 --no-pager
 <p>Only Claude (and your chosen TTS, if cloud) runs in the cloud. Everything else can run on-device.</p>
 <hr>
 <h2 id="update-notes">Update Notes <a class="heading-anchor" href="#update-notes" aria-label="link to this section">#</a></h2>
+<h3 id="20260522f">2026.05.22f <a class="heading-anchor" href="#20260522f" aria-label="link to this section">#</a></h3>
+<ul>
+<li><strong><code>/deploy</code> now pulls MindAttic.Components first.</strong> <code>scripts/cli/deploy.ps1</code> gained a sync stage between the version bump and the build: it invokes <code>MindAttic.Components/sync/sync-claudia.ps1</code> (looked up as a sibling of the Claudia repo, or overridden via <code>$env:MINDATTIC_COMPONENTS_ROOT</code>) to splice the latest subscribed component CSS (OutfitFont, AtticFont, BackHomeM) into <code>build-html.js</code> <em>before</em> <code>node build-html.js</code> runs. A new <code>-NoSync</code> switch skips it for machines that don&#39;t have the Components repo cloned, and a missing sibling folder produces a warning instead of a hard failure. The <code>.claude/commands/deploy.md</code> doc was updated to describe the new stage.</li>
+</ul>
 <h3 id="20260522e">2026.05.22e <a class="heading-anchor" href="#20260522e" aria-label="link to this section">#</a></h3>
 <ul>
 <li><strong>TOC absolutely positioned.</strong> Added <code>position: absolute; top: 60px</code> to <code>.toc</code> in <code>build-html.js</code> so the table-of-contents lifts out of normal sidebar flow.</li>
