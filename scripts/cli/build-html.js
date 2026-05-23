@@ -469,10 +469,12 @@ html, body { font-family: 'Outfit', system-ui, sans-serif; }
 /* ====================================================================
  * MindAttic.Components - BackHomeM/back-home-m.css
  * A capital "M" in AtticFont pinned to the upper-left of the viewport,
- * linking back to mindattic.com. Hosts opt in by adding an anchor of the
- * form <a class="back-home-m" href="https://mindattic.com">M</a> anywhere
- * inside the body. Requires AtticFont/ (the Attic @font-face) to also be
- * present in the subscriber.
+ * linking back to mindattic.com. Hosts opt in by adding an empty anchor of
+ * the form <a class="back-home-m" href="https://mindattic.com"></a> anywhere
+ * inside the body — the glyph "❮ M" is injected by the ::before rule below,
+ * so the anchor's own text content is intentionally empty (any inner text
+ * would render alongside the injected glyph). Requires AtticFont/ (the
+ * Attic @font-face) to also be present in the subscriber.
  * Avoid backticks and dollar-brace sequences in this file -- it gets
  * spliced into the JS template literals of build-html-js subscribers
  * (Claudia, ChiMesh) where either would terminate or interpolate the literal.
