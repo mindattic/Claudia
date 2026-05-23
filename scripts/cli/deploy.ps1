@@ -1,6 +1,6 @@
 # deploy.ps1 - Claudia FTP deploy.
 #
-# 1. Pulls subscribed component CSS from the sibling MindAttic.Components
+# 1. Pulls subscribed component CSS from the sibling MindAttic.UIUX
 #    repo into build-html.js via sync-claudia.ps1.
 # 2. Regenerates Claudia.htm from Claudia.md (build-html.js).
 # 3. Stamps index.htm with a "Last Updated" comment.
@@ -71,10 +71,10 @@ if (Test-Path $mdPath) {
 }
 
 # ---------------------------------------------------------------------------
-# Pull subscribed components from MindAttic.Components (skip with -NoSync if
-# you're deploying from a machine that doesn't have MindAttic.Components, or
+# Pull subscribed components from MindAttic.UIUX (skip with -NoSync if
+# you're deploying from a machine that doesn't have MindAttic.UIUX, or
 # you've already synced manually). The Components repo is expected as a
-# sibling of the Claudia repo (i.e. D:\Projects\MindAttic\MindAttic.Components
+# sibling of the Claudia repo (i.e. D:\Projects\MindAttic\MindAttic.UIUX
 # next to D:\Projects\MindAttic\Claudia); override by setting the
 # MINDATTIC_COMPONENTS_ROOT environment variable.
 # ---------------------------------------------------------------------------
@@ -82,14 +82,14 @@ if (-not $NoSync) {
     $componentsRoot = if ($env:MINDATTIC_COMPONENTS_ROOT) {
         $env:MINDATTIC_COMPONENTS_ROOT
     } else {
-        Join-Path (Split-Path -Parent $repoRoot) 'MindAttic.Components'
+        Join-Path (Split-Path -Parent $repoRoot) 'MindAttic.UIUX'
     }
     $syncScript = Join-Path $componentsRoot 'sync\sync-claudia.ps1'
     if (-not (Test-Path $syncScript)) {
-        Write-Warning "MindAttic.Components sync script not found at: $syncScript"
+        Write-Warning "MindAttic.UIUX sync script not found at: $syncScript"
         Write-Warning "Skipping component sync. Set MINDATTIC_COMPONENTS_ROOT or pass -NoSync to silence this."
     } else {
-        Write-Host "Syncing MindAttic.Components -> build-html.js ..."
+        Write-Host "Syncing MindAttic.UIUX -> build-html.js ..."
         & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $syncScript -ClaudiaRoot $repoRoot
         if ($LASTEXITCODE -ne 0) { Write-Error "sync-claudia.ps1 failed (exit $LASTEXITCODE)" }
     }

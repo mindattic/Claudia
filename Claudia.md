@@ -10,7 +10,7 @@ Build your own always-on voice assistant in an afternoon — a Raspberry Pi Zero
 
 [github.com/mindattic/Claudia](https://github.com/mindattic/Claudia)
 
-*Last updated: 2026.05.22h*
+*Last updated: 2026.05.23f*
 
 ---
 
@@ -710,13 +710,25 @@ Only Claude (and your chosen TTS, if cloud) runs in the cloud. Everything else c
 
 ## Update Notes
 
+### 2026.05.23e
+
+- Immediate follow-up re-deploy to publish the `2026.05.23d` Update Notes entry, which was written locally after the original `.23d` deploy had already uploaded. The `.23d` live bundle was stamped but missing its own notes; `.23e` carries both entries to the live site. No prose, layout, or build-script changes — letter-suffix bump only.
+
+### 2026.05.23d
+
+- Routine re-deploy. MindAttic.UIUX sync re-spliced OutfitFont (62.6 KB), AtticFont (57.8 KB), and BackHomeM (1.6 KB) into `build-html.js` cleanly; all three files (`Claudia.md`, `Claudia.htm`, `index.htm`) uploaded successfully to `mindattic.com/claudia/`. No prose, layout, or build-script changes — letter-suffix bump only.
+
+### 2026.05.23c
+
+- Routine re-deploy with the refreshed MindAttic.UIUX font payloads (OutfitFont, AtticFont, BackHomeM re-spliced from the sibling components repo). No prose, layout, or build-script changes — letter-suffix bump only, covering the intervening `2026.05.23a` / `2026.05.23b` deploy iterations.
+
 ### 2026.05.22h
 
 - **`/commit` now also pushes.** The project-scoped `commit` slash command at `.claude/commands/commit.md` previously instructed Claude to commit and stop ("Do NOT push"). It now mirrors the global behavior — `git push` after every commit (sets `-u origin <branch>` if no upstream), with safety rails: no `--no-verify`, no `--force`/`--force-with-lease`, and a hard stop with a user-facing warning if the push is rejected on `main`/`master`. No Claudia content changes.
 
 ### 2026.05.22g
 
-- **`/deploy` now pulls MindAttic.Components first.** `scripts/cli/deploy.ps1` gained a sync stage between the version bump and the build: it invokes `MindAttic.Components/sync/sync-claudia.ps1` (looked up as a sibling of the Claudia repo, or overridden via `$env:MINDATTIC_COMPONENTS_ROOT`) to splice the latest subscribed component CSS (OutfitFont, AtticFont, BackHomeM) into `build-html.js` *before* `node build-html.js` runs. A new `-NoSync` switch skips it for machines that don't have the Components repo cloned, and a missing sibling folder produces a warning instead of a hard failure. The `.claude/commands/deploy.md` doc was updated to describe the new stage.
+- **`/deploy` now pulls MindAttic.UIUX first.** `scripts/cli/deploy.ps1` gained a sync stage between the version bump and the build: it invokes `MindAttic.UIUX/sync/sync-claudia.ps1` (looked up as a sibling of the Claudia repo, or overridden via `$env:MINDATTIC_COMPONENTS_ROOT`) to splice the latest subscribed component CSS (OutfitFont, AtticFont, BackHomeM) into `build-html.js` *before* `node build-html.js` runs. A new `-NoSync` switch skips it for machines that don't have the Components repo cloned, and a missing sibling folder produces a warning instead of a hard failure. The `.claude/commands/deploy.md` doc was updated to describe the new stage.
 
 ### 2026.05.22e
 
@@ -750,7 +762,7 @@ Only Claude (and your chosen TTS, if cloud) runs in the cloud. Everything else c
 
 ### 2026.05.22b
 
-- **Outfit variable font now embedded.** The build pipeline (via `MindAttic.Components/sync/sync-claudia.ps1`) now inlines the Outfit variable font (weights 100–900) directly into `Claudia.htm` as a base64 `data:` URL, so the live page no longer depends on Google Fonts and renders identically offline. No content changes — same words, same layout, just the typography source.
+- **Outfit variable font now embedded.** The build pipeline (via `MindAttic.UIUX/sync/sync-claudia.ps1`) now inlines the Outfit variable font (weights 100–900) directly into `Claudia.htm` as a base64 `data:` URL, so the live page no longer depends on Google Fonts and renders identically offline. No content changes — same words, same layout, just the typography source.
 
 ### 2026.05.20k
 

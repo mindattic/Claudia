@@ -1,10 +1,38 @@
 # Claudia
 
-> **Build your own Claude-powered voice assistant.** Claudia is a palm-sized, hackable smart speaker on a Raspberry Pi Zero 2 **WH** + Hiwonder WonderEcho voice module — no soldering, ready in an afternoon. Say **"Claudia"**, ask anything, and Claude answers out loud. This repo is the complete builder kit: an illustrated build guide, a parts catalog with price-comparison shopping, an automated Pi installer, and a Windows console that configures and updates your device over the LAN.
+**Build your own Claude-powered smart speaker in an afternoon. No soldering. No cloud lock-in.**
 
-> The build requires the **WH** variant (pre-soldered headers). The plain "W" has no headers and would need 40 pins soldered before the WonderEcho's 4-pin cable can connect.
+Claudia is a palm-sized, hackable smart speaker on a Raspberry Pi Zero 2 **WH** + Hiwonder WonderEcho voice module. Say **"Claudia"**, ask anything, and Claude answers out loud. This repo is the complete builder kit: an illustrated build guide, a parts catalog with price-comparison shopping, an automated Pi installer, and a Windows console that configures and updates your device over the LAN.
 
-Wake-word detection runs in the WonderEcho's own firmware over I²C — no Pi-side listener, no openWakeWord, no training. You program **"Claudia"** once with a one-shot I²C write (Part 8.3 of the guide). The chatbot runtime is the upstream [`PiSugar/whisplay-ai-chatbot`](https://github.com/PiSugar/whisplay-ai-chatbot); this repo doesn't fork it — it's the guide, configs, and Windows-side tooling that turn a pile of parts into a finished device.
+Wake-word detection runs in the WonderEcho's own firmware over I²C — no Pi-side listener, no openWakeWord, no model training. You program **"Claudia"** once with a one-shot I²C write (Part 8.3 of the guide). The chatbot runtime is the upstream [`PiSugar/whisplay-ai-chatbot`](https://github.com/PiSugar/whisplay-ai-chatbot); this repo doesn't fork it — it's the guide, configs, and Windows-side tooling that turn a pile of parts into a finished device.
+
+**Why Claudia:**
+
+- **No soldering, ready in an afternoon.** Four pins of pre-flashed I²C cable connects the WonderEcho to the Pi Zero 2 **WH**. First-boot install is one shell script.
+- **No Alexa in the room.** The wake word is local. Recognition fires on-board the WonderEcho — your microphone is not streaming to a vendor's servers waiting for "Hey {brand}."
+- **Pluggable everything.** Swap LLMs (`anthropic` / `openai`), TTS engines (`openai` / `piper` / `elevenlabs` / `gemini`), or ASR providers (`whisper-cpp` / `openai` / `google`) with a single `set-llm` / `set-tts` / `set-asr` console command.
+- **Builder kit, not a SaaS.** Everything you need ships in this repo: parts list with tiered Amazon / Official / Reputable links, a `find-deals` shopping walker, a Pi-side installer, a Windows console, and a build guide rendered as one self-contained HTML file.
+- **One Markdown, one HTML, one truth.** Edit `Claudia.md`, save, and a `PostToolUse` hook regenerates `Claudia.htm` (inline CSS + JS + base64 PNGs — no CDN, no broken images two years from now).
+
+> The build requires the **WH** variant of the Pi Zero 2 (pre-soldered headers). The plain "W" has no headers and would need 40 pins soldered before the WonderEcho's 4-pin cable can connect.
+
+---
+
+## Table of Contents
+
+- [What's in here](#whats-in-here)
+- [Getting started (Windows builder side)](#getting-started-windows-builder-side)
+  - [Shopping flow (find-deals → apply-deals)](#shopping-flow-find-deals--apply-deals)
+  - [Self-update (`pull-latest` + `self-update`)](#self-update-pull-latest--self-update)
+- [Build the device](#build-the-device)
+- [HTML workflow](#html-workflow)
+  - [Theming](#theming)
+  - [Parts gallery](#parts-gallery)
+  - [Bumping the version](#bumping-the-version)
+  - [Deploying to mindattic.com/claudia/](#deploying-to-mindatticcomclaudia)
+- [Slash commands](#slash-commands-commit-do-deploy)
+- [Cost / time / parts](#cost--time--parts)
+- [Upstream references](#upstream-references)
 
 ---
 
