@@ -710,6 +710,10 @@ Only Claude (and your chosen TTS, if cloud) runs in the cloud. Everything else c
 
 ## Update Notes
 
+### 2026.05.22h
+
+- **`/commit` now also pushes.** The project-scoped `commit` slash command at `.claude/commands/commit.md` previously instructed Claude to commit and stop ("Do NOT push"). It now mirrors the global behavior — `git push` after every commit (sets `-u origin <branch>` if no upstream), with safety rails: no `--no-verify`, no `--force`/`--force-with-lease`, and a hard stop with a user-facing warning if the push is rejected on `main`/`master`. No Claudia content changes.
+
 ### 2026.05.22g
 
 - **`/deploy` now pulls MindAttic.Components first.** `scripts/cli/deploy.ps1` gained a sync stage between the version bump and the build: it invokes `MindAttic.Components/sync/sync-claudia.ps1` (looked up as a sibling of the Claudia repo, or overridden via `$env:MINDATTIC_COMPONENTS_ROOT`) to splice the latest subscribed component CSS (OutfitFont, AtticFont, BackHomeM) into `build-html.js` *before* `node build-html.js` runs. A new `-NoSync` switch skips it for machines that don't have the Components repo cloned, and a missing sibling folder produces a warning instead of a hard failure. The `.claude/commands/deploy.md` doc was updated to describe the new stage.
