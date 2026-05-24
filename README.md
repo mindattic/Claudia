@@ -1,274 +1,822 @@
 # Claudia
 
-**Build your own Claude-powered smart speaker in an afternoon. No soldering. No cloud lock-in.**
+Build your own always-on voice assistant in an afternoon — a Raspberry Pi Zero 2 WH with the Hiwonder WonderEcho voice module, wired straight to the Claude API. Sits on your shelf, listens for **"Claudia"**, and Claude answers out loud in seconds. No Alexa account, no surveillance, no subscription — just a Claude API key and hardware you own.
 
-Claudia is a palm-sized, hackable smart speaker on a Raspberry Pi Zero 2 **WH** + Hiwonder WonderEcho voice module. Say **"Claudia"**, ask anything, and Claude answers out loud. This repo is the complete builder kit: an illustrated build guide, a parts catalog with price-comparison shopping, an automated Pi installer, and a Windows console that configures and updates your device over the LAN.
+> **WH, not W.** The WonderEcho connects to four GPIO pins (SDA / SCL / 5V / GND), so the build needs the **WH** variant with pre-soldered headers. Buying the plain "W" means soldering 40 pins yourself before anything works.
 
-Wake-word detection runs in the WonderEcho's own firmware over I²C — no Pi-side listener, no openWakeWord, no model training. You program **"Claudia"** once with a one-shot I²C write (Part 8.3 of the guide). The chatbot runtime is the upstream [`PiSugar/whisplay-ai-chatbot`](https://github.com/PiSugar/whisplay-ai-chatbot); this repo doesn't fork it — it's the guide, configs, and Windows-side tooling that turn a pile of parts into a finished device.
+> **Before you start, gather:** a Windows / macOS / Linux computer to flash the microSD and SSH in, a way to plug a microSD into it (the SanDisk Ultra ships with a full-size SD adapter but no USB reader — most modern ultrabooks and MacBooks need a USB microSD reader, ~$8), and a **2.4 GHz** Wi-Fi network (the Pi Zero 2 WH has no 5 GHz radio). The smart-plug options below ship with US plugs; each vendor (Kasa, Shelly, Sonoff) also sells EU/UK/AU variants that speak the same local API — pick your region at checkout. **No soldering iron needed**, and **no extra jumper wires** — the WonderEcho ships with the 4-pin Dupont cable already.
 
-**Why Claudia:**
+> **Stock check.** The Pi Zero 2 WH is supply-constrained; if all the US retailers on the cards below show out-of-stock, [rpilocator.com](https://rpilocator.com) tracks live availability across the official reseller network.
 
-- **No soldering, ready in an afternoon.** Four pins of pre-flashed I²C cable connects the WonderEcho to the Pi Zero 2 **WH**. First-boot install is one shell script.
-- **No Alexa in the room.** The wake word is local. Recognition fires on-board the WonderEcho — your microphone is not streaming to a vendor's servers waiting for "Hey {brand}."
-- **Pluggable everything.** Swap LLMs (`anthropic` / `openai`), TTS engines (`openai` / `piper` / `elevenlabs` / `gemini`), or ASR providers (`whisper-cpp` / `openai` / `google`) with a single `set-llm` / `set-tts` / `set-asr` console command.
-- **Builder kit, not a SaaS.** Everything you need ships in this repo: parts list with tiered Amazon / Official / Reputable links, a `find-deals` shopping walker, a Pi-side installer, a Windows console, and a build guide rendered as one self-contained HTML file.
-- **One Markdown, one HTML, one truth.** Edit `Claudia.md`, save, and a `PostToolUse` hook regenerates `Claudia.htm` (inline CSS + JS + base64 PNGs — no CDN, no broken images two years from now).
+[github.com/mindattic/Claudia](https://github.com/mindattic/Claudia)
 
-> The build requires the **WH** variant of the Pi Zero 2 (pre-soldered headers). The plain "W" has no headers and would need 40 pins soldered before the WonderEcho's 4-pin cable can connect.
+*Last updated: 2026.05.23f*
 
 ---
 
-## Table of Contents
+## 01. Configure
 
-- [What's in here](#whats-in-here)
-- [Getting started (Windows builder side)](#getting-started-windows-builder-side)
-  - [Shopping flow (find-deals → apply-deals)](#shopping-flow-find-deals--apply-deals)
-  - [Self-update (`pull-latest` + `self-update`)](#self-update-pull-latest--self-update)
-- [Build the device](#build-the-device)
-- [HTML workflow](#html-workflow)
-  - [Theming](#theming)
-  - [Parts gallery](#parts-gallery)
-  - [Bumping the version](#bumping-the-version)
-  - [Deploying to mindattic.com/claudia/](#deploying-to-mindatticcomclaudia)
-- [Slash commands](#slash-commands-commit-do-deploy)
-- [Cost / time / parts](#cost--time--parts)
-- [Upstream references](#upstream-references)
+<!-- CONFIG-WIDGET -->
 
 ---
 
-## What's in here
+## 02. Shopping list
 
-```
-Claudia/
-├── Claudia.md                 # The build guide (canonical source of truth)
-├── Claudia.htm                # Auto-generated self-contained page (inlined CSS+JS+images, light/dark theme)
-├── index.htm                  # Byte-identical clone of Claudia.htm (so /claudia/ serves it directly — no redirect)
-├── README.md                  # ← you are here
-├── CLAUDE.md                  # Project rules for Claude Code agents
-├── Claudia.Console.bat        # Top-level shortcut to scripts/cli/Claudia.Console.bat
-├── package.json               # Two deps: marked (markdown) + highlight.js (syntax)
-│
-├── .claude/
-│   ├── settings.json          # Hook: regenerate .htm on every .md edit
-│   └── commands/
-│       ├── commit.md          # /commit slash command
-│       ├── deploy.md          # /deploy slash command (FTP-upload to mindattic.com/claudia)
-│       └── do.md              # /do slash command (continue current task)
-│
-├── config/
-│   ├── env.template           # Example .env for the Pi
-│   ├── asoundrc.usbmic        # ~/.asoundrc for legacy USB-mic builds (current build doesn't need it)
-│   ├── parts.json             # Parts catalog (Amazon/official/reputable URLs per part)
-│   ├── versions.json          # Compile-time {{VAR}} substitutions injected into the .md
-│   ├── part-images/           # PNGs that build-html.js base64-inlines into Claudia.htm
-│   └── console.json           # Saved Pi host/user (created on first 'detect'; gitignored value)
-│
-└── scripts/
-    ├── cli/                          # Windows builder-side tooling
-    │   ├── Claudia.Console.ps1       # Multi-command console (local + remote Pi)
-    │   ├── Claudia.Console.bat       # Launcher
-    │   ├── build-html.js             # Node: markdown -> self-contained .htm with theme toggle
-    │   ├── build-html.ps1 / .bat     # PowerShell wrapper for build-html.js
-    │   ├── bump-version.ps1 / .bat   # Stamp Claudia.md with a new date + rebuild .htm
-    │   ├── deploy.ps1 / .bat         # Build + FTP upload to /mindattic.com/claudia/
-    │   ├── deploy.settings.json.template  # Copy to deploy.settings.json (gitignored) with real FTP creds
-    │   ├── on-md-change.ps1          # Hook handler - auto-rebuild .htm on .md edits
-    │   └── pull-latest-finisher.ps1  # Detached helper for self-update (locked-file safe)
-    └── pi/                           # Scripts that run on the Raspberry Pi
-        ├── healthcheck.sh            # End-to-end smoke test (I²C + network + Claude API)
-        └── install-claudia.sh        # Automates Parts 5-10 of the guide
-```
+<!-- PARTS-GALLERY -->
 
 ---
 
-## Getting started (Windows builder side)
+## 03. Assemble
 
-You need **Node.js** ([nodejs.org](https://nodejs.org)) and **PowerShell 5+** (ships with Windows).
+**Total time:** ~3 minutes. No soldering.
 
-```powershell
-# 1. one-time: install the local deps the HTML build uses
-.\scripts\cli\Claudia.Console.bat update
+1. **Do not insert the microSD yet.** Flash it first in section 04.
+2. Connect the WonderEcho to the Pi's I²C header pins via the **4-pin Dupont cable that ships in the WonderEcho box** (Hiwonder includes it — you should not need to source one separately): **`SDA → BCM 2 (pin 3)`**, **`SCL → BCM 3 (pin 5)`**, **`5V → pin 2`**, **`GND → pin 6`**.
+3. Make sure the WonderEcho's speaker face is unobstructed (it doubles as the mic intake).
 
-# 2. open the interactive console
-.\Claudia.Console.bat
-```
+<!-- when: battery=yes -->
+4. Snap the **PiSugar 3 battery** onto the underside of the Pi using its magnetic pogo pins. No soldering — the spring-loaded pogo pins align themselves.
 
-You'll see something like:
+**Final stack:** WonderEcho (via I²C cable) ←→ Pi Zero 2 WH → PiSugar 3
+<!-- end -->
+<!-- when: battery=no -->
+**Final layout:** WonderEcho (via I²C cable) ←→ Pi Zero 2 WH (wall-powered)
+<!-- end -->
 
-```
-  Claudia Console
-  ---------------
-  target Pi  : pi@claudia.local
-
-  Commands:
-    help           List available commands.
-    detect         Find Claudia (the Pi) on the LAN. Saves the host for later commands.
-    set-host       Override the Pi hostname/IP.
-    shell          Open an interactive SSH session to Claudia.
-    status         Show chatbot.service status on Claudia.
-    restart        Restart chatbot.service on Claudia.
-    logs           Tail Claudia chatbot logs.
-    healthcheck    Copy scripts/pi/healthcheck.sh to Claudia and run it.
-    set-model      Set ANTHROPIC_MODEL on the Pi.
-    set-prompt     Set SYSTEM_PROMPT on the Pi.
-    set-apikey     Set ANTHROPIC_API_KEY on the Pi.
-    set-tts        Set TTS_SERVER on the Pi (openai | piper | elevenlabs | gemini | ...).
-    set-asr        Set ASR_SERVER on the Pi (whisper-cpp | openai | google).
-    set-llm        Set LLM_SERVER on the Pi (anthropic | openai).
-    show-config    Print the remote .env (api key masked).
-    update         Install/refresh local Node deps.
-    build-html     Render the latest Claudia.md to a self-contained .htm.
-    bump           Stamp Claudia.md with today's date and rebuild the .htm.
-    deploy         Build Claudia.htm and FTP-upload .md/.htm/index.htm.
-    list-parts     List parts catalog + which have a chosen URL.
-    find-deals     Open Amazon/official/reputable tabs per part; save your picks.
-    apply-deals    Stamp chosen URLs into the latest Claudia.md.
-    pull-latest    git fetch + overlay latest source (handles locked .ps1 files).
-    self-update    Refresh node_modules + open "newer version?" searches per part.
-```
-
-> The wake word lives in the WonderEcho's own firmware over I²C — there's no Pi-side env knob for it, so the Console no longer exposes a `set-wakeword` command. Re-program it with the one-shot I²C script from Part 8.3 of the guide.
-
-### Shopping flow (find-deals → apply-deals)
-
-The Console doubles as a price-comparison assistant for the parts in `config/parts.json`. For every part it opens browser tabs in this order:
-
-1. **Search for** a Google Shopping query (broad fallback)
-2. **Amazon** (filtered for price-asc)
-3. **Official retailer** (raspberrypi.com, pisugar.com, hiwonder.com, etc.)
-4. **Reputable** secondaries (Adafruit, Pi Hut, Sparkfun, Best Buy, Target, Tindie)
-
-You pick the best URL, paste it back into the prompt, and `apply-deals` rewrites the latest `Claudia.md` so each part line becomes a Markdown link to the URL you chose. The hook then auto-regenerates `Claudia.htm`.
-
-```powershell
-.\Claudia.Console.bat find-deals               # walk the whole catalog
-.\Claudia.Console.bat find-deals core          # just the must-have parts (Pi, SD, PSU, WonderEcho)
-.\Claudia.Console.bat find-deals smarthome     # just the smart-plug category
-.\Claudia.Console.bat apply-deals              # write the chosen URLs into the .md
-```
-
-### Self-update (`pull-latest` + `self-update`)
-
-- **`pull-latest`** — `git fetch` then mirror `origin/<branch>` into the working tree. Because Windows keeps the running `Claudia.Console.ps1` open, the command stages the new files into `%TEMP%` and spawns a detached helper (`scripts/cli/pull-latest-finisher.ps1`) that waits for *this* PowerShell to exit before robocopying the temp tree over the repo. Progress goes to `.claude/pull-latest.log`.
-- **`self-update`** — runs `npm outdated` / `npm update` / `npm audit fix`, then opens "is there a newer version of \<part\>?" searches for every catalog entry, then opens the official Claude model catalog. Use it monthly to catch silently-aging dependencies, deprecated parts, and new model IDs.
-
-You can also call commands directly:
-
-```powershell
-.\Claudia.Console.bat detect
-.\Claudia.Console.bat set-model claude-sonnet-4-6
-.\Claudia.Console.bat logs
-.\Claudia.Console.bat update --clean
-```
+✅ **Checkpoint:** The four I²C wires are seated firmly, nothing wobbles, the WonderEcho's speaker grille is unobstructed.
 
 ---
 
-## Build the device
+## 04. Flash microSD
 
-1. Open **`Claudia.md`** (or `Claudia.htm` for the styled, offline-ready version).
-2. Follow Parts 01–04 to configure your build, buy parts, assemble, and flash the SD card.
-3. SSH in. Then either:
-   - **Manual path:** follow Parts 05–10 by hand.
-   - **Scripted path:** copy `scripts/pi/install-claudia.sh` to the Pi and run it. It walks the same steps end-to-end and prompts you when it needs a reboot or your API key.
-4. Once it's running, run `Claudia.Console detect` from this machine — every command after that targets it over SSH.
+### 4.1 Install Raspberry Pi Imager
 
----
+> If your laptop has no SD-card slot — common on recent ultrabooks and every modern MacBook — plug in a **USB microSD reader** now. The card itself ships with a full-size SD adapter, but that only helps you if the host has a full-size SD slot.
 
-## HTML workflow
+Download from **raspberrypi.com/software** (Windows, macOS, Linux).
 
-The `.htm` is **derived**: never hand-edit `Claudia.htm`, always edit the `.md`. The output is one self-contained file — inline CSS, inline JS. No CDN, no `<link>`, no `<script src>`. Styling and the light/dark theme toggle follow [mindattic.com](https://mindattic.com)'s single-file convention.
+### 4.2 Flash
 
-Two ways the page gets refreshed:
+1. Open Raspberry Pi Imager.
+2. **Choose Device** → `Raspberry Pi Zero 2 W` *(Imager doesn't distinguish W from WH — the OS image is the same)*.
+3. **Choose OS** → `Raspberry Pi OS (other)` → **Raspberry Pi OS (64-bit)** (the full version, *not* Lite).
+   - The chatbot repo's install script expects packages from the full image. Lite will work but you'll need extra apt installs and may hit surprises.
+4. **Choose Storage** → your microSD card.
+5. Click the gear icon (⚙) for **Edit Settings** and configure:
+   - **Hostname:** `claudia`
+   - **Username:** *anything other than* `pi` — Pi OS Bookworm deprecated the default `pi` user, and current Imager builds warn (or refuse) when you try to set it. Use `claudia`, your first name, or any other identifier you'll remember.
+   - **Password:** *something secure*
+   - **Enable SSH:** ✅ password auth
+   - **Wireless LAN:** SSID + password for your home Wi-Fi
+   - **Locale:** *your timezone* (e.g. `America/Chicago`), keyboard *your layout* (e.g. `us`)
+6. **Save**, then **Write**. Takes 2–5 minutes.
 
-1. **Automatic** — `.claude/settings.json` registers a `PostToolUse` hook that fires `scripts/cli/on-md-change.ps1` whenever Claude Code edits `Claudia.md`. The hook re-renders `Claudia.htm`, mirrors it to `index.htm`, and logs to `.claude/html-rebuild.log`. No-op for any other file edit.
+### 4.3 First boot
 
-2. **Manual** —
-   ```powershell
-   .\scripts\cli\build-html.bat              # latest version
-   .\scripts\cli\build-html.bat -Source .\Claudia.md
+1. Insert the microSD into the Pi.
+2. Plug the official power supply into the **`PWR IN`** micro-USB port (the one nearest the corner, labeled `PWR IN` on the silkscreen). **Not** the middle port labeled `USB`.
+3. Wait 60–90 seconds.
+4. From your PC:
+
+   ```bash
+   ssh <your-username>@claudia.local
    ```
 
-### Theming
+   If `claudia.local` doesn't resolve, find the Pi's IP in your router's admin page and use `ssh <your-username>@192.168.x.x`.
 
-The page ships with both palettes and **defaults to dark**. The toggle button (top-right corner) flips `data-theme` on `<html>`; CSS custom properties drive every color so the rest of the cascade follows. The choice is persisted to `localStorage` under the key `claudia-theme` — including on first visit, so the dark default is locked in until the user explicitly flips it.
+✅ **Checkpoint:** You see the `<your-username>@claudia:~ $` prompt. Run `cat /etc/os-release` and confirm it says Debian/Raspberry Pi OS. Run `free -h` — you should see ~430 MB of `Mem:` (the Pi Zero 2 WH has 512 MB total).
 
-### Parts gallery
+---
 
-`build-html.js` builds a "Parts gallery" section from `config/parts.json`. Each card lists every tier link (Official / Google Shopping / reputable secondaries) plus a per-part price estimate, and the running total at the bottom updates live as the user changes the Configure-your-build widget above.
+## 05. System setup
 
-Images are read from `config/part-images/*.png` and base64-inlined into `Claudia.htm` at build time — no `<img src>`, no CDN dependency. Vendor CDNs rot too fast to trust; local PNGs in the repo are version-pinned with the rest of the build. To add an image for a new part, drop a PNG into `config/part-images/` and set `"imageFile": "part-images/<file>.png"` on the part entry in `parts.json`.
+Run these from the SSH session. One at a time. Wait for each to finish.
 
-### Bumping the version
+### 5.1 Update
 
-The file path is **stable** — `Claudia.md` and `Claudia.htm` never get renamed, so external links to them never rot. The revision date lives *inside* the file (in the H1, the "What's new in <date>" heading, and the footer). Bumping means rewriting those dates in place; historical revisions are recoverable from git history.
-
-```powershell
-.\scripts\cli\bump-version.bat                # stamp today's date (YYYY.MM.DD)
-.\scripts\cli\bump-version.bat -To 2026.06.01 # forward-date explicitly
+```bash
+sudo apt update && sudo apt full-upgrade -y
 ```
 
-The bumper finds the current date from the H1, replaces it everywhere it appears in the file, then regenerates `Claudia.htm`.
+This takes 5–15 minutes on a Pi Zero 2 WH. Be patient.
 
-### Deploying to mindattic.com/claudia/
+### 5.2 Free up RAM (Pi Zero only has 512 MB)
 
-The repo includes an FTP deploy that mirrors mindattic.com's pattern.
+The Pi Zero 2 WH is RAM-constrained. Disable services you don't need:
 
-```powershell
-# one-time setup
-copy scripts\cli\deploy.settings.json.template scripts\cli\deploy.settings.json
-# edit deploy.settings.json with real FTP creds (it's gitignored)
+```bash
+# Disable Bluetooth (not used by this build)
+sudo systemctl disable hciuart bluetooth
 
-# every release
-.\scripts\cli\deploy.bat
-# or, from the Console:
-.\Claudia.Console.bat deploy
+# Disable triggerhappy (gamepad daemon, not needed)
+sudo systemctl disable triggerhappy
 ```
 
-What `deploy.ps1` does, in order:
+### 5.3 Install build dependencies
 
-1. **Builds** — runs `build-html.js` so `Claudia.htm` reflects the current `.md`. Skip with `-NoBuild` if you just ran it.
-2. **Stamps + clones** — inserts/replaces a `<!-- Last Updated: ISO8601 -->` comment at the top of `Claudia.htm`, then writes that same byte stream out to `index.htm`. Both files are identical post-deploy, so `mindattic.com/claudia/` serves the full page directly with no redirect hop.
-3. **Uploads** — `curl.exe --ssl-reqd --ftp-pasv` pushes `Claudia.md`, `Claudia.htm`, and `index.htm` to `FtpRemotePath` (defaults to `/mindattic.com/claudia`).
+```bash
+sudo apt install -y git curl build-essential python3-pip python3-venv \
+  portaudio19-dev libsndfile1 ffmpeg alsa-utils libatlas-base-dev
+```
 
-Credentials never leave your machine: `scripts/cli/deploy.settings.json` is in `.gitignore`. Only the placeholder template gets committed.
+### 5.4 Enable I²C and detect the WonderEcho
 
----
+The WonderEcho is an I²C device. Turn the bus on, install i2c-tools, then verify the module answers on the bus.
 
-## Slash commands (`/commit`, `/do`, `/deploy`)
+```bash
+# Enable I²C non-interactively
+sudo raspi-config nonint do_i2c 0
 
-Three project-scoped commands live under `.claude/commands/`:
+# Tools + Python bindings
+sudo apt install -y i2c-tools python3-smbus
 
-- **`/commit`** — stages and commits the current working tree with a concise, log-style-matching message. Never `git add -A`, never `--amend`, never `--no-verify`.
-- **`/do`** — explicit version of the "bare `do` means continue" rule. Resumes whatever Claude was in the middle of when you stepped away.
-- **`/deploy`** — rebuilds `Claudia.htm`, stamps `index.htm`, and FTP-uploads `Claudia.md` / `Claudia.htm` / `index.htm` to `mindattic.com/claudia/`. Mirrors the `/deploy` command in the [mindattic.com](https://mindattic.com) repo.
+sudo reboot
+```
 
-Any of these can be hoisted to your global `~/.claude/commands/` later if you want them everywhere.
+After it reboots, SSH back in and run:
 
----
+```bash
+i2cdetect -y 1
+```
 
-## Cost / time / parts
+You should see a device address show up (commonly `0x52` for the WonderEcho — verify against the sticker on the module).
 
-The interactive Parts gallery in `Claudia.md` (Part 02) sums the live total based on your configuration. At a glance:
-
-| Build | What you get | Total |
-|-------|--------------|-------|
-| Desktop  | Pi Zero 2 WH + 32 GB microSD + 12.5 W PSU + WonderEcho  | ~$62 |
-| Portable | Desktop + PiSugar 3 1200 mAh battery                    | ~$102 |
-| + smart plug | Add one of Kasa HS103 / Shelly Plug US Gen4 / Sonoff S31 + Tasmota | +$10–$20 |
-
-Assembly is ~3 minutes — one 4-pin I²C cable from the WonderEcho to the Pi's GPIO header, no soldering. First-boot software install is ~30–60 minutes wall-clock (mostly `apt` and `npm` chugging on a 512 MB Pi).
+✅ **Checkpoint:** `i2cdetect -y 1` lists at least one device address — the WonderEcho is talking to the Pi.
 
 ---
 
-## Upstream references
+## 06. Install chatbot
 
-- Build guide: **`Claudia.md`** in this repo
-- Chatbot runtime: <https://github.com/PiSugar/whisplay-ai-chatbot>
-- WonderEcho voice module: <https://www.hiwonder.com/products/wonderecho>
-- Claude API docs: <https://docs.claude.com>
-- Claude model catalog: <https://docs.claude.com/en/docs/about-claude/models/overview>
-- Claude pricing: <https://anthropic.com/pricing>
+This is the PiSugar `whisplay-ai-chatbot` repo — we use it as the LLM/ASR/TTS plumbing even though we're not using the Whisplay HAT itself. Wake-word and audio I/O go through the WonderEcho instead.
+
+```bash
+cd ~
+git clone https://github.com/PiSugar/whisplay-ai-chatbot.git
+cd whisplay-ai-chatbot
+bash install_dependencies.sh
+source ~/.bashrc
+```
+
+The dependency install pulls Node.js, Python packages, and audio libraries. This takes **15–25 minutes** on a Pi Zero 2 WH. Let it finish.
+
+> The `source ~/.bashrc` line is important — the installer sets PATH entries you need in your current shell session.
+
+✅ **Checkpoint:** `install_dependencies.sh` finishes without errors. Test that Node is on PATH:
+
+```bash
+node --version
+```
+
+You should see `v20.x` or newer (upstream's installer pulls in the current Node LTS).
 
 ---
 
-*Built by MindAttic LLC. The guide carries the canonical version; this README just points at it.*
+## 07. API key
+
+1. Go to **console.anthropic.com** and sign in (or create an account).
+2. Add a payment method and put a small amount of credit on the account (e.g., $5 — that lasts a long time on Haiku).
+3. Navigate to **API Keys** → **Create Key**.
+4. Name it `claudia`. **Copy the key now** — you can't see it again later.
+5. Treat the key like a password.
+
+**Approximate cost:** Casual personal use on `claude-haiku-4-5-20251001` typically runs a few dollars per month at most. Check current pricing at anthropic.com/pricing.
+
+### Which model to pick
+
+| Model ID | Speed | Quality | When to use |
+|----------|-------|---------|-------------|
+| `claude-haiku-4-5-20251001` | Fastest | Good | **Default for this device.** Latency matters more than essay-grade prose for a voice assistant. |
+| `claude-sonnet-4-6` | Medium | Excellent | If you want richer answers and don't mind a slightly slower response. |
+| `claude-opus-4-7` | Slowest | Best | Overkill for spoken Q&A. Use for hard reasoning tasks only. |
+
+Model IDs change over time. The current list lives at [docs.claude.com](https://docs.claude.com/en/docs/about-claude/models/overview).
+
+---
+
+## 08. Configure chatbot
+
+### 8.1 Create your `.env`
+
+```bash
+cd ~/whisplay-ai-chatbot
+cp .env.template .env
+nano .env
+```
+
+The template ships with many fields for different ASR/LLM/TTS providers. For a Claude-based build, you need the LLM section set to Anthropic. Find and set:
+
+```env
+# === LLM (the AI brain) ===
+LLM_SERVER=anthropic
+ANTHROPIC_API_KEY=sk-ant-YOUR-KEY-HERE
+ANTHROPIC_MODEL=claude-haiku-4-5-20251001
+
+# === System prompt — shapes the assistant's voice ===
+SYSTEM_PROMPT=You are a concise, friendly voice assistant. Answer in plain spoken English — no markdown, no bullet lists, no headings. Keep responses to 1–3 sentences unless the user explicitly asks for more.
+```
+
+The wake-word listener does **not** run on the Pi — it's handled in hardware by the WonderEcho (see section 08.3 below). The Pi only polls the WonderEcho's wake-event register over I²C, so no `WAKE_WORD_*` env keys are needed.
+
+> **Env-key naming:** upstream uses `LLM_SERVER`, `ASR_SERVER`, `TTS_SERVER` (not `*_PROVIDER`). The plugin registry switches on the lowercase value — see `src/cloud-api/server.ts` in the upstream repo.
+
+<!-- when: asr=whisper-cpp -->
+**ASR (speech-to-text): Whisper, local.** Already wired up by the template defaults. Slowest option on a Pi Zero 2 WH (~3–6 s per utterance) but no API key required and works offline.
+<!-- end -->
+<!-- when: asr=openai -->
+**ASR (speech-to-text): OpenAI Whisper API.** Add to your `.env`:
+```env
+ASR_SERVER=openai
+OPENAI_API_KEY=sk-REPLACE-ME
+```
+Round-trip latency drops to ~0.5–1 s. Costs a few cents per hour of speech.
+<!-- end -->
+<!-- when: asr=google -->
+**ASR (speech-to-text): Google Cloud STT.** Add to your `.env`:
+```env
+ASR_SERVER=google
+GOOGLE_APPLICATION_CREDENTIALS=/home/pi/google-stt-key.json
+```
+Drop the service-account JSON from Google Cloud Console at the path above. Generally fastest cloud STT on US-region traffic.
+<!-- end -->
+
+<!-- when: tts=piper -->
+**TTS (text-to-speech): Piper, local.** Free, runs on the Pi. Voice quality is "robot but understandable" — fine for short replies. Add to your `.env`:
+```env
+TTS_SERVER=piper
+PIPER_BINARY_PATH=/usr/local/bin/piper
+PIPER_MODEL_PATH=/home/pi/piper/voices/en_US-amy-low.onnx
+```
+<!-- end -->
+<!-- when: tts=openai -->
+**TTS (text-to-speech): OpenAI gpt-4o-mini-tts (recommended).** Near-state-of-the-art quality, supported by upstream out-of-the-box. Add to your `.env`:
+```env
+TTS_SERVER=openai
+OPENAI_API_KEY=sk-REPLACE-ME
+OPENAI_VOICE_MODEL=gpt-4o-mini-tts
+OPENAI_VOICE_TYPE=nova
+```
+The new `gpt-4o-mini-tts` model and the 4o-series voices (`alloy`, `nova`, `onyx`, `marin`, `cedar`, plus older `echo`/`fable`/`shimmer`/`ash`/`ballad`/`coral`/`sage`/`verse`) are dramatically more natural than the older `tts-1`. Costs roughly $0.015 per minute of speech.
+<!-- end -->
+
+<!-- when: tts=elevenlabs -->
+**TTS (text-to-speech): ElevenLabs (best quality, requires a one-time patch).**
+
+ElevenLabs has the most natural voices on the market right now, but the upstream chatbot doesn't ship an ElevenLabs handler. You add one yourself — about 40 lines of TypeScript and a single registration entry.
+
+**Step 1 — handler.** Create `~/whisplay-ai-chatbot/src/cloud-api/elevenlabs/elevenlabs-tts.ts` with:
+
+```typescript
+import mp3Duration from "mp3-duration";
+import { TTSResult } from "../../type";
+
+// The chatbot already loads .env at startup, so process.env is populated
+// by the time this plugin's activate() runs — no need to call dotenv here.
+const apiKey     = process.env.ELEVENLABS_API_KEY     || "";
+const voiceId    = process.env.ELEVENLABS_VOICE_ID    || "EXAVITQu4vr4xnSDxMaL"; // "Bella"
+const modelId    = process.env.ELEVENLABS_MODEL_ID    || "eleven_turbo_v2_5";    // low-latency
+const stability  = parseFloat(process.env.ELEVENLABS_STABILITY  || "0.5");
+const similarity = parseFloat(process.env.ELEVENLABS_SIMILARITY || "0.75");
+
+const elevenLabsTTS = async (text: string): Promise<TTSResult> => {
+  if (!apiKey) { console.error("ELEVENLABS_API_KEY is not set."); return { duration: 0 }; }
+  const url = `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(voiceId)}`;
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "xi-api-key": apiKey,
+        "Content-Type": "application/json",
+        "Accept": "audio/mpeg",
+      },
+      body: JSON.stringify({
+        text,
+        model_id: modelId,
+        voice_settings: { stability, similarity_boost: similarity },
+      }),
+    });
+  } catch (e) {
+    console.log("ElevenLabs TTS request failed:", e);
+    return { duration: 0 };
+  }
+  if (!res.ok) {
+    console.log("ElevenLabs TTS HTTP " + res.status + ": " + (await res.text().catch(() => "")));
+    return { duration: 0 };
+  }
+  const buffer = Buffer.from(await res.arrayBuffer());
+  const duration = await mp3Duration(buffer);
+  // mp3-duration returns undefined if it can't parse the stream; coerce to
+  // 0 so downstream code never sees NaN.
+  return { buffer, duration: (duration ?? 0) * 1000 };
+};
+
+export default elevenLabsTTS;
+```
+
+**Step 2 — register the plugin.** Open `~/whisplay-ai-chatbot/src/plugin/builtin/tts.ts` and add this block alongside the other `pluginRegistry.register(...)` calls:
+
+```typescript
+pluginRegistry.register({
+  name: "elevenlabs",
+  displayName: "ElevenLabs TTS",
+  version: "1.0.0",
+  type: "tts",
+  audioFormat: "mp3",
+  description: "ElevenLabs text-to-speech (high-quality cloud voices)",
+  activate: () => {
+    const ttsProcessor = require("../../cloud-api/elevenlabs/elevenlabs-tts").default;
+    return { ttsProcessor };
+  },
+} as TTSPlugin);
+```
+
+**Step 3 — `.env`.**
+```env
+TTS_SERVER=elevenlabs
+ELEVENLABS_API_KEY=sk_REPLACE_ME
+ELEVENLABS_VOICE_ID=EXAVITQu4vr4xnSDxMaL
+ELEVENLABS_MODEL_ID=eleven_turbo_v2_5
+ELEVENLABS_STABILITY=0.5
+ELEVENLABS_SIMILARITY=0.75
+```
+
+**Step 4 — rebuild + restart.**
+```bash
+cd ~/whisplay-ai-chatbot
+bash build.sh
+sudo systemctl restart chatbot.service
+```
+
+Voice IDs: log into [elevenlabs.io](https://elevenlabs.io), open VoiceLab, and copy the ID of any voice you've cloned or one of their stock voices. `eleven_turbo_v2_5` is recommended for the Pi Zero 2 WH — it has the lowest latency. Cost is roughly $0.18 per 1000 chars (~7-8 cents per minute of speech).
+<!-- end -->
+
+> The `.env.template` evolves. If your file looks different from this guide, the live template at [github.com/PiSugar/whisplay-ai-chatbot/blob/master/.env.template](https://github.com/PiSugar/whisplay-ai-chatbot/blob/master/.env.template) is the source of truth.
+
+Save: `Ctrl+X`, `Y`, `Enter`.
+
+### 8.2 Build the project
+
+```bash
+bash build.sh
+```
+
+This compiles the TypeScript and prepares assets. ~5–10 minutes on a Pi Zero 2 WH.
+
+✅ **Checkpoint:** `build.sh` exits cleanly with no errors.
+
+### 8.3 Configure the WonderEcho wake word
+
+The WonderEcho module runs its own on-device wake-word detector — the Pi doesn't have to listen. You program the trigger phrase (`"Claudia"`) once over I²C, then the module flags a wake event on the bus whenever it hears the word; the Pi polls that register and starts a recording session each time it fires.
+
+> **Verify before running.** The exact I²C register layout (`0x10` as the "set-trigger" opcode below) depends on your WonderEcho firmware revision. Check the [Hiwonder WonderEcho wiki](https://www.hiwonder.com/products/wonderecho) for the register map matching your unit before running this — the snippet is the canonical pattern, not a guaranteed copy-paste for every shipping firmware.
+
+```bash
+# Reference snippet: writes the trigger word to the WonderEcho's "set-trigger"
+# register. Confirm the register/opcode against the Hiwonder wiki for your
+# firmware revision before relying on this in production.
+cd ~/whisplay-ai-chatbot
+python3 - <<'PY'
+import smbus2 as smbus, time
+bus = smbus.SMBus(1)          # I²C bus 1 on the Pi Zero
+ADDR = 0x52                    # WonderEcho default — confirm with i2cdetect
+WORD = b"claudia"
+bus.write_i2c_block_data(ADDR, 0x10, list(WORD) + [0])   # 0x10 = set-trigger
+time.sleep(0.2)                                          # let the WonderEcho commit the trigger to its on-board flash before we close the bus
+print("Wake word programmed:", WORD.decode())
+PY
+```
+
+The chatbot service polls the WonderEcho's wake-event register over I²C and starts a recording session each time the word fires. No Python venv, no openWakeWord, no training.
+
+✅ **Checkpoint:** speak "Claudia" near the module — `journalctl -u chatbot.service -f` shows a wake event within ~300 ms.
+
+> The exact register map can vary by firmware revision. If your unit reports a different I²C address (verify with `i2cdetect -y 1`) or uses a different "set-trigger" opcode, check the [WonderEcho wiki](https://www.hiwonder.com/products/wonderecho) for the map matching your firmware.
+
+---
+
+## 09. Healthcheck
+
+Before launching the full chatbot, run a 90-second healthcheck that verifies three layers: the WonderEcho is present on the I²C bus, the network can reach Anthropic, and your API key + chosen model actually return a response. (The audio path itself — speaker out, mic in — is exercised by the manual launch in Part 10.)
+
+Create the script:
+
+```bash
+nano ~/healthcheck.sh
+```
+
+Paste:
+
+```bash
+#!/bin/bash
+# claudia healthcheck — quick end-to-end smoke test
+# Usage: bash ~/healthcheck.sh
+
+set -u
+ENV_FILE="$HOME/whisplay-ai-chatbot/.env"
+PASS="\033[0;32m✓\033[0m"
+FAIL="\033[0;31m✗\033[0m"
+exit_code=0
+
+step() { printf "\n%s\n" "── $1 ──"; }
+ok()   { printf "  $PASS %s\n" "$1"; }
+bad()  { printf "  $FAIL %s\n" "$1"; exit_code=1; }
+
+step "1. WonderEcho module on I2C"
+# The WonderEcho carries both mic and speaker on-board and talks to the Pi
+# over I2C bus 1. We don't expect a standalone ALSA card.
+if command -v i2cdetect >/dev/null 2>&1; then
+    if i2cdetect -y 1 2>/dev/null | grep -qE ' 5[234] '; then
+        ok "WonderEcho detected on I2C bus 1"
+    else
+        bad "WonderEcho NOT detected on I2C bus 1 (check 4-pin wiring + 'sudo raspi-config nonint do_i2c 0')"
+    fi
+else
+    bad "i2c-tools not installed - run 'sudo apt install -y i2c-tools' (see Part 05.4)"
+fi
+
+step "2. Network reachability"
+# Use HTTPS instead of ping — many networks/APIs drop ICMP but pass TLS.
+# A 4xx response still proves we got a real reply from api.anthropic.com.
+net_code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 5 https://api.anthropic.com/ 2>/dev/null || echo "000")
+if [ "$net_code" != "000" ]; then
+  ok "api.anthropic.com responded (HTTP $net_code)"
+else
+  bad "cannot reach api.anthropic.com (Wi-Fi, DNS, or TLS issue)"
+fi
+
+step "3. Claude API call"
+if [ ! -f "$ENV_FILE" ]; then
+  bad "$ENV_FILE not found — finish Part 08 first"
+else
+  # shellcheck disable=SC1090
+  set -a; source "$ENV_FILE"; set +a
+  if [ -z "${ANTHROPIC_API_KEY:-}" ]; then
+    bad "ANTHROPIC_API_KEY is empty in .env"
+  else
+    response=$(curl -s -w "\n%{http_code}" https://api.anthropic.com/v1/messages \
+      -H "x-api-key: $ANTHROPIC_API_KEY" \
+      -H "anthropic-version: 2023-06-01" \
+      -H "content-type: application/json" \
+      -d "{\"model\":\"${ANTHROPIC_MODEL:-claude-haiku-4-5-20251001}\",\"max_tokens\":50,\"messages\":[{\"role\":\"user\",\"content\":\"Say hello in exactly 5 words.\"}]}")
+    http_code=$(echo "$response" | tail -n1)
+    body=$(echo "$response" | sed '$d')
+    if [ "$http_code" = "200" ]; then
+      ok "Claude API responded HTTP 200"
+      # Prefer jq if available — it handles escaped quotes correctly. Fall
+      # back to a grep+sed that breaks on escapes but is good enough for a
+      # smoke-test "did Claude reply" sanity check.
+      if command -v jq >/dev/null 2>&1; then
+        reply=$(echo "$body" | jq -r '.content[0].text // empty' 2>/dev/null)
+      else
+        reply=$(echo "$body" | grep -o '"text":"[^"]*"' | head -1 | sed 's/"text":"//;s/"$//')
+      fi
+      echo "  Reply: $reply"
+    else
+      bad "Claude API returned HTTP $http_code"
+      echo "  $body" | head -3
+    fi
+  fi
+fi
+
+echo
+if [ $exit_code -eq 0 ]; then
+  printf "$PASS All checks passed. You're ready for Part 10.\n"
+else
+  printf "$FAIL One or more checks failed. Fix above before running the chatbot.\n"
+fi
+exit $exit_code
+```
+
+Run it:
+
+```bash
+chmod +x ~/healthcheck.sh
+bash ~/healthcheck.sh
+```
+
+✅ **Checkpoint:** All three sections print green check marks. If anything fails, fix that piece before moving on — running the full chatbot before this passes just makes debugging harder.
+
+---
+
+## 10. Run
+
+### Manual launch (foreground, for testing)
+
+```bash
+cd ~/whisplay-ai-chatbot
+bash run_chatbot.sh
+```
+
+**Say "Claudia"** — the WonderEcho hears the wake word, the chatbot starts a recording session, you ask your question, and Claude answers out loud. Sessions end automatically after 60 seconds of silence or when you say a stop word (`byebye`, `goodbye`, or `stop`).
+
+Stop the foreground process with `Ctrl+C`.
+
+### Set it to start on boot
+
+The repo provides an opinionated startup installer that registers a `chatbot.service` systemd unit and sets the system to multi-user (headless) mode. Use it:
+
+```bash
+cd ~/whisplay-ai-chatbot
+bash startup.sh
+```
+
+After this, the chatbot starts automatically on every boot. Verify:
+
+```bash
+sudo systemctl status chatbot.service
+```
+
+You should see `Active: active (running)`.
+
+### Live logs
+
+```bash
+tail -f ~/whisplay-ai-chatbot/chatbot.log
+# or
+journalctl -u chatbot.service -f
+```
+
+### Tuning wake-word reliability
+
+The WonderEcho exposes a few I²C registers for tuning:
+
+- **Too many false wakes** (TV, conversations) → raise the detection threshold via the threshold register.
+- **Missing real wakes** (you have to say it twice) → lower the threshold, or move the module closer to where you sit.
+
+Reference: [Hiwonder WonderEcho wiki](https://www.hiwonder.com/products/wonderecho) for the exact register map for your firmware revision.
+
+<!-- when: smarthome=kasa,shelly,sonoff -->
+---
+
+## 10.5 Smart-home
+
+You picked a smart plug. Teach Claudia to flip it by giving the chatbot a *tool* — a small shell command it can invoke when the user's request matches.
+
+<!-- when: smarthome=kasa -->
+### TP-Link Kasa (HS103 / KP125M) — local control via `python-kasa`
+
+```bash
+pip install python-kasa --break-system-packages
+
+# Find your plug on the LAN
+kasa discover
+
+# Toggle it (replace IP)
+kasa --host 192.168.1.42 on
+kasa --host 192.168.1.42 off
+```
+
+Wire that into the chatbot by exposing `kasa --host <ip> on` / `off` as a tool the LLM can call. No vendor account, no cloud hop — works even if the Kasa cloud is down.
+<!-- end -->
+
+<!-- when: smarthome=shelly -->
+### Shelly Plug US — local HTTP
+
+Find your plug's IP in your router admin or via the Shelly app. Then any HTTP client can flip it:
+
+```bash
+# On
+curl "http://192.168.1.42/relay/0?turn=on"
+# Off
+curl "http://192.168.1.42/relay/0?turn=off"
+```
+
+No vendor account, no SDK — wire those two `curl` calls into the chatbot as tools.
+<!-- end -->
+
+<!-- when: smarthome=sonoff -->
+### Sonoff S31 + Tasmota — local MQTT / HTTP
+
+Out-of-the-box the S31 uses the eWeLink cloud, which means latency and a dependency on someone else's servers. Reflash with [Tasmota](https://templates.blakadder.com/sonoff_S31.html) (no soldering needed for the S31 — there's a serial header) to expose a local HTTP endpoint:
+
+```bash
+curl "http://192.168.1.42/cm?cmnd=Power%20On"
+curl "http://192.168.1.42/cm?cmnd=Power%20Off"
+```
+
+Slightly more work to flash, but you get full local control + power-usage telemetry over MQTT.
+<!-- end -->
+<!-- end -->
+
+---
+
+## 11. Case
+
+<!-- when: case=none -->
+You picked **no case**. PiSugar publishes free STL files if you change your mind — flip the *3D-printed case* config above to FDM or SLA and the right link will appear here.
+<!-- end -->
+<!-- when: case=fdm,sla -->
+PiSugar publishes free STL files for case shells:
+<!-- end -->
+
+<!-- when: case=fdm -->
+- [pi02 Whisplay chatbot case — **FDM** (filament print)](https://github.com/PiSugar/suit-cases/tree/main/pisugar3-whisplay-chatbot-fdm)
+<!-- end -->
+<!-- when: case=sla -->
+- [pi02 Whisplay chatbot case — **SLA** (resin print)](https://github.com/PiSugar/suit-cases/tree/main/pisugar3-whisplay-chatbot)
+<!-- end -->
+
+<!-- when: case=fdm,sla -->
+No printer? Upload the STL to a print service like [JLC3DP](https://jlc3dp.com) or [Craftcloud](https://craftcloud3d.com) — a few dollars shipped.
+<!-- end -->
+
+---
+
+## 12. Troubleshooting
+
+### Nothing plays through the speaker
+- The WonderEcho carries the speaker on-board and is driven over I²C — it does **not** show up in `aplay -l`. If you hear nothing, run `i2cdetect -y 1` and confirm the module's address still answers; if not, the 4-pin cable has come loose.
+- Check `journalctl -u chatbot.service -f` for "TTS" or "speak" lines — if Claude is replying but the WonderEcho doesn't render, the I²C write path is failing.
+
+### Mic captures silence or garbage
+- The mic is on the WonderEcho too — its input is occluded if the module is face-down or covered. Reposition it speaker-side up.
+- If the wake event never fires (`journalctl -u chatbot.service -f` stays silent when you speak), the wake word may have been reset on cold boot; re-run the I²C programming snippet from Part 08.3.
+
+### Build fails out of memory
+- The Pi Zero 2 WH only has 512 MB. Add swap if `build.sh` gets OOM-killed:
+  ```bash
+  sudo dphys-swapfile swapoff
+  sudo sed -i 's/^CONF_SWAPSIZE=.*/CONF_SWAPSIZE=1024/' /etc/dphys-swapfile
+  sudo dphys-swapfile setup
+  sudo dphys-swapfile swapon
+  ```
+
+### Service won't start
+```bash
+sudo systemctl status chatbot.service --no-pager
+journalctl -u chatbot.service -n 60 --no-pager
+```
+Look for the first ERROR line — usually a missing `.env` key or a wrong path.
+
+### Claude API returns 401
+- API key is invalid or expired. Re-copy from console.anthropic.com → API Keys.
+
+### Claude API returns 429
+- You're rate-limited. Add credit at console.anthropic.com → Billing.
+
+### WonderEcho doesn't respond
+- Run `i2cdetect -y 1` and confirm the module's address still shows up.
+- Re-run the wake-word programming script in Part 08.3 — flashes can be lost on cold boots.
+- Check `journalctl -u chatbot.service -f` while you speak — if the wake event never fires, the 4-pin I²C cable may have come loose or the module's mic input is occluded.
+
+### Wake word triggers on TV / unrelated speech
+- Increase the WonderEcho's detection threshold via I²C — see the [Hiwonder wiki](https://www.hiwonder.com/products/wonderecho) for the register address on your firmware revision.
+
+### Responses feel slow
+- Use `claude-haiku-4-5-20251001` (Part 07 — it's the recommended default for this reason).
+- The Pi Zero 2 WH's Wi-Fi antenna is weak. Move it closer to the router.
+- Local Whisper STT is the slowest step on a Pi Zero 2 WH. If you have a cloud STT key (OpenAI, Google), switching to one of those in `.env` cuts perceived latency dramatically.
+
+### Need to re-run the healthcheck
+```bash
+bash ~/healthcheck.sh
+```
+
+### SD card filling up
+```bash
+df -h
+sudo apt clean
+# clear chatbot recordings:
+rm -f ~/whisplay-ai-chatbot/data/recordings/*.wav 2>/dev/null
+```
+
+---
+
+## Reference
+
+- **WonderEcho module:** https://www.hiwonder.com/products/wonderecho
+- **Chatbot repo:** https://github.com/PiSugar/whisplay-ai-chatbot
+- **Claude API docs:** https://docs.claude.com
+- **Claude model catalog:** https://docs.claude.com/en/docs/about-claude/models/overview
+- **Pricing:** https://anthropic.com/pricing
+
+---
+
+## Summary stack
+
+| Layer | What it is |
+|-------|-----------|
+| Hardware | Pi Zero 2 WH + Hiwonder WonderEcho (I²C) (+ optional PiSugar 3 battery) |
+| OS | Raspberry Pi OS 64-bit |
+| Wake word | **"Claudia"** — runs on the WonderEcho, no Pi-side listener |
+| Speech → text | Local Whisper-cpp, or cloud STT if configured |
+| LLM | Claude API (Anthropic) |
+| Text → speech | OpenAI gpt-4o-mini-tts (recommended), Piper (local), or ElevenLabs (with patch) |
+| Service manager | systemd (`chatbot.service`, set up by `startup.sh`) |
+
+Only Claude (and your chosen TTS, if cloud) runs in the cloud. Everything else can run on-device.
+
+---
+
+## Update Notes
+
+### 2026.05.23e
+
+- Immediate follow-up re-deploy to publish the `2026.05.23d` Update Notes entry, which was written locally after the original `.23d` deploy had already uploaded. The `.23d` live bundle was stamped but missing its own notes; `.23e` carries both entries to the live site. No prose, layout, or build-script changes — letter-suffix bump only.
+
+### 2026.05.23d
+
+- Routine re-deploy. MindAttic.UiUx sync re-spliced OutfitFont (62.6 KB), AtticFont (57.8 KB), and BackHomeM (1.6 KB) into `build-html.js` cleanly; all three files (`Claudia.md`, `Claudia.htm`, `index.htm`) uploaded successfully to `mindattic.com/claudia/`. No prose, layout, or build-script changes — letter-suffix bump only.
+
+### 2026.05.23c
+
+- Routine re-deploy with the refreshed MindAttic.UiUx font payloads (OutfitFont, AtticFont, BackHomeM re-spliced from the sibling components repo). No prose, layout, or build-script changes — letter-suffix bump only, covering the intervening `2026.05.23a` / `2026.05.23b` deploy iterations.
+
+### 2026.05.22h
+
+- **`/commit` now also pushes.** The project-scoped `commit` slash command at `.claude/commands/commit.md` previously instructed Claude to commit and stop ("Do NOT push"). It now mirrors the global behavior — `git push` after every commit (sets `-u origin <branch>` if no upstream), with safety rails: no `--no-verify`, no `--force`/`--force-with-lease`, and a hard stop with a user-facing warning if the push is rejected on `main`/`master`. No Claudia content changes.
+
+### 2026.05.22g
+
+- **`/deploy` now pulls MindAttic.UiUx first.** `scripts/cli/deploy.ps1` gained a sync stage between the version bump and the build: it invokes `MindAttic.UiUx/sync/sync-claudia.ps1` (looked up as a sibling of the Claudia repo, or overridden via `$env:MINDATTIC_COMPONENTS_ROOT`) to splice the latest subscribed component CSS (OutfitFont, AtticFont, BackHomeM) into `build-html.js` *before* `node build-html.js` runs. A new `-NoSync` switch skips it for machines that don't have the Components repo cloned, and a missing sibling folder produces a warning instead of a hard failure. The `.claude/commands/deploy.md` doc was updated to describe the new stage.
+
+### 2026.05.22e
+
+- **TOC absolutely positioned.** Added `position: absolute; top: 60px` to `.toc` in `build-html.js` so the table-of-contents lifts out of normal sidebar flow.
+- **Wake mechanism: last "interrupt line" mention purged.** The 22c sweep unified Parts 08 / 08.3 / 10 around "polls the WonderEcho's wake-event register over I²C", but the matching troubleshooting bullet still said "the I²C interrupt line may be miswired". Now says "the 4-pin I²C cable may have come loose" — consistent with the actual wiring (SDA/SCL/5V/GND, no interrupt GPIO).
+- **Register-map stability contradiction resolved.** Part 08.3 had two adjacent notes that disagreed — one said the layout "depends on your WonderEcho firmware revision", the other said Hiwonder ships a "fixed register map". Both now point at the wiki as the source of truth and acknowledge revision drift.
+- **Healthcheck intro now matches what the script actually tests.** Used to claim "speaker, mic, network, Claude API"; the script never exercises the speaker or mic. Updated to "WonderEcho on I²C, network, Claude API" — and notes the audio path itself is verified by the manual launch in Part 10.
+- **Network check no longer relies on ICMP.** Replaced `ping api.anthropic.com` (which silently fails on networks that drop ICMP) with an HTTPS probe via `curl` — a 4xx still proves reachability without needing valid auth.
+- **JSON reply extraction prefers `jq` when available.** The `grep '"text":"…"'` pattern breaks on responses containing escaped quotes. The healthcheck now uses `jq -r '.content[0].text'` if installed, and falls back to the grep/sed pattern for hosts that don't have jq.
+- **Last two "Pi Zero" stragglers normalized.** Parts 05.1 and 12 ("This takes 5–15 minutes on a Pi Zero", "Local Whisper STT is the slowest step on a Pi Zero") joined the rest of the body in saying "Pi Zero 2 WH".
+- **ElevenLabs handler no longer returns NaN duration.** `mp3-duration` can return `undefined` on parse failure, and `undefined * 1000 = NaN`. Coerced with `(duration ?? 0) * 1000` so the caller always sees a real number.
+- **Redundant `dotenv.config()` removed from the ElevenLabs plugin.** The chatbot already loads `.env` at startup; calling `dotenv.config()` on plugin import was an unconditional side effect that ran whether or not the plugin was activated.
+- **Smart-plug regional note covers all three vendors.** The "Before you start" callout used to single out Shelly and Kasa for international plug variants; Sonoff (the third option) has them too. Now framed as "each vendor sells EU/UK/AU variants — pick your region at checkout."
+
+### 2026.05.22d
+
+- Routine re-deploy after committing 2026.05.22c's 10 doc fixes. No source changes — letter-suffix bump only.
+
+### 2026.05.22c
+
+- **Build-pipeline placeholder leak fixed.** Part 06's Node-version checkpoint was rendering the literal `{{NODE_LABEL}}` template token instead of a real version. Replaced with `v20.x` (current Node LTS that upstream's installer pulls).
+- **Default Pi OS username removed.** Part 04 used to recommend `Username: pi`, but Bookworm-era Imager warns or refuses that name. The guide now tells you to pick anything else (e.g. `claudia` or your first name) and downstream SSH commands + the checkpoint prompt use `<your-username>@claudia` instead of `pi@claudia`.
+- **Hardcoded timezone unmasked.** `America/Chicago` sat next to genuine placeholders in the Imager settings list, so international readers were copying a Central-US timezone verbatim. Now framed as "*your timezone* (e.g. `America/Chicago`)".
+- **Wake-trigger mechanism unified.** Parts 08 / 08.3 / 10 previously described the WonderEcho's wake signal three different ways ("wake-up signal over I²C" / "pulls a GPIO" / "watches the interrupt line"). All three now say the Pi polls a wake-event register over I²C — matches the 4-pin SDA/SCL/5V/GND wiring (no dedicated interrupt GPIO).
+- **i2cdetect regex tightened.** Part 09 healthcheck's `grep -qE '52|53|54'` matched those substrings anywhere on a line. Anchored to a matrix cell (`' 5[234] '`) so column-header lines can't false-positive.
+- **SD-reader callout moved before the Imager download line** in Part 04.1, so readers see "you might need a USB microSD reader" *before* they leave to download Imager rather than after.
+- **Cross-reference numbering normalized.** Section headings use two-digit prefixes (`## 04.`, `## 05.`, …), so cross-refs in the healthcheck script and troubleshooting section were standardized to match: "Part 5.4" → "Part 05.4", "Part 8" → "Part 08", "Part 8.3" → "Part 08.3", "Part 7" → "Part 07".
+- **Pi Zero 2 W → WH nomenclature aligned.** After the recent power-supply-card fix established WH as canonical, eight remaining body mentions of "Pi Zero 2 W" (RAM checkpoint, dependency-install time, ASR/TTS latency notes, OOM troubleshooting, Wi-Fi note) were converted. The Imager UI step keeps `Raspberry Pi Zero 2 W` since that's literally what Imager shows.
+- **WonderEcho I²C snippet labeled as a reference, not a guaranteed paste.** Part 08.3's `bus.write_i2c_block_data(ADDR, 0x10, …)` script now sits under a "verify before running" callout pointing at the Hiwonder wiki for the register map of the reader's specific firmware revision.
+- **`time.sleep(0.2)` annotated.** The unexplained 200 ms delay after writing the trigger word now has an inline comment explaining it lets the WonderEcho commit the trigger to its on-board flash before the bus closes.
+
+### 2026.05.22b
+
+- **Outfit variable font now embedded.** The build pipeline (via `MindAttic.UiUx/sync/sync-claudia.ps1`) now inlines the Outfit variable font (weights 100–900) directly into `Claudia.htm` as a base64 `data:` URL, so the live page no longer depends on Google Fonts and renders identically offline. No content changes — same words, same layout, just the typography source.
+
+### 2026.05.20k
+
+- **"Before you start" callout.** Added explicit prerequisites near the top — host computer, microSD reader caveat (the SanDisk Ultra ships with a full-size SD adapter only — no USB reader; most modern laptops lack any SD slot), 2.4 GHz Wi-Fi requirement (the Pi Zero 2 W has no 5 GHz radio), regional note for the smart-plug options, and a stock-check pointer to rpilocator.com for the Pi Zero 2 WH.
+- **WonderEcho cable confirmation.** Hiwonder's packing list confirms the 4-pin Dupont cable ships in the WonderEcho box — added that fact to the part card spec table, the assembly step, and the prerequisites callout so builders don't go hunting for jumper wires.
+- **Store-link refresh.** Replaced three broken or stale "Official" URLs in the parts catalog: TP-Link Kasa HS103 (the old slug now 500s, swapped to `kasa-smart-wifi-mini-plug-hs103`), Shelly Plug US (the old URL 404s — moved to the current Gen 4 product at `us.shelly.com`), and the Pi Hut power-supply page (redirected to its homepage — swapped to the power-supply collection page so it survives future SKU rotation).
+- **Prices refreshed (2026-05-22):** Pi Zero 2 WH $22 → $20, PSU $10 → $9, WonderEcho $25 → $24, Sonoff S31 $13 → $10. Desktop total now ~$62, portable ~$102.
+
+### 2026.05.20a
+
+- **Pi Zero 2 WH callout.** Added a top-of-guide note clarifying the build needs the **WH** (with pre-soldered headers) variant — the plain "W" has no GPIO pins and would require 40 pins soldered before the WonderEcho's 4-pin cable can connect. The parts-catalog buy links now point at verified WH product pages (Sparkfun direct WH page; The Pi Hut and CanaKit pages that carry the WH variant) and the part card carries an inline reminder to pick "with headers" on retailers that list it as a dropdown variant. Dropped the Adafruit link since they don't currently stock the Pi Zero 2 WH.
+- **Healthcheck pivoted to I²C.** The audio-card checks in Part 09 (`aplay -l | grep wm8960`, `arecord` smoke test) were stale — `wm8960` was the dropped Whisplay HAT chip, and the WonderEcho carries its mic and speaker on-board over I²C rather than appearing as an ALSA card. Replaced with an `i2cdetect` check for the module's I²C address.
+- **Troubleshooting refresh.** "Nothing plays through the speaker" / "Mic captures silence" now point at the WonderEcho's I²C plumbing instead of the dropped `alsamixer` / `wm8960` flow.
+- **Cross-reference fix.** "Re-run the wake-word programming script in 9.3" → Part 8.3.
+
+### 2026.05.19f
+
+- **Sections renumbered to start at 01.** `02. Configure` → `01. Configure`, with every subsequent section shifted down by one (and sub-headings + cross-references re-targeted to match).
+- **`<pre>` overflow-x removed**, so long code lines no longer trigger horizontal scroll inside their box.
+- **Flex-shrink bug fixed.** The sticky-footer layout was squashing `<pre>` blocks and tables to a single line when total content exceeded the viewport; direct children of `main.page` now use `flex-shrink: 0` so they keep their natural height.
+- Stray USB-mic troubleshooting line (referencing the deleted Part 4.5) cleaned up.
+
+### 2026.05.19e
+
+- Hidden all standalone `<hr>` rules — the H2 top-margin already provides the section gap, and the rules read as visual noise on a long page.
+
+### 2026.05.19d
+
+- Dropped the "Different architecture…" note from the WonderEcho card now that the module is core to the build instead of a niche alternative.
+
+### 2026.05.19c
+
+- Routine re-deploy. No source changes — letter-suffix bump only.
+
+### 2026.05.19b
+
+- **Build versioning.** Stamp is now `YYYY.MM.DD<letter>` and auto-bumps on each deploy: same day → next letter (`a` → `b` → `c` …), new day → reset to `a`. The Update Notes headings adopt the same format with no description after the date.
+- **Footer rework.** Replaced the "Built for MindAttic LLC — date" line and the old "Generated by Claudia build-html.js…" rendered footer with a single `© <auto-year> MindAttic LLC` line. The new footer pins to the bottom of the main pane when content is short (`margin-top: auto` on a flex column) and flows naturally at the end of the page otherwise.
+- `bump-version.ps1` simplified: now only rewrites the `*Last updated:*` line (the date no longer lives in the H1 or the footer).
+
+### 2026.05.19a
+
+- **Hardware change.** Dropped the PiSugar Whisplay HAT, SunFounder mic, reSpeaker XVF3800, and the OTG adapter. The build is now Pi Zero 2 W + Hiwonder WonderEcho (I²C) + power + microSD. The WonderEcho provides the mic, speaker, and wake-word detection in one module.
+- **Wake word.** No more openWakeWord, no more Python 3.11 pyenv, no more custom-model training. The WonderEcho runs the keyword detector in its own firmware; you program "Claudia" once over I²C (section 08.3).
+- **TTS defaults.** OpenAI `gpt-4o-mini-tts` is the new recommended TTS — natively supported by upstream. Piper still available for local. ElevenLabs added as a patchable option (drop-in TypeScript handler documented in section 08 — TTS subsection).
+- **Env-key fix.** Corrected `*_PROVIDER` → `*_SERVER` everywhere (`LLM_SERVER`, `ASR_SERVER`, `TTS_SERVER`) to match upstream's plugin registry.
+- **Interactive guide.** Configure-your-build widget at the top adapts the steps below to your picks; selections persist in `localStorage`.
+
+### 2026.05.18a
+
+- One path, not two. The PiSugar `whisplay-ai-chatbot` repo is purpose-built for this exact hardware and is the right choice for a Pi Zero 2 W.
+- Verified install commands against the live upstream repos.
+- Checkpoint tests at the end of each Part.
+- First-run `healthcheck.sh` script (Part 09).
+- systemd unit dropped — the repo's `startup.sh` sets up `chatbot.service` properly.
+- Mic decision moved to the front as a 3-question flowchart.
+- Cost tiers cut from 4 to 2. Desktop or portable.

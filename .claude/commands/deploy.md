@@ -1,15 +1,22 @@
-Deploy the Claudia build guide to the FTP server (mindattic.com/claudia/). Run the following command and report the result:
+Deploy the Claudia landing page (`mindattic.com/claudia.htm`) via **MindAttic.Deploy** (sibling repo at `D:\Projects\MindAttic\MindAttic.Deploy`).
+
+This now uses the standard catalog pipeline: `README.md` is rendered through `template/index.template.htm` with the `Hardware` theme and FTPS-uploaded as a single file. The old 3-file long-form-guide pipeline (`scripts/cli/deploy.ps1` + marker-block splicing + `/claudia/` subfolder) is retired.
+
+Run this command and report the result:
 
 ```
-powershell -NoProfile -ExecutionPolicy Bypass -File "D:\Projects\MindAttic\Claudia\scripts\cli\deploy.ps1"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "cd D:\Projects\MindAttic\MindAttic.Deploy; npm run deploy -- --only claudia"
 ```
 
-Note: do NOT invoke via `cmd /c "D:/.../deploy.bat"` -- the forward slashes in the path get parsed as cmd switches (cmd uses `/` as its switch prefix), so the command silently opens a fresh shell in the directory and exits without running anything. Call deploy.ps1 directly via PowerShell as shown above.
+It will:
 
-This pulls subscribed component CSS from the sibling `MindAttic.UiUx` repo into `scripts/cli/build-html.js` (via `sync-claudia.ps1`), rebuilds `Claudia.htm` from `Claudia.md`, stamps it with the current UTC timestamp, clones it byte-for-byte to `index.htm` so `mindattic.com/claudia/` serves the full guide directly (no redirect hop), and FTP-uploads all three files to `/mindattic.com/claudia/`:
+1. Render `D:\Projects\MindAttic\Claudia\README.md` through the catalog template (Hardware theme, MindAttic.UIUX components loaded via jsDelivr).
+2. FTPS-upload `out/claudia.htm` to `/mindattic.com/claudia.htm`.
 
-- `Claudia.md` — the canonical markdown source
-- `Claudia.htm` — the self-contained styled page
-- `index.htm` — byte-identical clone of `Claudia.htm`
+After running, summarize the result and flag any failures.
 
-After running, summarize how many files were uploaded successfully and flag any failures. If the MindAttic.UiUx sync produced a warning (e.g. the sibling repo is missing), surface that too.
+Notes:
+- Catalog entry: `MindAttic.Deploy/projects.json` -> `projects[]` slug `claudia` (theme: Hardware).
+- Credentials: `MindAttic.Deploy/secrets/ftp.json` (gitignored).
+- `scripts/cli/` in this repo is dead code awaiting cleanup -- do not invoke `deploy.bat` / `deploy.ps1` from here.
+- Old subfolder URL `mindattic.com/claudia/` still exists on the FTP server until you manually delete it.
