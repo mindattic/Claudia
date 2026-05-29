@@ -43,7 +43,7 @@ sudo apt install -y i2c-tools python3-smbus
 ok "I2C enabled"
 warn "after the next reboot, run 'i2cdetect -y 1' to confirm the WonderEcho is on the bus."
 
-step "5  chatbot software (PiSugar/whisplay-ai-chatbot)"
+step "6  chatbot software (PiSugar/whisplay-ai-chatbot)"
 cd "$HOME"
 if [ ! -d whisplay-ai-chatbot ]; then
     git clone https://github.com/PiSugar/whisplay-ai-chatbot.git
@@ -78,19 +78,27 @@ EOF
     fi
 fi
 
-if grep -q 'sk-ant-REPLACE-ME' .env; then
-    warn ".env still has the placeholder API key."
-    warn "Edit it now:   nano $HOME/whisplay-ai-chatbot/.env"
-    warn "Then re-run:   bash ~/$SCRIPT_NAME"
-    exit 0
-fi
+# Guard against an unconfigured key from EITHER source: the stub we write
+# above (sk-ant-REPLACE-ME) or the upstream .env.template (empty / its own
+# "your key here" placeholder). Read the value and reject anything that
+# doesn't look like a real Anthropic key.
+api_key=$(grep -E '^ANTHROPIC_API_KEY=' .env | head -1 | cut -d= -f2-)
+api_key=$(echo "$api_key" | tr -d ' \t\r"'\''')   # strip whitespace, CR, and quotes
+case "$api_key" in
+    ""|sk-ant-REPLACE-ME|*REPLACE*|*your*|*YOUR*|*here*|*HERE*)
+        warn ".env still has a placeholder / empty ANTHROPIC_API_KEY."
+        warn "Edit it now:   nano $HOME/whisplay-ai-chatbot/.env"
+        warn "Then re-run:   bash ~/$SCRIPT_NAME"
+        exit 0
+        ;;
+esac
 
 step "8.2  build the chatbot  (~5–10 min)"
 bash build.sh
 ok "build complete"
 
 step "8.3  WonderEcho I2C check"
-if i2cdetect -y 1 2>/dev/null | grep -qE '52|53|54'; then
+if i2cdetect -y 1 2>/dev/null | grep -qE ' 5[234] '; then
     ok "WonderEcho detected on I2C bus 1"
 else
     warn "WonderEcho not detected on I2C bus 1 - check 4-pin wiring (SDA/SCL/5V/GND)"

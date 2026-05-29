@@ -1,5 +1,5 @@
 {
-  "_description": "External dependency versions referenced in the build guide. Update these when upstream releases new majors. build-html.js injects these into Claudia.md wherever placeholders like {{NODE_LABEL}} appear (compile-time substitution, AFTER marked renders).",
+  "_description": "External dependency versions referenced in the build guide (README.md). Update these when upstream releases new majors; README.md currently hardcodes the labels, so keep them in sync by hand. (The old build-html.js placeholder-injection pipeline that read this file was retired with the move to MindAttic.Deploy.)",
   "versionsAsOf": "2026-05-20",
 
   "NODE_MAJOR": "24",

@@ -1,6 +1,8 @@
 #!/bin/bash
 # claudia healthcheck — quick end-to-end smoke test
-# Verifies speaker, mic, network, and Claude API in one shot.
+# Verifies the WonderEcho is on the I2C bus, the network can reach Anthropic,
+# and the API key + chosen model return a response. (The audio path — speaker
+# out, mic in — is exercised by the manual launch in Part 10, not here.)
 # Usage: bash ~/healthcheck.sh
 
 set -u
@@ -17,23 +19,28 @@ step "1. WonderEcho module on I2C"
 # The WonderEcho carries both mic and speaker on-board and talks to the Pi
 # over I2C bus 1. We don't expect a standalone ALSA card.
 if command -v i2cdetect >/dev/null 2>&1; then
-    if i2cdetect -y 1 2>/dev/null | grep -qE '52|53|54'; then
+    if i2cdetect -y 1 2>/dev/null | grep -qE ' 5[234] '; then
         ok "WonderEcho detected on I2C bus 1"
     else
         bad "WonderEcho NOT detected on I2C bus 1 (check 4-pin wiring + 'sudo raspi-config nonint do_i2c 0')"
     fi
 else
-    bad "i2c-tools not installed - run 'sudo apt install -y i2c-tools' (see Part 5.4)"
+    bad "i2c-tools not installed - run 'sudo apt install -y i2c-tools' (see Part 05.4)"
 fi
 
 step "2. Network reachability"
-ping -c 1 -W 3 api.anthropic.com >/dev/null 2>&1 \
-  && ok "api.anthropic.com is reachable" \
-  || bad "cannot reach api.anthropic.com (Wi-Fi or DNS issue)"
+# Use HTTPS instead of ping — many networks/APIs drop ICMP but pass TLS.
+# A 4xx response still proves we got a real reply from api.anthropic.com.
+net_code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 5 https://api.anthropic.com/ 2>/dev/null || echo "000")
+if [ "$net_code" != "000" ]; then
+  ok "api.anthropic.com responded (HTTP $net_code)"
+else
+  bad "cannot reach api.anthropic.com (Wi-Fi, DNS, or TLS issue)"
+fi
 
 step "3. Claude API call"
 if [ ! -f "$ENV_FILE" ]; then
-  bad "$ENV_FILE not found — finish Part 8 first"
+  bad "$ENV_FILE not found — finish Part 08 first"
 else
   # shellcheck disable=SC1090
   set -a; source "$ENV_FILE"; set +a
@@ -49,7 +56,15 @@ else
     body=$(echo "$response" | sed '$d')
     if [ "$http_code" = "200" ]; then
       ok "Claude API responded HTTP 200"
-      echo "  Reply: $(echo "$body" | grep -o '"text":"[^"]*"' | head -1 | sed 's/"text":"//;s/"$//')"
+      # Prefer jq if available — it handles escaped quotes correctly. Fall
+      # back to a grep+sed that breaks on escapes but is good enough for a
+      # smoke-test "did Claude reply" sanity check.
+      if command -v jq >/dev/null 2>&1; then
+        reply=$(echo "$body" | jq -r '.content[0].text // empty' 2>/dev/null)
+      else
+        reply=$(echo "$body" | grep -o '"text":"[^"]*"' | head -1 | sed 's/"text":"//;s/"$//')
+      fi
+      echo "  Reply: $reply"
     else
       bad "Claude API returned HTTP $http_code"
       echo "  $body" | head -3
@@ -59,7 +74,7 @@ fi
 
 echo
 if [ $exit_code -eq 0 ]; then
-  printf "$PASS All checks passed. You're ready for Part 10 (run the chatbot).\n"
+  printf "$PASS All checks passed. You're ready for Part 10.\n"
 else
   printf "$FAIL One or more checks failed. Fix above before running the chatbot.\n"
 fi

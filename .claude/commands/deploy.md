@@ -18,5 +18,4 @@ After running, summarize the result and flag any failures.
 Notes:
 - Catalog entry: `MindAttic.Deploy/projects.json` -> `projects[]` slug `claudia` (theme: Hardware).
 - Credentials: `MindAttic.Deploy/secrets/ftp.json` (gitignored).
-- `scripts/cli/` in this repo is dead code awaiting cleanup -- do not invoke `deploy.bat` / `deploy.ps1` from here.
 - Old subfolder URL `mindattic.com/claudia/` still exists on the FTP server until you manually delete it.

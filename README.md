@@ -167,7 +167,7 @@ The dependency install pulls Node.js, Python packages, and audio libraries. This
 node --version
 ```
 
-You should see `v20.x` or newer (upstream's installer pulls in the current Node LTS).
+You should see `v22.x` or newer (upstream's installer pulls in the current Node LTS).
 
 ---
 

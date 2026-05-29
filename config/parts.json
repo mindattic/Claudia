@@ -34,6 +34,7 @@
       "searchFor": "https://www.google.com/search?udm=28&q=Raspberry+Pi+Zero+2+WH+with+headers",
       "tiers": [
         { "tier": "amazon",    "url": "https://www.amazon.com/s?k=raspberry+pi+zero+2+wh+headers&i=electronics&s=price-asc-rank&rh=p_72%3A2661618011" },
+        { "tier": "official",  "url": "https://www.raspberrypi.com/products/raspberry-pi-zero-2-w/" },
         { "tier": "reputable", "url": "https://www.adafruit.com/product/6008" },
         { "tier": "reputable", "url": "https://www.sparkfun.com/raspberry-pi-zero-2-w-with-headers.html" },
         { "tier": "reputable", "url": "https://www.pishop.us/product/raspberry-pi-zero-2w-with-headers/" }
@@ -55,7 +56,7 @@
         { "label": "Substitutes", "value": "Any reputable 32 GB Class 10 / A1 microSD works (Samsung EVO Plus, Kingston Canvas Select, etc.)" }
       ],
       "imageFile": "part-images/microsd-32gb.png",
-      "imageSource": "https://shop.sandisk.com/products/memory-cards/microsd-cards/sandisk-extreme-uhs-i-microsd",
+      "imageSource": "https://shop.sandisk.com/products/memory-cards/microsd-cards/sandisk-ultra-uhs-i-microsd",
       "searchFor": "https://www.google.com/search?udm=28&q=SanDisk+Ultra+32GB+microSD",
       "tiers": [
         { "tier": "amazon",    "url": "https://www.amazon.com/s?k=sandisk+ultra+32gb+microsd&i=electronics&s=price-asc-rank&rh=p_72%3A2661618011" },

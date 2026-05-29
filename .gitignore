@@ -3,10 +3,6 @@
 *.user
 *.suo
 
-# Node (build-html.js uses marked + highlight.js)
-node_modules/
-package-lock.json
-
 # Python
 __pycache__/
 *.pyc
@@ -19,7 +15,6 @@ Thumbs.db
 .env
 config/.env
 config/*.local.*
-scripts/cli/deploy.settings.json
 
 # Editor
 .vscode/
@@ -28,7 +23,3 @@ scripts/cli/deploy.settings.json
 # Build artifacts
 out/
 dist/
-
-# Runtime logs from the .claude PostToolUse hook
-.claude/html-rebuild.log
-.claude/pull-latest.log
