@@ -218,6 +218,7 @@
         { "label": "Rating",   "value": "Light-gauge signal wire: < 1 A, < 50 V DC" },
         { "label": "Used for", "value": "Female-to-female jumpers for the WonderEcho ↔ Pi GPIO link (+ spares)" }
       ],
+      "imageFile": "images/elegoo-dupont-wires.png",
       "searchFor": "https://www.google.com/search?udm=28&q=ELEGOO+120pcs+Dupont+jumper+wire+kit",
       "tiers": [
         { "tier": "amazon",    "url": "https://www.amazon.com/dp/B01EV70C78" },
