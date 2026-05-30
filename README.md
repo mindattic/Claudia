@@ -8,10 +8,6 @@ Build your own always-on voice assistant in an afternoon — a Raspberry Pi Zero
 
 > **Stock check.** The Pi Zero 2 WH is supply-constrained; if all the US retailers on the cards below show out-of-stock, [rpilocator.com](https://rpilocator.com) tracks live availability across the official reseller network.
 
-[github.com/mindattic/Claudia](https://github.com/mindattic/Claudia)
-
-*Last updated: 2026.05.23f*
-
 ---
 
 ## 01. Configure
