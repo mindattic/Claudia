@@ -4,7 +4,7 @@ Build your own always-on voice assistant in an afternoon — a Raspberry Pi Zero
 
 > **WH, not W.** The WonderEcho connects to four GPIO pins (SDA / SCL / 5V / GND), so the build needs the **WH** variant with pre-soldered headers. Buying the plain "W" means soldering 40 pins yourself before anything works.
 
-> **Before you start, gather:** a Windows / macOS / Linux computer to flash the microSD and SSH in, a way to plug a microSD into it (the SanDisk Ultra ships with a full-size SD adapter but no USB reader — most modern ultrabooks and MacBooks need a USB microSD reader, ~$8), and a **2.4 GHz** Wi-Fi network (the Pi Zero 2 WH has no 5 GHz radio). The smart-plug options below ship with US plugs; each vendor (Kasa, Shelly, Sonoff) also sells EU/UK/AU variants that speak the same local API — pick your region at checkout. **No soldering iron needed**, and **no extra jumper wires** — the WonderEcho ships with the 4-pin Dupont cable already.
+> **Before you start, gather:** a Windows / macOS / Linux computer to flash the microSD and SSH in, a way to plug a microSD into it (the SanDisk Ultra ships with a full-size SD adapter but no USB reader — most modern ultrabooks and MacBooks need a USB microSD reader, ~$8), and a **2.4 GHz** Wi-Fi network (the Pi Zero 2 WH has no 5 GHz radio). The smart-plug options below ship with US plugs; each vendor (Kasa, Shelly, Sonoff) also sells EU/UK/AU variants that speak the same local API — pick your region at checkout. **No soldering iron needed**, but you'll need **4 female-to-female jumper wires** to link the WonderEcho to the Pi — the WonderEcho does not include any cable, so the shopping list below adds a cheap Dupont wire kit.
 
 > **Stock check.** The Pi Zero 2 WH is supply-constrained; if all the US retailers on the cards below show out-of-stock, [rpilocator.com](https://rpilocator.com) tracks live availability across the official reseller network.
 
@@ -27,7 +27,7 @@ Build your own always-on voice assistant in an afternoon — a Raspberry Pi Zero
 **Total time:** ~3 minutes. No soldering.
 
 1. **Do not insert the microSD yet.** Flash it first in section 04.
-2. Connect the WonderEcho to the Pi's I²C header pins via the **4-pin Dupont cable that ships in the WonderEcho box** (Hiwonder includes it — you should not need to source one separately): **`SDA → BCM 2 (pin 3)`**, **`SCL → BCM 3 (pin 5)`**, **`5V → pin 2`**, **`GND → pin 6`**.
+2. Connect the WonderEcho to the Pi's I²C header pins with **4 female-to-female Dupont jumper wires** (from the kit in the shopping list — the WonderEcho does not include any cable): **`SDA → BCM 2 (pin 3)`**, **`SCL → BCM 3 (pin 5)`**, **`5V → pin 2`**, **`GND → pin 6`**.
 3. Make sure the WonderEcho's speaker face is unobstructed (it doubles as the mic intake).
 
 <!-- when: battery=yes -->

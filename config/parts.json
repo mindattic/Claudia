@@ -183,10 +183,10 @@
       "category": "core",
       "name": "Hiwonder WonderEcho voice module (I2C wake-word frontend)",
       "price": 24,
-      "note": "Ships with the 4-pin Dupont cable used to connect to the Pi's GPIO header — no extra wires to buy. Verify the box contains 1× WonderEcho + 1× 4-pin cable before assembling.",
+      "note": "Does not include any wiring — connect it to the Pi's GPIO header with 4 female-to-female jumper wires (see the ELEGOO Dupont kit below). Buy the wires separately if you don't already have them.",
       "specs": [
         { "label": "SKU",        "value": "Hiwonder 21090150 · Amazon ASIN B0F7RR983M" },
-        { "label": "In the box", "value": "1× WonderEcho module + 1× 4-pin Dupont cable (per Hiwonder packing list)" },
+        { "label": "In the box", "value": "1× WonderEcho module only — no jumper wires (source them separately)" },
         { "label": "Voice chip", "value": "CI1302 (on-device CNN wake-word + recognition firmware)" },
         { "label": "Interface",  "value": "I²C bus 1, default address 0x52 — verify with “i2cdetect -y 1”" },
         { "label": "Connector",  "value": "4-pin cable: SDA → BCM 2 (pin 3), SCL → BCM 3 (pin 5), 5V → pin 2, GND → pin 6" },
@@ -209,7 +209,7 @@
       "category": "core",
       "name": "ELEGOO 120pcs Dupont Jumper Wire Kit (M-F / M-M / F-F)",
       "price": 7,
-      "note": "Required. The WonderEcho ships with one 4-pin cable, but that single cable is the only thing tying the mic module to the Pi's GPIO header and is easy to lose or damage. This 120-pc assortment gives you female-to-female spares for that 4-pin link (SDA → pin 3, SCL → pin 5, 5V → pin 2, GND → pin 6) plus jumpers for any other GPIO wiring. 2.54 mm pitch matches the Pi Zero 2 WH header exactly.",
+      "note": "Required. The WonderEcho does not include any wiring, so you need these to tie the mic module to the Pi's GPIO header. This 120-pc assortment gives you the female-to-female wires for the 4-pin link (SDA → pin 3, SCL → pin 5, 5V → pin 2, GND → pin 6) plus jumpers for any other GPIO wiring. 2.54 mm pitch matches the Pi Zero 2 WH header exactly.",
       "specs": [
         { "label": "Pieces",   "value": "120 (3× 40-pin ribbons — peel apart as needed)" },
         { "label": "Types",    "value": "40× male-to-female · 40× male-to-male · 40× female-to-female" },
