@@ -93,7 +93,8 @@ voice module wired straight to the Claude API — that a non-expert can assemble
   audio path for a USB mic.
 - **`scripts/pi/install-claudia.sh`** — idempotent Pi-side installer automating README parts 5–10.
 - **`scripts/pi/healthcheck.sh`** — 3-layer smoke test (WonderEcho on I²C · network reaches
-  Anthropic · API key + model return 200). Also embedded verbatim in README part 09.
+  Anthropic · API key + model return 200). Reproduced (with an abbreviated comment header) in
+  README part 09, where the builder pastes it as `~/healthcheck.sh` on the Pi.
 
 ### 4.2 Domain model (NOUNS)
 
