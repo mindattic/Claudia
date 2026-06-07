@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mindattic.com/claudia/schema/part.schema.json",
+  "title": "Claudia parts-catalog part",
+  "description": "Schema for one entry in config/parts.json -> parts[]. The catalog itself is the L5 canon-as-data store (read by MindAttic.Deploy); this schema validates each part. Codex stable id is derived as 'part.<id>' (see docs/data/parts.index.json).",
+  "type": "object",
+  "required": ["id", "category", "name", "price", "tiers"],
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "Stable slug, unique within the catalog. Codex id = 'part.' + this value."
+    },
+    "category": {
+      "type": "string",
+      "enum": ["core", "portable", "smarthome"]
+    },
+    "name": { "type": "string", "minLength": 1 },
+    "price": { "type": "integer", "minimum": 0, "description": "Non-authoritative USD estimate." },
+    "note": { "type": "string" },
+    "when": {
+      "type": "object",
+      "description": "Config-axis gate: this part only appears when the named axis equals the value.",
+      "additionalProperties": { "type": "string" }
+    },
+    "specs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["label", "value"],
+        "additionalProperties": false,
+        "properties": {
+          "label": { "type": "string" },
+          "value": { "type": "string" }
+        }
+      }
+    },
+    "imageFile": { "type": "string" },
+    "searchFor": { "type": "string", "format": "uri" },
+    "tiers": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["tier", "url"],
+        "additionalProperties": false,
+        "properties": {
+          "tier": { "type": "string", "enum": ["amazon", "official", "reputable"] },
+          "url": { "type": "string", "format": "uri" }
+        }
+      }
+    }
+  }
+}

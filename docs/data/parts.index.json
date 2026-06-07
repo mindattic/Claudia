@@ -1,0 +1,25 @@
+{
+  "//front-matter": {
+    "codex": 1,
+    "project": "Claudia",
+    "code": "CLA",
+    "layer": "data",
+    "status": "living",
+    "updated": "2026-06-07"
+  },
+  "//note": "L5 canon-as-data registry. The CANONICAL store is ../../config/parts.json (read by MindAttic.Deploy to render the catalog page); it is NOT moved here so deploy tooling keeps working. This file mirrors each part's stable Codex id ('part.<id>') and validating schema so docs/codex.ps1 doctor can validate the catalog and cross-references resolve. Keep ids in sync with config/parts.json when parts are added or removed.",
+  "canonicalSource": "config/parts.json",
+  "schema": "docs/data/_schema/part.schema.json",
+  "configAxes": ["battery", "asr", "tts", "case", "smarthome"],
+  "entities": [
+    { "id": "part.pi-zero-2-wh",      "category": "core",      "name": "Raspberry Pi Zero 2 WH" },
+    { "id": "part.microsd-32gb",      "category": "core",      "name": "microSD card, 32 GB Class 10 (SanDisk Ultra)" },
+    { "id": "part.pi-power-supply",   "category": "core",      "name": "Official Raspberry Pi 12.5W micro-USB power supply" },
+    { "id": "part.hiwonder-wonderecho","category": "core",     "name": "Hiwonder WonderEcho voice module" },
+    { "id": "part.elegoo-dupont-wires","category": "core",     "name": "ELEGOO 120pcs Dupont Jumper Wire Kit" },
+    { "id": "part.pisugar3-battery",  "category": "portable",  "name": "PiSugar 3 1200 mAh battery" },
+    { "id": "part.tplink-kasa-hs103", "category": "smarthome", "name": "TP-Link Kasa HS103 / KP125M smart plug" },
+    { "id": "part.shelly-plug-us",    "category": "smarthome", "name": "Shelly Plug US" },
+    { "id": "part.sonoff-s31",        "category": "smarthome", "name": "Sonoff S31 (+ Tasmota)" }
+  ]
+}
