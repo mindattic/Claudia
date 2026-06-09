@@ -4,7 +4,7 @@ project: Claudia
 code: CLA
 layer: stories
 status: living
-updated: 2026-06-07
+updated: 2026-06-09
 ---
 
 # Claudia — User Stories
@@ -17,9 +17,9 @@ updated: 2026-06-07
 
 ## Epic A — Configure & shop
 
-- **CLA-US-A1 ✅** As a builder, I can pick my build options (battery, ASR, TTS, case,
-  smart-home) on the landing page, so the shopping list and guide match my choices.
-  *Given the five `configAxes`, When I choose a value, Then matching `<!-- when: -->` README
+- **CLA-US-A1 ✅** As a builder, I can pick my build options (battery, microphone, ASR, TTS,
+  case, smart-home) on the landing page, so the shopping list and guide match my choices.
+  *Given the six `configAxes`, When I choose a value, Then matching `<!-- when: -->` README
   blocks and `when`-gated parts show.* *(verified by `codex.ps1 doctor` axis-contract check that
   `configAxes` values in `config/parts.json` match part `when` gates; markers checked manually
   per [CLA-LAW-4](BIBLE.md#CLA-LAW-4).)*
@@ -66,9 +66,10 @@ updated: 2026-06-07
 ## Epic D — Verify & operate
 
 - **CLA-US-D1 🟡** As a builder, I can run a 90-second healthcheck that proves the WonderEcho is
-  present, the network reaches Anthropic, and my key + model return a response, so I debug before
-  launch. *Given `healthcheck.sh`, Then 3 layers report pass/fail.* *(script `bash -n` clean and
-  reviewed; step 1 needs hardware, steps 2–3 need a live key — not run in this repo's CI.)*
+  present, the USB mic is visible to ALSA, the network reaches Anthropic, and my key + model
+  return a response, so I debug before launch. *Given `healthcheck.sh`, Then 4 layers report
+  pass/fail.* *(script `bash -n` clean and reviewed; steps 1–2 need hardware, step 4 needs a live
+  key — not run in this repo's CI.)*
 - **CLA-US-D2 🟡** As a builder, I can set the chatbot to start on boot via systemd, so the device
   is always-on. *(documented in README part 10 + `install-claudia.sh` step 10 calling upstream
   `startup.sh`; requires the Pi.)*
@@ -89,5 +90,14 @@ Dependency-ordered toward "a non-expert ships a working Claudia":
 
 ### Audit log
 
-No stories have been changed since their original ask; nothing to preserve here yet. When a story
-is rewritten, the original spec is kept verbatim below, marked "(original spec — audit log)".
+When a story is rewritten, the original spec is kept verbatim below, marked
+"(original spec — audit log)".
+
+- **CLA-US-A1** (original spec — audit log, superseded 2026-06-09 by [CLA-A2](AMENDMENTS.md)):
+  "As a builder, I can pick my build options (battery, ASR, TTS, case, smart-home) on the landing
+  page, so the shopping list and guide match my choices. *Given the five `configAxes`, When I
+  choose a value, Then matching `<!-- when: -->` README blocks and `when`-gated parts show.*"
+- **CLA-US-D1** (original spec — audit log, superseded 2026-06-09 by [CLA-A2](AMENDMENTS.md)):
+  "As a builder, I can run a 90-second healthcheck that proves the WonderEcho is present, the
+  network reaches Anthropic, and my key + model return a response, so I debug before launch.
+  *Given `healthcheck.sh`, Then 3 layers report pass/fail.*"

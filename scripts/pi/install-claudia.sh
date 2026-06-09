@@ -43,6 +43,40 @@ sudo apt install -y i2c-tools python3-smbus
 ok "I2C enabled"
 warn "after the next reboot, run 'i2cdetect -y 1' to confirm the WonderEcho is on the bus."
 
+step "5.5  USB conversation mic (ALSA)"
+# The WonderEcho only handles the wake word — conversation audio is recorded
+# from the USB mic, which must show up as a standard ALSA capture card.
+if arecord -l 2>/dev/null | grep -q '^card '; then
+    ok "ALSA capture device present: $(arecord -l 2>/dev/null | grep '^card ' | head -1)"
+else
+    warn "no ALSA capture device — plug the USB mic into the middle 'USB' port via the OTG adapter."
+fi
+if [ ! -f "$HOME/.asoundrc" ]; then
+    # Same content as the repo's config/asoundrc.usbmic (guide Part 5.5):
+    # capture from the USB mic (card 1), playback on the default output (card 0).
+    cat > "$HOME/.asoundrc" <<'EOF'
+pcm.!default {
+    type asym
+    playback.pcm {
+        type plug
+        slave.pcm "hw:0,0"
+    }
+    capture.pcm {
+        type plug
+        slave.pcm "hw:1,0"
+    }
+}
+
+ctl.!default {
+    type hw
+    card 1
+}
+EOF
+    ok "wrote ~/.asoundrc (capture = card 1 — edit if 'arecord -l' shows a different card)"
+else
+    ok "~/.asoundrc already present — left untouched"
+fi
+
 step "6  chatbot software (PiSugar/whisplay-ai-chatbot)"
 cd "$HOME"
 if [ ! -d whisplay-ai-chatbot ]; then

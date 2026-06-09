@@ -1,7 +1,12 @@
-# Drop into ~/.asoundrc on the Pi when using a USB mic (SunFooder / reSpeaker).
-# Playback stays on the Whisplay speaker (card 0); capture comes from the USB
-# mic (card 1). Pair this with /etc/modprobe.d/alsa-base.conf locking the USB
-# mic to index 1 — see Part 4.5 of the guide.
+# Drop into ~/.asoundrc on the Pi — Part 5.5 of the build guide.
+# Capture comes from the USB conversation mic (SunFounder mini or reSpeaker
+# XVF3800 — both are driverless USB Audio Class devices, typically card 1).
+# Playback stays on the Pi's default output (card 0 — HDMI on a bare build;
+# on the reSpeaker array you can point playback at its card instead and use
+# its 3.5 mm jack / JST speaker output).
+# If 'arecord -l' shows the mic on a different card, change hw:1,0 (and
+# 'card 1') to match — or lock the mic to index 1 via
+# /etc/modprobe.d/alsa-base.conf so USB enumeration order can't move it.
 
 pcm.!default {
     type asym

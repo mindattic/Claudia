@@ -2,11 +2,15 @@
   "_description": "Parts catalog for the Claudia build. Each part has a 'searchFor' Google Shopping URL plus at least 3 direct tier links (amazon -> official -> reputable). Prices are NON-AUTHORITATIVE estimates - they go stale fast. Refresh by querying current Google Shopping results (per part) and updating both 'price' (USD, integer dollars) and 'pricesAsOf' (date last verified, top-level).",
   "_priorityOrder": ["amazon", "official", "reputable"],
 
-  "_configAxesNote": "Drives the interactive build configurator on the landing page (rendered by MindAttic.Deploy/src/parts.js). Each axis becomes a <select>; the chosen value is matched against the README's <!-- when: key=value --> conditional blocks AND each part's `when` field. 'default' is the value shown on first visit and on Reset. Keys/values here MUST match the README markers exactly: battery=no|yes, asr=whisper-cpp|openai|google, tts=openai|elevenlabs|piper, case=none|fdm|sla, smarthome=none|kasa|shelly|sonoff.",
+  "_configAxesNote": "Drives the interactive build configurator on the landing page (rendered by MindAttic.Deploy/src/parts.js). Each axis becomes a <select>; the chosen value is matched against the README's <!-- when: key=value --> conditional blocks AND each part's `when` field. 'default' is the value shown on first visit and on Reset. Keys/values here MUST match the README markers exactly: battery=no|yes, mic=basic|array, asr=whisper-cpp|openai|google, tts=openai|elevenlabs|piper, case=none|fdm|sla, smarthome=none|kasa|shelly|sonoff.",
   "configAxes": [
     { "key": "battery", "label": "Battery / portability", "default": "no", "options": [
       ["no",  "No - desktop, wall-powered"],
       ["yes", "Yes - PiSugar 3 (portable)"]
+    ]},
+    { "key": "mic", "label": "Conversation microphone", "default": "basic", "options": [
+      ["basic", "Basic - SunFounder USB mini mic"],
+      ["array", "Upgrade - reSpeaker XVF3800 4-mic array"]
     ]},
     { "key": "asr", "label": "Speech-to-text (ASR)", "default": "whisper-cpp", "options": [
       ["whisper-cpp", "Whisper (local, free)"],
@@ -36,6 +40,7 @@
 
   "categories": {
     "core": "Required for every build.",
+    "mic": "The conversation microphone — required, pick one in the configurator. The WonderEcho only handles the wake word; it never streams audio to the Pi.",
     "portable": "Optional battery for a roaming build.",
     "smarthome": "Optional locally-controllable smart plugs. Lets Claudia run commands like 'Claudia turn on the living room' without any cloud round-trip beyond Claude itself."
   },
@@ -113,6 +118,75 @@
       ]
     },
     {
+      "id": "sunfounder-mic",
+      "category": "mic",
+      "name": "SunFounder USB 2.0 Mini Microphone",
+      "price": 9,
+      "when": { "mic": "basic" },
+      "note": "Required (or pick the reSpeaker array instead). The conversation mic — the WonderEcho only recognizes the wake word on-chip and never streams audio, so Whisper needs a real ALSA microphone. This thumb-size dongle is plug-and-play USB Audio Class: it shows up in 'arecord -l' the moment it's plugged in, no driver. Plugs into the Pi's middle 'USB' port via the OTG adapter below.",
+      "specs": [
+        { "label": "SKU",        "value": "SunFounder CN0029 · Amazon ASIN B01KLRBHGM" },
+        { "label": "Interface",  "value": "USB 2.0 — USB Audio Class 1.0, driverless on Linux/ALSA" },
+        { "label": "Chip",       "value": "C-Media CM108 (16-bit, 44.1/48 kHz capture)" },
+        { "label": "Pattern",    "value": "Omnidirectional" },
+        { "label": "Form",       "value": "Thumb-size dongle — plugs straight into a USB-A port" },
+        { "label": "Range",      "value": "Desk-distance pickup — fine for ~1-2 m; pick the array for far-field" }
+      ],
+      "imageFile": "images/sunfounder-mic.png",
+      "searchFor": "https://www.google.com/search?udm=28&q=SunFounder+USB+mini+microphone",
+      "tiers": [
+        { "tier": "amazon",    "url": "https://www.amazon.com/SunFounder-Microphone-Raspberry-Recognition-Software/dp/B01KLRBHGM" },
+        { "tier": "official",  "url": "https://www.sunfounder.com/products/mini-usb-microphone" },
+        { "tier": "reputable", "url": "https://www.robotshop.com/products/sunfounder-mini-usb-20-microphone-audio-adapter-plug-play-raspberry-pi-5-4" },
+        { "tier": "reputable", "url": "https://www.raspberrypiq.com/products/sunfounder-usb-2-0-mini-microphone-raspberry.html" }
+      ]
+    },
+    {
+      "id": "respeaker-xvf3800",
+      "category": "mic",
+      "name": "Seeed reSpeaker XVF3800 USB 4-Mic Array (far-field upgrade)",
+      "price": 51,
+      "when": { "mic": "array" },
+      "note": "The higher-quality alternative to the SunFounder mini mic: four MEMS mics with on-chip XMOS DSP (echo cancellation, beamforming, neural noise suppression, dereverberation) for 360° pickup up to ~5 m — Alexa-grade far-field capture. Standard USB Audio Class 2.0, so it's driverless ALSA just like the basic mic. Bonus: a 3.5 mm jack + JST connector give it a speaker output too.",
+      "specs": [
+        { "label": "SKU",       "value": "Seeed 101991441 · Amazon ASIN B0FKGFXQQ5" },
+        { "label": "Mics",      "value": "4× PDM MEMS, circular array — 360° far-field up to ~5 m" },
+        { "label": "DSP",       "value": "XMOS XVF3800: AEC · beamforming · DNN noise suppression · dereverb · DoA · AGC" },
+        { "label": "Interface", "value": "USB-C (cable included) — USB Audio Class 2.0, driverless on Linux/ALSA" },
+        { "label": "Capture",   "value": "16 kHz max sample rate, 32-bit — matched to speech ASR, not music" },
+        { "label": "Audio out", "value": "3.5 mm headphone jack + JST speaker connector (up to 5 W)" },
+        { "label": "Size",      "value": "108 × 108 × 18 mm" }
+      ],
+      "searchFor": "https://www.google.com/search?udm=28&q=reSpeaker+XVF3800+USB+mic+array",
+      "tiers": [
+        { "tier": "amazon",    "url": "https://www.amazon.com/ReSpeaker-Microphone-Cancellation-Far-Field-Assistants/dp/B0FKGFXQQ5" },
+        { "tier": "official",  "url": "https://www.seeedstudio.com/ReSpeaker-XVF3800-USB-Mic-Array-p-6488.html" },
+        { "tier": "reputable", "url": "https://thepihut.com/products/respeaker-xmos-xvf3800-ai-powered-4-mic-array-for-clear-voice-even-in-noise" },
+        { "tier": "reputable", "url": "https://openelab.io/products/seeed-studio-respeaker-xvf3800-usb-4-mic-array-aec-agc-noise-suppression" }
+      ]
+    },
+    {
+      "id": "otg-adapter",
+      "category": "core",
+      "name": "micro-USB OTG adapter (USB-A female)",
+      "price": 3,
+      "note": "Required — the Pi Zero 2 WH has no full-size USB-A port, so the USB mic connects through this. Plug it into the MIDDLE port labeled 'USB' (the data/OTG port), never the corner 'PWR IN' port, which carries power only. Any micro-B-male-to-A-female OTG cable or dongle works; Adafruit 1099 is the reference part.",
+      "specs": [
+        { "label": "SKU",       "value": "Adafruit 1099 (cable) · Adafruit 2910 (flush dongle variant)" },
+        { "label": "Connectors","value": "micro-USB-B male (OTG, ID pin wired for host mode) → USB-A female" },
+        { "label": "Length",    "value": "~13 cm (5\") tip-to-tip; passive cable, no electronics" },
+        { "label": "Plugs into","value": "Pi Zero 2 WH middle 'USB' port — NOT the corner 'PWR IN' (power-only)" },
+        { "label": "Used for",  "value": "Hosting the USB conversation mic (basic dongle or reSpeaker array)" }
+      ],
+      "searchFor": "https://www.google.com/search?udm=28&q=micro+USB+OTG+adapter+raspberry+pi+zero",
+      "tiers": [
+        { "tier": "amazon",    "url": "https://www.amazon.com/s?k=micro+usb+otg+adapter&i=electronics&s=price-asc-rank&rh=p_72%3A2661618011" },
+        { "tier": "official",  "url": "https://www.adafruit.com/product/1099" },
+        { "tier": "reputable", "url": "https://thepihut.com/products/micro-usb-otg-adapter" },
+        { "tier": "reputable", "url": "https://www.adafruit.com/product/2910" }
+      ]
+    },
+    {
       "id": "pisugar3-battery",
       "category": "portable",
       "name": "PiSugar 3 1200 mAh battery",
@@ -183,14 +257,14 @@
       "category": "core",
       "name": "Hiwonder WonderEcho voice module (I2C wake-word frontend)",
       "price": 24,
-      "note": "Does not include any wiring — connect it to the Pi's GPIO header with 4 female-to-female jumper wires (see the ELEGOO Dupont kit below). Buy the wires separately if you don't already have them.",
+      "note": "The hardware wake-word trigger — NOT the conversation microphone. Its CI1302 chip recognizes 'Claudia' on-device and reports an event ID over I²C; it never streams raw audio, so the build also needs the USB mic above. Does not include any wiring — connect it to the Pi's GPIO header with 4 female-to-female jumper wires (see the ELEGOO Dupont kit below).",
       "specs": [
         { "label": "SKU",        "value": "Hiwonder 21090150 · Amazon ASIN B0F7RR983M" },
         { "label": "In the box", "value": "1× WonderEcho module only — no jumper wires (source them separately)" },
         { "label": "Voice chip", "value": "CI1302 (on-device CNN wake-word + recognition firmware)" },
         { "label": "Interface",  "value": "I²C bus 1, default address 0x52 — verify with “i2cdetect -y 1”" },
         { "label": "Connector",  "value": "4-pin cable: SDA → BCM 2 (pin 3), SCL → BCM 3 (pin 5), 5V → pin 2, GND → pin 6" },
-        { "label": "On-board",   "value": "Microphone (noise-reducing) + speaker + red/blue status LEDs" },
+        { "label": "On-board",   "value": "Mic + speaker (used only by its on-chip recognizer — not visible to ALSA) + red/blue status LEDs" },
         { "label": "Memory",     "value": "2 MB Flash, 640 KB SRAM" },
         { "label": "Range",      "value": "~5 m quiet / ~1 m noisy · up to 255 phrases" },
         { "label": "Size",       "value": "48 × 24 × 10.5 mm, 10 g" },

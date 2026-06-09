@@ -1,10 +1,12 @@
 # Claudia
 
-Build your own always-on voice assistant in an afternoon — a Raspberry Pi Zero 2 WH with the Hiwonder WonderEcho voice module, wired straight to the Claude API. Sits on your shelf, listens for **"Claudia"**, and Claude answers out loud in seconds. No Alexa account, no surveillance, no subscription — just a Claude API key and hardware you own.
+Build your own always-on voice assistant in an afternoon — a Raspberry Pi Zero 2 WH with a USB microphone for conversation audio and the Hiwonder WonderEcho module as a hardware wake-word trigger, wired straight to the Claude API. Sits on your shelf, listens for **"Claudia"**, and Claude answers out loud in seconds. No Alexa account, no surveillance, no subscription — just a Claude API key and hardware you own.
+
+> **Why two audio devices?** The WonderEcho is a *command-word recognizer*, not a microphone: its CI1302 chip recognizes the wake word on-device and reports a short event ID over I²C. It never streams raw audio, so Whisper can't transcribe through it. The WonderEcho handles the always-listening wake word; the USB mic (a standard ALSA device) records what you actually say.
 
 > **WH, not W.** The WonderEcho connects to four GPIO pins (SDA / SCL / 5V / GND), so the build needs the **WH** variant with pre-soldered headers. Buying the plain "W" means soldering 40 pins yourself before anything works.
 
-> **Before you start, gather:** a Windows / macOS / Linux computer to flash the microSD and SSH in, a way to plug a microSD into it (the SanDisk Ultra ships with a full-size SD adapter but no USB reader — most modern ultrabooks and MacBooks need a USB microSD reader, ~$8), and a **2.4 GHz** Wi-Fi network (the Pi Zero 2 WH has no 5 GHz radio). The smart-plug options below ship with US plugs; each vendor (Kasa, Shelly, Sonoff) also sells EU/UK/AU variants that speak the same local API — pick your region at checkout. **No soldering iron needed**, but you'll need **4 female-to-female jumper wires** to link the WonderEcho to the Pi — the WonderEcho does not include any cable, so the shopping list below adds a cheap Dupont wire kit.
+> **Before you start, gather:** a Windows / macOS / Linux computer to flash the microSD and SSH in, a way to plug a microSD into it (the SanDisk Ultra ships with a full-size SD adapter but no USB reader — most modern ultrabooks and MacBooks need a USB microSD reader, ~$8), and a **2.4 GHz** Wi-Fi network (the Pi Zero 2 WH has no 5 GHz radio). The smart-plug options below ship with US plugs; each vendor (Kasa, Shelly, Sonoff) also sells EU/UK/AU variants that speak the same local API — pick your region at checkout. **No soldering iron needed**, but you'll need **4 female-to-female jumper wires** to link the WonderEcho to the Pi — the WonderEcho does not include any cable, so the shopping list below adds a cheap Dupont wire kit. The USB microphone plugs into the Pi's data port through a **micro-USB OTG adapter** (also in the shopping list — the Pi Zero has no full-size USB-A port).
 
 > **Stock check.** The Pi Zero 2 WH is supply-constrained; if all the US retailers on the cards below show out-of-stock, [rpilocator.com](https://rpilocator.com) tracks live availability across the official reseller network.
 
@@ -28,18 +30,25 @@ Build your own always-on voice assistant in an afternoon — a Raspberry Pi Zero
 
 1. **Do not insert the microSD yet.** Flash it first in section 04.
 2. Connect the WonderEcho to the Pi's I²C header pins with **4 female-to-female Dupont jumper wires** (from the kit in the shopping list — the WonderEcho does not include any cable): **`SDA → BCM 2 (pin 3)`**, **`SCL → BCM 3 (pin 5)`**, **`5V → pin 2`**, **`GND → pin 6`**.
-3. Make sure the WonderEcho's speaker face is unobstructed (it doubles as the mic intake).
+3. Plug the **micro-USB OTG adapter** into the Pi's **middle port labeled `USB`** (the data port — *not* the corner `PWR IN` port), then plug the USB microphone into the adapter.
+<!-- when: mic=basic -->
+4. The SunFounder mini mic is a thumb-size dongle — it just hangs off the OTG adapter. Point its grille roughly toward where you'll be speaking.
+<!-- end -->
+<!-- when: mic=array -->
+4. Set the reSpeaker XVF3800 array flat, mics facing the room — its beamforming works best with an unobstructed 360° view. It connects to the OTG adapter with its own USB cable.
+<!-- end -->
+5. Make sure the WonderEcho's speaker face is unobstructed (its on-board mic listens for the wake word).
 
 <!-- when: battery=yes -->
-4. Snap the **PiSugar 3 battery** onto the underside of the Pi using its magnetic pogo pins. No soldering — the spring-loaded pogo pins align themselves.
+6. Snap the **PiSugar 3 battery** onto the underside of the Pi using its magnetic pogo pins. No soldering — the spring-loaded pogo pins align themselves.
 
-**Final stack:** WonderEcho (via I²C cable) ←→ Pi Zero 2 WH → PiSugar 3
+**Final stack:** WonderEcho (via I²C cable) ←→ Pi Zero 2 WH ←→ USB mic (via OTG) → PiSugar 3
 <!-- end -->
 <!-- when: battery=no -->
-**Final layout:** WonderEcho (via I²C cable) ←→ Pi Zero 2 WH (wall-powered)
+**Final layout:** WonderEcho (via I²C cable) ←→ Pi Zero 2 WH ←→ USB mic (via OTG), wall-powered
 <!-- end -->
 
-✅ **Checkpoint:** The four I²C wires are seated firmly, nothing wobbles, the WonderEcho's speaker grille is unobstructed.
+✅ **Checkpoint:** The four I²C wires are seated firmly, nothing wobbles, the USB mic is in the **`USB`** (middle) port via the OTG adapter, and the WonderEcho's speaker grille is unobstructed.
 
 ---
 
@@ -139,11 +148,60 @@ You should see a device address show up (commonly `0x52` for the WonderEcho — 
 
 ✅ **Checkpoint:** `i2cdetect -y 1` lists at least one device address — the WonderEcho is talking to the Pi.
 
+### 5.5 Verify the USB microphone
+
+The USB mic is a standard USB Audio Class device — no driver needed. Confirm ALSA sees it:
+
+```bash
+arecord -l
+```
+
+You should see the mic listed as a capture card (typically `card 1` — `card 0` is the Pi's HDMI output, which has no capture side). Then make it the default capture device so the chatbot's recorder finds it without extra flags:
+
+```bash
+nano ~/.asoundrc
+```
+
+Paste (this file also ships in the repo as `config/asoundrc.usbmic`):
+
+```
+pcm.!default {
+    type asym
+    playback.pcm {
+        type plug
+        slave.pcm "hw:0,0"
+    }
+    capture.pcm {
+        type plug
+        slave.pcm "hw:1,0"
+    }
+}
+
+ctl.!default {
+    type hw
+    card 1
+}
+```
+
+If `arecord -l` showed your mic on a different card number, change the `hw:1,0` (and `card 1`) to match.
+
+<!-- when: mic=array -->
+> **Array bonus:** the reSpeaker XVF3800 also has a playback side — a 3.5 mm jack plus a JST connector driving up to 5 W speakers ([Seeed wiki](https://wiki.seeedstudio.com/respeaker_xvf3800_introduction/)). Point `playback.pcm` at the reSpeaker's card too and one device covers both mic and speaker.
+<!-- end -->
+
+Now record a 3-second test clip:
+
+```bash
+arecord -d 3 -f S16_LE -r 16000 /tmp/mictest.wav
+```
+
+✅ **Checkpoint:** `arecord -l` lists the USB mic, and the test recording completes without `audio open error`. (Playback of the clip is covered in Part 10 — the Pi's only speaker at this point may be an HDMI display.)
+
 ---
 
 ## 06. Install chatbot
 
-This is the PiSugar `whisplay-ai-chatbot` repo — we use it as the LLM/ASR/TTS plumbing even though we're not using the Whisplay HAT itself. Wake-word and audio I/O go through the WonderEcho instead.
+This is the PiSugar `whisplay-ai-chatbot` repo — we use it as the LLM/ASR/TTS plumbing even though we're not using the Whisplay HAT itself. Wake-word detection goes through the WonderEcho; conversation audio is recorded from the USB mic, which the chatbot picks up as the default ALSA capture device (set in Part 5.5).
 
 ```bash
 cd ~
@@ -211,7 +269,7 @@ ANTHROPIC_MODEL=claude-haiku-4-5-20251001
 SYSTEM_PROMPT=You are a concise, friendly voice assistant. Answer in plain spoken English — no markdown, no bullet lists, no headings. Keep responses to 1–3 sentences unless the user explicitly asks for more.
 ```
 
-The wake-word listener does **not** run on the Pi — it's handled in hardware by the WonderEcho (see section 08.3 below). The Pi only polls the WonderEcho's wake-event register over I²C, so no `WAKE_WORD_*` env keys are needed.
+The wake-word listener does **not** run on the Pi — it's handled in hardware by the WonderEcho (see section 08.3 below). The Pi only polls the WonderEcho's wake-event register over I²C, so no `WAKE_WORD_*` env keys are needed. When a wake event fires, the chatbot records your question from the **USB mic** (the default ALSA capture device you set in Part 5.5) — the WonderEcho's own mic is only used by its on-chip wake-word detector and is never seen by the Pi.
 
 > **Env-key naming:** upstream uses `LLM_SERVER`, `ASR_SERVER`, `TTS_SERVER` (not `*_PROVIDER`). The plugin registry switches on the lowercase value — see `src/cloud-api/server.ts` in the upstream repo.
 
@@ -392,7 +450,7 @@ The chatbot service polls the WonderEcho's wake-event register over I²C and sta
 
 ## 09. Healthcheck
 
-Before launching the full chatbot, run a 90-second healthcheck that verifies three layers: the WonderEcho is present on the I²C bus, the network can reach Anthropic, and your API key + chosen model actually return a response. (The audio path itself — speaker out, mic in — is exercised by the manual launch in Part 10.)
+Before launching the full chatbot, run a 90-second healthcheck that verifies four layers: the WonderEcho is present on the I²C bus, the USB mic is visible to ALSA, the network can reach Anthropic, and your API key + chosen model actually return a response. (The full audio round trip — record, transcribe, speak — is exercised by the manual launch in Part 10.)
 
 Create the script:
 
@@ -418,8 +476,8 @@ ok()   { printf "  $PASS %s\n" "$1"; }
 bad()  { printf "  $FAIL %s\n" "$1"; exit_code=1; }
 
 step "1. WonderEcho module on I2C"
-# The WonderEcho carries both mic and speaker on-board and talks to the Pi
-# over I2C bus 1. We don't expect a standalone ALSA card.
+# The WonderEcho is the wake-word frontend and talks to the Pi over I2C bus 1.
+# It is NOT an audio device — it never appears in ALSA.
 if command -v i2cdetect >/dev/null 2>&1; then
     if i2cdetect -y 1 2>/dev/null | grep -qE ' 5[234] '; then
         ok "WonderEcho detected on I2C bus 1"
@@ -430,7 +488,20 @@ else
     bad "i2c-tools not installed - run 'sudo apt install -y i2c-tools' (see Part 05.4)"
 fi
 
-step "2. Network reachability"
+step "2. USB microphone in ALSA"
+# Conversation audio comes from the USB mic — a standard USB Audio Class
+# device that must show up as an ALSA capture card (see Part 5.5).
+if command -v arecord >/dev/null 2>&1; then
+    if arecord -l 2>/dev/null | grep -q '^card '; then
+        ok "ALSA capture device present: $(arecord -l 2>/dev/null | grep '^card ' | head -1)"
+    else
+        bad "no ALSA capture device — is the USB mic in the middle 'USB' port via the OTG adapter? (Part 03 / 5.5)"
+    fi
+else
+    bad "alsa-utils not installed - run 'sudo apt install -y alsa-utils' (see Part 05.3)"
+fi
+
+step "3. Network reachability"
 # Use HTTPS instead of ping — many networks/APIs drop ICMP but pass TLS.
 # A 4xx response still proves we got a real reply from api.anthropic.com.
 net_code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 5 https://api.anthropic.com/ 2>/dev/null || echo "000")
@@ -440,7 +511,7 @@ else
   bad "cannot reach api.anthropic.com (Wi-Fi, DNS, or TLS issue)"
 fi
 
-step "3. Claude API call"
+step "4. Claude API call"
 if [ ! -f "$ENV_FILE" ]; then
   bad "$ENV_FILE not found — finish Part 08 first"
 else
@@ -490,7 +561,7 @@ chmod +x ~/healthcheck.sh
 bash ~/healthcheck.sh
 ```
 
-✅ **Checkpoint:** All three sections print green check marks. If anything fails, fix that piece before moving on — running the full chatbot before this passes just makes debugging harder.
+✅ **Checkpoint:** All four sections print green check marks. If anything fails, fix that piece before moving on — running the full chatbot before this passes just makes debugging harder.
 
 ---
 
@@ -503,7 +574,7 @@ cd ~/whisplay-ai-chatbot
 bash run_chatbot.sh
 ```
 
-**Say "Claudia"** — the WonderEcho hears the wake word, the chatbot starts a recording session, you ask your question, and Claude answers out loud. Sessions end automatically after 60 seconds of silence or when you say a stop word (`byebye`, `goodbye`, or `stop`).
+**Say "Claudia"** — the WonderEcho hears the wake word, the chatbot starts a recording session on the USB mic, you ask your question, and Claude answers out loud. Sessions end automatically after 60 seconds of silence or when you say a stop word (`byebye`, `goodbye`, or `stop`).
 
 Stop the foreground process with `Ctrl+C`.
 
@@ -621,12 +692,14 @@ No printer? Upload the STL to a print service like [JLC3DP](https://jlc3dp.com) 
 ## 12. Troubleshooting
 
 ### Nothing plays through the speaker
-- The WonderEcho carries the speaker on-board and is driven over I²C — it does **not** show up in `aplay -l`. If you hear nothing, run `i2cdetect -y 1` and confirm the module's address still answers; if not, the 4-pin cable has come loose.
-- Check `journalctl -u chatbot.service -f` for "TTS" or "speak" lines — if Claude is replying but the WonderEcho doesn't render, the I²C write path is failing.
+- TTS playback goes to the Pi's **default ALSA output** (`aplay -l` shows it), not to the WonderEcho — the WonderEcho's on-board speaker can only play its own canned firmware phrases and cannot render Claude's replies. Check which card playback is routed to in `~/.asoundrc` (Part 5.5) and that an actual speaker is attached to it.
+- Check `journalctl -u chatbot.service -f` for "TTS" or "speak" lines — if Claude is replying but you hear nothing, the playback device is wrong or muted (`alsamixer`, F6 to pick the card).
 
 ### Mic captures silence or garbage
-- The mic is on the WonderEcho too — its input is occluded if the module is face-down or covered. Reposition it speaker-side up.
-- If the wake event never fires (`journalctl -u chatbot.service -f` stays silent when you speak), the wake word may have been reset on cold boot; re-run the I²C programming snippet from Part 08.3.
+- Run `arecord -l` — if the USB mic is missing, reseat the OTG adapter in the **middle `USB` port** (the corner port is power-only) and check `dmesg | tail` for USB enumeration errors.
+- If the card number changed after a reboot (USB enumeration order isn't stable), update `hw:1,0` in `~/.asoundrc` to match `arecord -l`, or lock the mic to index 1 via `/etc/modprobe.d/alsa-base.conf`.
+- Test in isolation: `arecord -d 3 -f S16_LE -r 16000 /tmp/mictest.wav` — if this errors, the problem is ALSA config, not the chatbot.
+- If the wake event never fires (`journalctl -u chatbot.service -f` stays silent when you speak), that's the WonderEcho, not the mic — the wake word may have been reset on cold boot; re-run the I²C programming snippet from Part 08.3.
 
 ### Build fails out of memory
 - The Pi Zero 2 WH only has 512 MB. Add swap if `build.sh` gets OOM-killed:
@@ -681,6 +754,8 @@ rm -f ~/whisplay-ai-chatbot/data/recordings/*.wav 2>/dev/null
 ## Reference
 
 - **WonderEcho module:** https://www.hiwonder.com/products/wonderecho
+- **SunFounder USB mini mic:** https://www.sunfounder.com/products/mini-usb-microphone
+- **reSpeaker XVF3800 mic array:** https://wiki.seeedstudio.com/respeaker_xvf3800_introduction/
 - **Chatbot repo:** https://github.com/PiSugar/whisplay-ai-chatbot
 - **Claude API docs:** https://docs.claude.com
 - **Claude model catalog:** https://docs.claude.com/en/docs/about-claude/models/overview
@@ -692,9 +767,10 @@ rm -f ~/whisplay-ai-chatbot/data/recordings/*.wav 2>/dev/null
 
 | Layer | What it is |
 |-------|-----------|
-| Hardware | Pi Zero 2 WH + Hiwonder WonderEcho (I²C) (+ optional PiSugar 3 battery) |
+| Hardware | Pi Zero 2 WH + USB mic (SunFounder mini or reSpeaker XVF3800 array) + Hiwonder WonderEcho (I²C wake word) (+ optional PiSugar 3 battery) |
 | OS | Raspberry Pi OS 64-bit |
 | Wake word | **"Claudia"** — runs on the WonderEcho, no Pi-side listener |
+| Microphone | USB mic via OTG adapter — the default ALSA capture device (the WonderEcho never streams audio) |
 | Speech → text | Local Whisper-cpp, or cloud STT if configured |
 | LLM | Claude API (Anthropic) |
 | Text → speech | OpenAI gpt-4o-mini-tts (recommended), Piper (local), or ElevenLabs (with patch) |

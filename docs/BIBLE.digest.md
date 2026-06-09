@@ -5,8 +5,9 @@ AUTHORITATIVE - full detail in docs/BIBLE.md
 
 ## 1. The one sentence
 Claudia is a buildable, vendor-neutral guide + deployable landing page for an always-on,
-privacy-respecting voice assistant — a Raspberry Pi Zero 2 WH plus a Hiwonder WonderEcho I²C
-voice module wired straight to the Claude API — that a non-expert can assemble in an afternoon.
+privacy-respecting voice assistant — a Raspberry Pi Zero 2 WH with a USB conversation microphone
+and a Hiwonder WonderEcho I²C wake-word module, wired straight to the Claude API — that a
+non-expert can assemble in an afternoon.
 
 ## What it is NOT
 - **NOT an application or library with compiled source.** This repo is documentation + config +
@@ -15,9 +16,12 @@ voice module wired straight to the Claude API — that a non-expert can assemble
   Pi — Claudia does not vendor or fork it.
 - **NOT a wake-word trainer.** Wake-word ("Claudia") runs on the WonderEcho's on-device CI1302
   chip over I²C; there is no Pi-side listener, no openWakeWord, no training step.
+- **NOT a WonderEcho-as-microphone build.** The WonderEcho is a command-word recognizer: it
+  reports event IDs over I²C and **never streams raw audio**, so it cannot feed Whisper and never
+  appears in ALSA ([CLA-A2](AMENDMENTS.md)). Conversation audio comes from the required USB mic.
 - **NOT a Whisplay-HAT project.** The upstream repo is named for the Whisplay HAT, but Claudia
-  deliberately uses only its LLM/ASR/TTS plumbing and routes audio + wake events through the
-  WonderEcho instead.
+  deliberately uses only its LLM/ASR/TTS plumbing — wake events come from the WonderEcho and
+  conversation audio from the USB mic instead.
 - **NOT tied to one cloud vendor for speech.** ASR and TTS are builder-selectable (local Whisper /
   Piper, or OpenAI / Google / ElevenLabs). The LLM brain is Claude by design — that is the point
   of the project, not an incidental choice.
@@ -65,8 +69,13 @@ with a vendor citation, and firmware-dependent specifics (e.g. the WonderEcho `0
 `0x10` set-trigger opcode) MUST carry an explicit "verify against your firmware revision" caveat.
 
 ## Glossary
-- **WonderEcho** — Hiwonder I²C voice module (CI1302 chip) carrying mic + speaker + on-device
-  wake-word detection; default I²C address `0x52` on bus 1. Catalog id `part.hiwonder-wonderecho`.
+- **WonderEcho** — Hiwonder I²C wake-word module (CI1302 chip); recognizes "Claudia" on-device
+  and reports event IDs over I²C address `0x52` on bus 1. Its on-board mic + speaker serve only
+  the on-chip recognizer — it never streams audio and is not an ALSA device ([CLA-A2](AMENDMENTS.md)).
+  Catalog id `part.hiwonder-wonderecho`.
+- **USB conversation mic** — the required ALSA capture device the chatbot records from, attached
+  via the Pi's OTG data port: `part.sunfounder-mic` (basic, default) or `part.respeaker-xvf3800`
+  (far-field 4-mic array upgrade), selected by the `mic` config axis.
 - **Pi Zero 2 WH** — Raspberry Pi Zero 2 with pre-soldered headers (the "H"); required so the
   4-pin WonderEcho link needs no soldering. Catalog id `part.pi-zero-2-wh`.
 - **I²C** — two-wire serial bus (SDA/SCL) the Pi uses to talk to the WonderEcho on bus 1.
@@ -74,8 +83,8 @@ with a vendor citation, and firmware-dependent specifics (e.g. the WonderEcho `0
   Pi (see [CLA-LAW-2](#CLA-LAW-2)).
 - **ASR / TTS** — automatic speech recognition (speech→text) / text-to-speech (text→speech); each
   builder-selectable via a config axis.
-- **Config axis** — a landing-page `<select>` choice (`battery`/`asr`/`tts`/`case`/`smarthome`)
-  governed by [CLA-LAW-4](#CLA-LAW-4).
+- **Config axis** — a landing-page `<select>` choice (`battery`/`mic`/`asr`/`tts`/`case`/
+  `smarthome`) governed by [CLA-LAW-4](#CLA-LAW-4).
 - **Wake event** — the WonderEcho flagging, over I²C, that it heard "Claudia"; the Pi polls this
   register and starts a recording session.
 - **MindAttic.Deploy** — sibling repo that renders this README into the public landing page; not
