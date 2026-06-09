@@ -157,6 +157,7 @@
         { "label": "Audio out", "value": "3.5 mm headphone jack + JST speaker connector (up to 5 W)" },
         { "label": "Size",      "value": "108 × 108 × 18 mm" }
       ],
+      "imageFile": "images/respeaker-xvf3800.png",
       "searchFor": "https://www.google.com/search?udm=28&q=reSpeaker+XVF3800+USB+mic+array",
       "tiers": [
         { "tier": "amazon",    "url": "https://www.amazon.com/ReSpeaker-Microphone-Cancellation-Far-Field-Assistants/dp/B0FKGFXQQ5" },
