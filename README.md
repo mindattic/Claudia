@@ -31,12 +31,19 @@ Build your own always-on voice assistant in an afternoon — a Raspberry Pi Zero
 1. **Do not insert the microSD yet.** Flash it first in section 04.
 2. Connect the WonderEcho to the Pi's I²C header pins with **4 female-to-female Dupont jumper wires** (from the kit in the shopping list — the WonderEcho does not include any cable): **`SDA → BCM 2 (pin 3)`**, **`SCL → BCM 3 (pin 5)`**, **`5V → pin 2`**, **`GND → pin 6`**.
 3. Plug the **micro-USB OTG adapter** into the Pi's **middle port labeled `USB`** (the data port — *not* the corner `PWR IN` port), then plug the USB microphone into the adapter.
+
 <!-- when: mic=basic -->
+
 4. The SunFounder mini mic is a thumb-size dongle — it just hangs off the OTG adapter. Point its grille roughly toward where you'll be speaking.
+
 <!-- end -->
+
 <!-- when: mic=array -->
+
 4. Set the reSpeaker XVF3800 array flat, mics facing the room — its beamforming works best with an unobstructed 360° view. It connects to the OTG adapter with its own USB cable.
+
 <!-- end -->
+
 5. Make sure the WonderEcho's speaker face is unobstructed (its on-board mic listens for the wake word).
 
 <!-- when: battery=yes -->
