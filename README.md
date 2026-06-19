@@ -1,5 +1,7 @@
 # Claudia
 
+**Version 1.0.0** — documentation + config repo
+
 Build your own always-on voice assistant in an afternoon — a Raspberry Pi Zero 2 WH with a USB microphone for conversation audio and the Hiwonder WonderEcho module as a hardware wake-word trigger, wired straight to the Claude API. Sits on your shelf, listens for **"Claudia"**, and Claude answers out loud in seconds. No Alexa account, no surveillance, no subscription — just a Claude API key and hardware you own.
 
 > **Why two audio devices?** The WonderEcho is a *command-word recognizer*, not a microphone: its CI1302 chip recognizes the wake word on-device and reports a short event ID over I²C. It never streams raw audio, so Whisper can't transcribe through it. The WonderEcho handles the always-listening wake word; the USB mic (a standard ALSA device) records what you actually say.
@@ -9,6 +11,41 @@ Build your own always-on voice assistant in an afternoon — a Raspberry Pi Zero
 > **Before you start, gather:** a Windows / macOS / Linux computer to flash the microSD and SSH in, a way to plug a microSD into it (the SanDisk Ultra ships with a full-size SD adapter but no USB reader — most modern ultrabooks and MacBooks need a USB microSD reader, ~$8), and a **2.4 GHz** Wi-Fi network (the Pi Zero 2 WH has no 5 GHz radio). The smart-plug options below ship with US plugs; each vendor (Kasa, Shelly, Sonoff) also sells EU/UK/AU variants that speak the same local API — pick your region at checkout. **No soldering iron needed**, but you'll need **4 female-to-female jumper wires** to link the WonderEcho to the Pi — the WonderEcho does not include any cable, so the shopping list below adds a cheap Dupont wire kit. The USB microphone plugs into the Pi's data port through a **micro-USB OTG adapter** (also in the shopping list — the Pi Zero has no full-size USB-A port).
 
 > **Stock check.** The Pi Zero 2 WH is supply-constrained; if all the US retailers on the cards below show out-of-stock, [rpilocator.com](https://rpilocator.com) tracks live availability across the official reseller network.
+
+---
+
+## Repo layout
+
+This is a documentation + config repo — there is no compiled source, no `.sln`, and no `package.json`. The actual assistant runtime ([`PiSugar/whisplay-ai-chatbot`](https://github.com/PiSugar/whisplay-ai-chatbot)) is cloned on the Pi at build time; this repo does not vendor it.
+
+```
+config/
+  parts.json          # shopping catalog + landing-page configurator axes (L5 canon)
+  versions.json       # pinned upstream dependency version labels
+  env.template        # example .env for ~/whisplay-ai-chatbot/.env on the Pi
+  asoundrc.usbmic     # ALSA ~/.asoundrc profile for the USB conversation mic
+  images/             # part images for the landing-page catalog
+
+scripts/pi/
+  install-claudia.sh  # idempotent Pi installer (automates build guide parts 5–10)
+  healthcheck.sh      # 4-layer smoke test (I²C · ALSA mic · network · Claude API)
+
+docs/                 # Codex canon (BIBLE.md, AMENDMENTS.md, USER_STORIES.md, rfc/)
+tools/
+  codex.ps1           # doctor + digest commands
+README.md             # the build guide — also the source document for the landing page
+```
+
+**Verify the repo is self-consistent** (Windows PowerShell 5.1):
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/codex.ps1 digest
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/codex.ps1 doctor
+```
+
+`doctor` must exit 0. `digest` regenerates `docs/BIBLE.digest.md`; run it first if doctor reports the digest is stale.
+
+The public landing page (`mindattic.com/claudia.htm`) is rendered from this `README.md` by the sibling **MindAttic.Deploy** repo — that rendering + deploy is outside this repo's scope.
 
 ---
 
@@ -228,7 +265,7 @@ The dependency install pulls Node.js, Python packages, and audio libraries. This
 node --version
 ```
 
-You should see `v22.x` or newer (upstream's installer pulls in the current Node LTS).
+You should see `v24.x` or newer (upstream's installer pulls in the current Node LTS).
 
 ---
 
