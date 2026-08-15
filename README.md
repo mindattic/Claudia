@@ -14,38 +14,168 @@ Build your own always-on voice assistant in an afternoon — a Raspberry Pi Zero
 
 ---
 
-## Repo layout
+## What this repo is
 
-This is a documentation + config repo — there is no compiled source, no `.sln`, and no `package.json`. The actual assistant runtime ([`PiSugar/whisplay-ai-chatbot`](https://github.com/PiSugar/whisplay-ai-chatbot)) is cloned on the Pi at build time; this repo does not vendor it.
+Claudia is a **documentation + config repo, not an application**. There is no compiled source, no
+`.sln`, no `package.json`, and no build step in the traditional sense — what ships is this
+`README.md` (the build guide you're reading, and the source document the public landing page is
+rendered from), a hardware/software parts catalog, two Pi-side shell scripts, and a small set of
+Windows PowerShell tools that keep the whole thing internally consistent. The actual assistant
+runtime — [`PiSugar/whisplay-ai-chatbot`](https://github.com/PiSugar/whisplay-ai-chatbot) — is
+cloned onto the Raspberry Pi at build time by the guide/installer; this repo never vendors or
+forks it. See [`docs/BIBLE.md {#CLA-§1}`](docs/BIBLE.md#CLA-§1)–[§3](docs/BIBLE.md#CLA-§3) for the
+canonical "is / is not" statement and [§4](docs/BIBLE.md#CLA-§4) for the full architecture canon —
+this section is a practical map of the repo, not a restatement of that canon.
+
+## Architecture at a glance
 
 ```
-config/
-  parts.json          # shopping catalog + landing-page configurator axes (L5 canon)
-  versions.json       # pinned upstream dependency version labels
-  env.template        # example .env for ~/whisplay-ai-chatbot/.env on the Pi
-  asoundrc.usbmic     # ALSA ~/.asoundrc profile for the USB conversation mic
-  images/             # part images for the landing-page catalog
-
-scripts/pi/
-  install-claudia.sh  # idempotent Pi installer (automates build guide parts 5–10)
-  healthcheck.sh      # 4-layer smoke test (I²C · ALSA mic · network · Claude API)
-
-docs/                 # Codex canon (BIBLE.md, AMENDMENTS.md, USER_STORIES.md, rfc/)
-tools/
-  codex.ps1           # doctor + digest commands
-README.md             # the build guide — also the source document for the landing page
+  This repo (Claudia)                          On the Pi (after following the guide)
+  ┌─────────────────────────┐                  ┌──────────────────────────────────────┐
+  │ README.md  (build guide │  builder follows │ Raspberry Pi OS 64-bit               │
+  │  + landing-page source) │ ───────────────▶ │  whisplay-ai-chatbot (cloned upstream)│
+  │ config/parts.json (L5)  │                  │   ASR ▸ Claude (LLM) ▸ TTS pipeline   │
+  │ config/versions.json    │                  │   systemd chatbot.service             │
+  │ config/env.template     │                  └───────┬──────────────┬────────────────┘
+  │ config/asoundrc.usbmic  │                          │ I²C (4 wires) │ USB OTG
+  │ scripts/pi/*.sh         │                          ▼               ▼
+  │ docs/ (Codex canon)     │                  WonderEcho (0x52)   USB mic (ALSA)
+  └─────────────────────────┘                  wake word "Claudia"  conversation audio
+            │ rendered by sibling MindAttic.Deploy         │
+            ▼                                              ▼ HTTPS
+     mindattic.com/claudia.htm                       api.anthropic.com (Claude — the brain)
 ```
 
-**Verify the repo is self-consistent** (Windows PowerShell 5.1):
+Only the Claude API call is mandatory cloud traffic; ASR/TTS/smart-home each have a local option
+(`{#CLA-LAW-1}`). The full canonical diagram, domain model, and verbs live in
+[`docs/BIBLE.md §4`](docs/BIBLE.md#CLA-§4).
+
+## Directory layout
+
+```
+Claudia/
+  README.md               the build guide (12 numbered parts + troubleshooting) — also the
+                           source document the public landing page is rendered from
+  CLAUDE.md                Codex working agreement for AI agents in this repo
+
+  config/
+    parts.json              L5 canon: shopping catalog + landing-page configurator axes
+    versions.json            pinned upstream dependency version labels (Node, Python, Claude model)
+    env.template              example .env for ~/whisplay-ai-chatbot/.env on the Pi
+    asoundrc.usbmic             ALSA ~/.asoundrc profile for the USB conversation mic
+    images/                       part photos for the landing-page catalog cards
+
+  scripts/pi/
+    install-claudia.sh       idempotent Pi installer — automates guide parts 5–10
+    healthcheck.sh            4-layer smoke test (I²C · ALSA mic · network · Claude API)
+
+  tools/
+    codex.ps1                doctor (validate canon) + digest (regenerate BIBLE.digest.md)
+    build-readme.ps1          wrapper: regenerates README.htm from README.md (this file)
+
+  docs/                      Codex canon — see "Docs canon" below
+    BIBLE.md                  L0 — architecture, laws, verified state, glossary
+    AMENDMENTS.md              L1 — append-only change log (CLA-A<n>)
+    USER_STORIES.md             L2 — stories (CLA-US-<Epic><n>), each ✅ cites its check
+    BIBLE.digest.md               GENERATED — never hand-edit; regenerate via tools/codex.ps1 digest
+    rfc/0001-config-axis-contract.md   design note on the configurator-axis contract
+    data/parts.index.json           mirrors config/parts.json's stable ids (part.<slug>)
+    data/_schema/part.schema.json     JSON Schema validating config/parts.json entries
+
+  .claude/                   Claude Code project wiring (hooks, slash commands, statusline)
+    commands/                 checkpoint.md, commit.md, deploy.md, do.md
+    hooks/                     inject-digest.ps1 (SessionStart), restore-handoff.ps1 (/clear)
+    settings.json               hook + statusline registration
+    statusline.ps1               context-window gauge shown in the CLI status bar
+```
+
+## Scripts, tools & CLI entry points
+
+Every runnable entry point in this repo, what it does, and where it's documented:
+
+| Entry point | Runs on | Purpose | Documented at |
+|---|---|---|---|
+| `tools/codex.ps1 doctor` | Windows (PS 5.1+) | Validates the whole Codex canon: front-matter, unique `{#...}` ids, resolving cross-refs, JSON + schema validity for `config/parts.json`/`config/versions.json`, catalog id uniqueness against `docs/data/parts.index.json`, that cited repo paths exist, and that `docs/BIBLE.digest.md` isn't stale. Must exit 0. | [`docs/BIBLE.md §6`](docs/BIBLE.md#CLA-§6), [`docs/USER_STORIES.md` CLA-US-D3](docs/USER_STORIES.md) |
+| `tools/codex.ps1 digest` | Windows (PS 5.1+) | Regenerates `docs/BIBLE.digest.md` from `docs/BIBLE.md` + the latest amendment. Run before `doctor` if it reports the digest stale. | [`docs/AMENDMENTS.md` CLA-A1](docs/AMENDMENTS.md) |
+| `tools/build-readme.ps1` | Windows (PS 5.1+) | Thin wrapper that calls the shared engine `../codex-standard/build-readme.ps1` to render this `README.md` into a standalone, dark-themed, sidebar-TOC `README.htm` at the repo root. Every MindAttic repo shares the one engine so all `README.htm` pages look and behave identically — edit the engine, not this wrapper. | This README, "Build, verify & test" below |
+| `scripts/pi/install-claudia.sh` | Raspberry Pi (bash) | Idempotent installer automating guide Parts 5–10: apt update/upgrade, trims RAM-hungry services, installs build deps, enables I²C, writes `~/.asoundrc` if absent, clones + builds `whisplay-ai-chatbot`, guards against a placeholder `ANTHROPIC_API_KEY`, runs the healthcheck, and registers the `chatbot.service` boot unit. Safe to re-run. | [`docs/BIBLE.md §4.1`](docs/BIBLE.md#CLA-§4), guide Parts 05–10 below |
+| `scripts/pi/healthcheck.sh` | Raspberry Pi (bash) | 4-layer smoke test: WonderEcho on the I²C bus → USB mic visible to ALSA → network reaches `api.anthropic.com` → the configured API key + model return HTTP 200. Also embedded (abbreviated header) in guide [Part 09](#09-healthcheck) as the copy-paste a builder pastes onto the Pi as `~/healthcheck.sh`. | Guide Part 09, [`docs/USER_STORIES.md` CLA-US-D1](docs/USER_STORIES.md) |
+| `.claude/hooks/inject-digest.ps1` | Claude Code SessionStart hook | Injects `docs/BIBLE.digest.md` as context at the start of every Claude Code session in this repo. | [`docs/AMENDMENTS.md` CLA-A1](docs/AMENDMENTS.md) |
+| `.claude/hooks/restore-handoff.ps1` | Claude Code SessionStart (`matcher: clear`) | Re-ingests `.claude/checkpoint.md` (written by `/checkpoint`) as resume context the instant `/clear` fires, then deletes it — a one-shot context handoff across `/clear`. | `.claude/commands/checkpoint.md` |
+
+There is no `dotnet build`/`npm install`/`npm test` here — this repo has no compiled or transpiled
+source. "Build" and "test" instead mean the checks below.
+
+## Configuration reference
+
+| File | What it holds | Consumed by |
+|---|---|---|
+| [`config/parts.json`](config/parts.json) | The canonical L5 shopping catalog **and** the `configAxes` block that drives the landing-page configurator (`battery`, `mic`, `asr`, `tts`, `case`, `smarthome`). Every part has `id`, `category`, `price`, `pricesAsOf`, `specs`, buy-link `tiers`, and an optional `when` gate. Prices are non-authoritative estimates dated by a top-level `pricesAsOf` ([`{#CLA-LAW-3}`](docs/BIBLE.md#CLA-LAW-3)). | Sibling **MindAttic.Deploy** reads this file **in place** at this exact path to render the shopping-list widget and configurator on `mindattic.com/claudia.htm`; do not move it. Ids are mirrored (not duplicated) into [`docs/data/parts.index.json`](docs/data/parts.index.json) as `part.<slug>` and validated against [`docs/data/_schema/part.schema.json`](docs/data/_schema/part.schema.json). |
+| [`config/versions.json`](config/versions.json) | Pinned upstream dependency version *labels* (current Node major, Python system version, Raspberry Pi OS label, default Claude model + label), each dated by `versionsAsOf`. | Hand-kept in sync with what `README.md` hardcodes in prose — there is no automatic injection pipeline (a prior `build-html.js` placeholder-injection step was retired when rendering moved to MindAttic.Deploy). |
+| [`config/env.template`](config/env.template) | Example `.env` for `~/whisplay-ai-chatbot/.env` on the Pi — LLM/ASR/TTS provider keys and the system prompt. | Guide [Part 08](#08-configure-chatbot); copied by `install-claudia.sh` when the Pi's own `.env.template` is missing. |
+| [`config/asoundrc.usbmic`](config/asoundrc.usbmic) | ALSA `~/.asoundrc` profile that makes the USB conversation mic the default capture device (card 1) while leaving playback on the default output (card 0). | Guide [Part 5.5](#05-system-setup); written verbatim by `install-claudia.sh` if `~/.asoundrc` doesn't already exist. |
+| [`config/images/`](config/images) | Part photos (`pi-zero-2-wh.png`, `hiwonder-wonderecho.png`, `sunfounder-mic.png`, `respeaker-xvf3800.png`, `microsd-32gb.png`, `pi-power-supply.png`, `elegoo-dupont-wires.png`) referenced by `imageFile` in `config/parts.json`. | Landing-page catalog cards (MindAttic.Deploy). |
+
+**Configurator axis contract.** An axis `key=value` is only valid if it agrees in all three
+places at once: the `configAxes` block above, each part's `when` gate, and this README's
+`<!-- when: key=value -->` markers. This is currently enforced by hand/review
+([`{#CLA-LAW-4}`](docs/BIBLE.md#CLA-LAW-4)); [RFC 0001](docs/rfc/0001-config-axis-contract.md)
+proposes teaching `codex.ps1 doctor` to check it mechanically.
+
+## Build, verify & test
+
+There's no compiler and no test runner — "build" means regenerating generated artifacts, and
+"test" means the checks below all pass. Run from the repo root, Windows PowerShell 5.1:
 
 ```powershell
+# Regenerate docs/BIBLE.digest.md from BIBLE.md + the latest amendment
 powershell -NoProfile -ExecutionPolicy Bypass -File tools/codex.ps1 digest
+
+# Validate the whole Codex canon (front-matter, ids, cross-refs, JSON+schema,
+# catalog id uniqueness, cited paths exist, digest freshness) — must exit 0
 powershell -NoProfile -ExecutionPolicy Bypass -File tools/codex.ps1 doctor
+
+# Regenerate README.htm from this README.md via the shared workspace-wide engine
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/build-readme.ps1
 ```
 
-`doctor` must exit 0. `digest` regenerates `docs/BIBLE.digest.md`; run it first if doctor reports the digest is stale.
+Additional checks reviewed by hand (not currently automated in this repo):
 
-The public landing page (`mindattic.com/claudia.htm`) is rendered from this `README.md` by the sibling **MindAttic.Deploy** repo — that rendering + deploy is outside this repo's scope.
+- Pi-side shell scripts (`scripts/pi/*.sh`) are syntax-checked with `bash -n` and kept idempotent.
+- Any new/edited config axis is checked to agree across `parts.json`, part `when` gates, and this
+  README's markers (see the axis contract above).
+- On-hardware behavior (WonderEcho detection, wake→Claude→speak round trip, boot service) can't be
+  exercised in CI — those stories stay `🟡` in [`docs/USER_STORIES.md`](docs/USER_STORIES.md) until
+  proven on a real Pi. See [`docs/BIBLE.md §6`](docs/BIBLE.md#CLA-§6) for the full verified-state
+  table.
+
+The public landing page (`mindattic.com/claudia.htm`) is rendered from this `README.md` +
+`config/parts.json` by the sibling **MindAttic.Deploy** repo — that rendering + deploy pipeline is
+outside this repo's scope. `README.htm` (generated above) is a separate, internal engineering
+rendering of this same file, shared in look-and-feel across every MindAttic repo.
+
+## Docs canon
+
+This repo uses the MindAttic **Codex** documentation standard — layered, single-home-per-fact docs
+under `docs/`. Read `docs/BIBLE.md` first; everything else links off it.
+
+| Layer | File | What it's for |
+|---|---|---|
+| L0 | [`docs/BIBLE.md`](docs/BIBLE.md) | What Claudia IS / is NOT, architecture canon, the Laws (`{#CLA-LAW-n}`), verified state, glossary. |
+| L1 | [`docs/AMENDMENTS.md`](docs/AMENDMENTS.md) | Append-only change log (`CLA-A<n>`); an amendment *wins* over the bible. |
+| L2 | [`docs/USER_STORIES.md`](docs/USER_STORIES.md) | Stories `CLA-US-<Epic><n>` across Epics A–D (Configure & shop, Assemble & flash, Install & converse, Verify & operate); every `✅` cites its verifying check. |
+| rfc | [`docs/rfc/`](docs/rfc) | Design notes; graduate into L0+L2 then mark superseded. Currently: [RFC 0001](docs/rfc/0001-config-axis-contract.md). |
+| L5 | [`docs/data/`](docs/data) | `parts.index.json` mirrors the canonical catalog `config/parts.json`; `_schema/part.schema.json` validates it. |
+| generated | [`docs/BIBLE.digest.md`](docs/BIBLE.digest.md) | Regenerated by `tools/codex.ps1 digest`; injected at Claude Code session start by `.claude/hooks/inject-digest.ps1`. Never hand-edit. |
+
+Org-wide laws are inherited by reference from [`../MindAttic.HouseRules.md`](../MindAttic.HouseRules.md)
+via [`docs/BIBLE.md §5`](docs/BIBLE.md#CLA-§5) — not restated here.
+
+## Versioning
+
+Whole-number, major-only: this README is stamped **Version 1.0.0** at the top of this file. A
+release bumps the major only (`1.0.0` → `2.0.0` → `3.0.0`, …); minor and patch stay `0`
+(`HOUSE-LAW-1`, inherited via [`docs/BIBLE.md §5`](docs/BIBLE.md#CLA-§5)).
 
 ---
 
