@@ -1,4 +1,4 @@
-# Visual Studio
+﻿# Visual Studio
 .vs/
 *.user
 *.suo
@@ -11,7 +11,7 @@ __pycache__/
 Thumbs.db
 .DS_Store
 
-# Local secrets — never commit a real .env / FTP creds
+# Local secrets â€” never commit a real .env / FTP creds
 .env
 config/.env
 config/*.local.*
@@ -23,4 +23,4 @@ config/*.local.*
 # Build artifacts
 out/
 dist/
-.claude/checkpoint.md
+.claude/quicksave.md
