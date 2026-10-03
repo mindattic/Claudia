@@ -4,7 +4,7 @@ AUTHORITATIVE - full detail in docs/BIBLE.md
 # Claudia - Codex digest
 
 ## 1. The one sentence
-Claudia is a buildable, vendor-neutral guide + deployable landing page for an always-on,
+Claudia is a buildable, vendor-neutral guide ~~+ deployable landing page~~ (**Superseded by [CLA-A3](AMENDMENTS.md)**: published as its static GitHub README) for an always-on,
 privacy-respecting voice assistant — a Raspberry Pi Zero 2 WH with a USB conversation microphone
 and a Hiwonder WonderEcho I²C wake-word module, wired straight to the Claude API — that a
 non-expert can assemble in an afternoon.
@@ -59,9 +59,10 @@ Stale-by-design data must always say when it was last verified — never present
 live fact.
 
 ### {#CLA-LAW-4} Configurator axes are a single contract.
-An axis `key=value` is valid only if it agrees in all three places: the `configAxes` block in
-`config/parts.json`, the part `when` gates, and the README `<!-- when: -->` markers. Adding or
-renaming an axis value means updating all three together; a value present in one but not the
+An axis `key=value` is valid only if it agrees in all ~~three~~ places: the `configAxes` block in
+`config/parts.json`, the part `when` gates, ~~and the README `<!-- when: -->` markers~~ and the
+README's prose naming that option (**Superseded by [CLA-A3](AMENDMENTS.md)**: the README no longer carries `when` markers). Adding or
+renaming an axis value means updating all of them together; a value present in one but not the
 others is a defect.
 
 ### {#CLA-LAW-5} No hardware claim ships unverified against the vendor.
@@ -84,12 +85,12 @@ with a vendor citation, and firmware-dependent specifics (e.g. the WonderEcho `0
   Pi (see [CLA-LAW-2](#CLA-LAW-2)).
 - **ASR / TTS** — automatic speech recognition (speech→text) / text-to-speech (text→speech); each
   builder-selectable via a config axis.
-- **Config axis** — a landing-page `<select>` choice (`battery`/`mic`/`asr`/`tts`/`case`/
+- **Config axis** — a ~~landing-page `<select>` choice~~ build option (**Superseded by [CLA-A3](AMENDMENTS.md)**) (`battery`/`mic`/`asr`/`tts`/`case`/
   `smarthome`) governed by [CLA-LAW-4](#CLA-LAW-4).
 - **Wake event** — the WonderEcho flagging, over I²C, that it heard "Claudia"; the Pi polls this
   register and starts a recording session.
-- **MindAttic.Deploy** — sibling repo that renders this README into the public landing page; not
-  part of Claudia's own scope.
+- **MindAttic.Deploy** — sibling deploy repo. ~~Renders this README into the public landing page;~~
+  **Superseded by [CLA-A3](AMENDMENTS.md)** — it no longer renders or uploads Claudia (DEP-A6). Not part of Claudia's own scope.
 
 ## Story status index
 - done: 8

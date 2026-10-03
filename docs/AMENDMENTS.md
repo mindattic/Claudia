@@ -53,3 +53,23 @@ shipped violation of it.
 
 **Migration.** Existing builders add a USB mic + micro-USB OTG adapter (~$12 total for the basic
 option) and create `~/.asoundrc` per guide Part 5.5. No software re-install needed.
+
+## CLA-A3 — MindAttic.Deploy render + parts configurator retired; README is a static GitHub page (supersedes the bible's landing-page/configurator canon)
+**What changed.** On 2026-10-03 MindAttic.Deploy retired its catalog pipeline (its amendment DEP-A6): the
+README → `claudia.htm` render, the `parts` addon (`src/parts.js`, which read `config/parts.json` and
+`config/images` to build the configurator, the shopping list and the `<!-- when: key=value -->` blocks)
+and the upload are gone, and `mindattic.com/claudia.htm` 301-redirects to https://github.com/mindattic/Claudia.
+`README.md` is now the project page as GitHub shows it, with a static parts table and plain per-option
+notes; it carries no `when` markers. `config/parts.json` (catalog + `configAxes` + part `when` gates)
+stays the canonical data.
+
+**Bible.** §1 ("deployable landing page"), §2 (landing-page configurator), §4.1 (README as render source
+with `when` blocks; `configAxes` driving the page), §4.2 config axis as a page `<select>` and the README
+marker clause, §4.3 Configure, [CLA-LAW-4](BIBLE.md#CLA-LAW-4)'s README-marker leg (the contract now
+spans `configAxes`, part `when` gates and the README's prose), the §6 "Landing page renders & deploys" row
+(now 🗑️), §8 item 2, and the §9 config-axis and MindAttic.Deploy entries are struck through and marked
+superseded; §7 notes the configurator is retired. The §3 "NOT a web deploy" bullet, the §4 diagram and
+§4.3 Publish were already updated by the 2026-10-03 README rewrite and are recorded here.
+**Stories.** CLA-US-A1 is rewritten to the static README (original kept in the audit log).
+
+**Migration.** None. No application code or Pi script changed.

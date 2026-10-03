@@ -4,7 +4,7 @@ project: Claudia
 code: CLA
 layer: bible
 status: living
-updated: 2026-06-09
+updated: 2026-10-03
 ---
 
 # Claudia — Project Bible
@@ -14,7 +14,7 @@ updated: 2026-06-09
 
 ## 1. The one sentence {#CLA-§1}
 
-Claudia is a buildable, vendor-neutral guide + deployable landing page for an always-on,
+Claudia is a buildable, vendor-neutral guide ~~+ deployable landing page~~ (**Superseded by [CLA-A3](AMENDMENTS.md)**: published as its static GitHub README) for an always-on,
 privacy-respecting voice assistant — a Raspberry Pi Zero 2 WH with a USB conversation microphone
 and a Hiwonder WonderEcho I²C wake-word module, wired straight to the Claude API — that a
 non-expert can assemble in an afternoon.
@@ -25,11 +25,14 @@ non-expert can assemble in an afternoon.
   own. Only Claude (and an optional cloud TTS/ASR, if the builder opts in) ever leaves the device.
 - **An afternoon, no soldering.** The build uses the **WH** (pre-soldered-header) Pi and a 4-wire
   Dupont link to the WonderEcho. Total assembly time ~3 minutes; the slow parts are downloads/builds.
-- **Configurable to the builder's taste, not ours.** A landing-page configurator (driven by the
+- **Configurable to the builder's taste, not ours.** ~~A landing-page configurator (driven by the
   config axes in [`config/parts.json`](../config/parts.json)) lets the reader pick battery vs.
   wall power, basic vs. far-field-array microphone, local vs. cloud ASR/TTS, case, and smart-home
   plug; the shopping list and guide sections adapt to the choices via `<!-- when: key=value -->`
-  markers in `README.md`.
+  markers in `README.md`.~~ **Superseded by [CLA-A3](AMENDMENTS.md)** — the reader picks battery vs. wall power, basic vs.
+  far-field-array microphone, local vs. cloud ASR/TTS, case, and smart-home plug from the build
+  options (the config axes in `config/parts.json`); the README's static parts table and guide mark
+  where each choice changes a part or a step. There is no interactive configurator.
 - **Honest about cost and stock.** Prices are flagged non-authoritative; the Pi Zero 2 WH's
   supply constraints and 2.4 GHz-only Wi-Fi are called out up front.
 
@@ -89,11 +92,12 @@ non-expert can assemble in an afternoon.
 
 ### 4.1 Components
 
-- **`README.md`** — the canonical build guide (12 numbered parts + troubleshooting). It is also
-  the source document the landing page is rendered from. Conditional blocks use
-  `<!-- when: key=value -->` / `<!-- end -->` matched against configurator axis values.
-- **`config/parts.json`** — L5 canon-as-data: the shopping catalog AND the `configAxes` that drive
-  the page configurator. See [§4.2](#CLA-§4) and [`docs/data/parts.index.json`](data/parts.index.json).
+- **`README.md`** — the canonical build guide (12 numbered parts + troubleshooting) and the
+  project page. ~~It is also the source document the landing page is rendered from. Conditional
+  blocks use `<!-- when: key=value -->` / `<!-- end -->` matched against configurator axis values.~~
+  **Superseded by [CLA-A3](AMENDMENTS.md)** — a static GitHub page with a static parts table; per-choice notes in plain prose.
+- **`config/parts.json`** — L5 canon-as-data: the shopping catalog AND the `configAxes` ~~that drive
+  the page configurator~~ (**Superseded by [CLA-A3](AMENDMENTS.md)**: the build options the README describes). See [§4.2](#CLA-§4) and [`docs/data/parts.index.json`](data/parts.index.json).
 - **`config/versions.json`** — pinned upstream dependency version *labels* (Node, Python, default
   Claude model). README hardcodes these; kept in sync by hand.
 - **`config/env.template`** — example `.env` for `~/whisplay-ai-chatbot/.env` on the Pi.
@@ -110,17 +114,18 @@ non-expert can assemble in an afternoon.
   `specs`, optional `when` gate). Canonical store [`config/parts.json`](../config/parts.json);
   schema [`part.schema.json`](data/_schema/part.schema.json); ids registered in
   [`parts.index.json`](data/parts.index.json) as `part.<slug>`.
-- **Config axis** — a builder choice surfaced as a `<select>` on the landing page:
+- **Config axis** — a builder choice ~~surfaced as a `<select>` on the landing page~~ (**Superseded by [CLA-A3](AMENDMENTS.md)**: a build option described in the README):
   `battery` (no|yes), `mic` (basic|array), `asr` (whisper-cpp|openai|google),
   `tts` (openai|elevenlabs|piper), `case` (none|fdm|sla), `smarthome` (none|kasa|shelly|sonoff).
-  Values MUST match README `<!-- when: -->` markers and each part's `when` field exactly.
+  Values MUST match ~~README `<!-- when: -->` markers and~~ each part's `when` field exactly
+  (**Superseded by [CLA-A3](AMENDMENTS.md)**: the README has no markers).
 - **Build guide** — `README.md` parts 01–12; the artifact a builder follows end to end.
 - **The device** — assembled stack: WonderEcho (I²C) ↔ Pi Zero 2 WH ↔ USB mic (OTG)
   (→ optional PiSugar 3 battery).
 
 ### 4.3 Key services (VERBS)
 
-- **Configure** — reader picks axis values on the page; catalog + guide blocks adapt.
+- ~~**Configure** — reader picks axis values on the page; catalog + guide blocks adapt.~~ **Superseded by [CLA-A3](AMENDMENTS.md)** — retired with MindAttic.Deploy's parts addon (DEP-A6); the README describes each option.
 - **Install** — `scripts/pi/install-claudia.sh` provisions the Pi (apt, I²C, clone, build, service).
 - **Healthcheck** — `scripts/pi/healthcheck.sh` proves I²C + network + Claude API before launch.
 - **Wake / converse** — WonderEcho detects "Claudia" on-device, flags a wake event on I²C; the
@@ -159,9 +164,10 @@ Stale-by-design data must always say when it was last verified — never present
 live fact.
 
 ### {#CLA-LAW-4} Configurator axes are a single contract.
-An axis `key=value` is valid only if it agrees in all three places: the `configAxes` block in
-`config/parts.json`, the part `when` gates, and the README `<!-- when: -->` markers. Adding or
-renaming an axis value means updating all three together; a value present in one but not the
+An axis `key=value` is valid only if it agrees in all ~~three~~ places: the `configAxes` block in
+`config/parts.json`, the part `when` gates, ~~and the README `<!-- when: -->` markers~~ and the
+README's prose naming that option (**Superseded by [CLA-A3](AMENDMENTS.md)**: the README no longer carries `when` markers). Adding or
+renaming an axis value means updating all of them together; a value present in one but not the
 others is a defect.
 
 ### {#CLA-LAW-5} No hardware claim ships unverified against the vendor.
@@ -183,7 +189,7 @@ self-consistent and machine-checkable, not that a physical device was assembled 
 | `BIBLE.digest.md` is current | ✅ | `tools/codex.ps1 digest` then doctor staleness check |
 | Cited repo paths (`config/*`, `scripts/pi/*`) exist on disk | ✅ | doctor path-existence check |
 | Pi installer / healthcheck run end-to-end on real hardware | 🟡 | shell scripts present & internally reviewed; not exercised on a Pi in this repo's CI — see [CLA-US-D1](USER_STORIES.md#stories), [CLA-US-D2](USER_STORIES.md#stories) |
-| Landing page renders & deploys | 🟡 | owned by sibling MindAttic.Deploy (out of this repo's scope) |
+| ~~Landing page renders & deploys~~ | 🗑️ | ~~owned by sibling MindAttic.Deploy (out of this repo's scope)~~ **Superseded by [CLA-A3](AMENDMENTS.md)** — retired (DEP-A6); the GitHub README is the page |
 
 **Build/test commands:** This repo has no compile step and no test suite (no `*.sln`,
 `*.csproj`, or `package.json`). Verification is `tools/codex.ps1 doctor` plus JSON validity;
@@ -195,7 +201,8 @@ the actual run results.
 - **Stories & backlog:** [`docs/USER_STORIES.md`](USER_STORIES.md) — Epics A (Configure & shop),
   B (Assemble & flash), C (Install & converse), D (Verify & operate).
 - **Design notes:** [`docs/rfc/`](rfc/) — [RFC 0001](rfc/0001-config-axis-contract.md) on keeping
-  the configurator axes a single enforced contract.
+  the configurator axes a single enforced contract (the interactive configurator itself is retired,
+  [CLA-A3](AMENDMENTS.md); the axis contract still governs `parts.json` and the README).
 - **Known soft spots:** firmware-dependent WonderEcho register map (caveated, see
   [CLA-LAW-5](#CLA-LAW-5)); ElevenLabs requires a hand-applied upstream patch; on-hardware
   end-to-end remains 🟡.
@@ -206,7 +213,7 @@ A change to Claudia is "done" only when:
 
 1. `tools/codex.ps1 doctor` passes (front-matter, ids, cross-refs, JSON+schema, path existence,
    digest freshness).
-2. Any new/edited config axis agrees across `parts.json`, part `when` gates, and README markers
+2. Any new/edited config axis agrees across `parts.json`, part `when` gates, and ~~README markers~~ the README's per-option prose (**Superseded by [CLA-A3](AMENDMENTS.md)**)
    ([CLA-LAW-4](#CLA-LAW-4)).
 3. Any new hardware/price/version claim carries a vendor citation and a dated/"verify" caveat
    ([CLA-LAW-3](#CLA-LAW-3), [CLA-LAW-5](#CLA-LAW-5)).
@@ -230,9 +237,9 @@ A change to Claudia is "done" only when:
   Pi (see [CLA-LAW-2](#CLA-LAW-2)).
 - **ASR / TTS** — automatic speech recognition (speech→text) / text-to-speech (text→speech); each
   builder-selectable via a config axis.
-- **Config axis** — a landing-page `<select>` choice (`battery`/`mic`/`asr`/`tts`/`case`/
+- **Config axis** — a ~~landing-page `<select>` choice~~ build option (**Superseded by [CLA-A3](AMENDMENTS.md)**) (`battery`/`mic`/`asr`/`tts`/`case`/
   `smarthome`) governed by [CLA-LAW-4](#CLA-LAW-4).
 - **Wake event** — the WonderEcho flagging, over I²C, that it heard "Claudia"; the Pi polls this
   register and starts a recording session.
-- **MindAttic.Deploy** — sibling repo that renders this README into the public landing page; not
-  part of Claudia's own scope.
+- **MindAttic.Deploy** — sibling deploy repo. ~~Renders this README into the public landing page;~~
+  **Superseded by [CLA-A3](AMENDMENTS.md)** — it no longer renders or uploads Claudia (DEP-A6). Not part of Claudia's own scope.

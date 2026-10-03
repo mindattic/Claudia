@@ -17,11 +17,12 @@ updated: 2026-06-09
 
 ## Epic A — Configure & shop
 
-- **CLA-US-A1 ✅** As a builder, I can pick my build options (battery, microphone, ASR, TTS,
-  case, smart-home) on the landing page, so the shopping list and guide match my choices.
-  *Given the six `configAxes`, When I choose a value, Then matching `<!-- when: -->` README
-  blocks and `when`-gated parts show.* *(verified by `codex.ps1 doctor` axis-contract check that
-  `configAxes` values in `config/parts.json` match part `when` gates; markers checked manually
+- **CLA-US-A1 ✅** As a builder, I can see my build options (battery, microphone, ASR, TTS,
+  case, smart-home) in the README, so I know which parts and guide steps apply to my choices.
+  *Given the six `configAxes`, When I read the README, Then the parts table and guide note which
+  parts and steps each option changes.* *(rewritten 2026-10-03 by [CLA-A3](AMENDMENTS.md): the
+  landing-page configurator was retired. Verified by `codex.ps1 doctor` axis-contract check that
+  `configAxes` values in `config/parts.json` match part `when` gates; README prose checked manually
   per [CLA-LAW-4](BIBLE.md#CLA-LAW-4).)*
 - **CLA-US-A2 ✅** As a builder, I can see every required and optional part with a price estimate
   and at least three buy links (Amazon → official → reputable), so I can source the hardware.
@@ -97,6 +98,10 @@ When a story is rewritten, the original spec is kept verbatim below, marked
   "As a builder, I can pick my build options (battery, ASR, TTS, case, smart-home) on the landing
   page, so the shopping list and guide match my choices. *Given the five `configAxes`, When I
   choose a value, Then matching `<!-- when: -->` README blocks and `when`-gated parts show.*"
+- **CLA-US-A1** (original spec — audit log, superseded 2026-10-03 by [CLA-A3](AMENDMENTS.md)):
+  "As a builder, I can pick my build options (battery, microphone, ASR, TTS, case, smart-home) on
+  the landing page, so the shopping list and guide match my choices. *Given the six `configAxes`,
+  When I choose a value, Then matching `<!-- when: -->` README blocks and `when`-gated parts show.*"
 - **CLA-US-D1** (original spec — audit log, superseded 2026-06-09 by [CLA-A2](AMENDMENTS.md)):
   "As a builder, I can run a 90-second healthcheck that proves the WonderEcho is present, the
   network reaches Anthropic, and my key + model return a response, so I debug before launch.
