@@ -406,16 +406,14 @@ function Build-DigestText {
     $cut     = ([regex]::Matches($s, 'CLA-US-[A-Za-z0-9]+\s*' + [regex]::Escape($EMO_CUT))).Count
   }
 
-  # latest amendment head
-  $amendHead = ''
+  # pending decisions (only when docs/AMENDMENTS.md holds entries)
+  $pending = New-Object System.Collections.Generic.List[string]
   $ap = Join-Path $DocsDir 'AMENDMENTS.md'
   if (Test-Path $ap) {
     $a = Read-Utf8 $ap
-    $am = [regex]::Match($a, '(?ms)^##\s+(CLA-A\d+[^\r\n]*)\r?\n(.*?)(?=^##\s|\Z)')
-    if ($am.Success) {
-      $head = $am.Groups[1].Value.Trim()
-      $body = ($am.Groups[2].Value.Trim() -split "\r?\n" | Select-Object -First 4) -join "`n"
-      $amendHead = "## $head`n$body"
+    foreach ($m in [regex]::Matches($a, '(?m)^##\s+(CLA-A\d+[^
+]*)')) {
+      $pending.Add($m.Groups[1].Value.Trim())
     }
   }
 
@@ -441,11 +439,10 @@ function Build-DigestText {
   [void]$sb.AppendLine("- done: $done")
   [void]$sb.AppendLine("- partial: $partial")
   [void]$sb.AppendLine("- planned: $planned")
-  [void]$sb.AppendLine("- cut: $cut")
-  if ($amendHead -ne '') {
+  if ($pending.Count -gt 0) {
     [void]$sb.AppendLine('')
-    [void]$sb.AppendLine('## Latest amendment')
-    [void]$sb.AppendLine($amendHead)
+    [void]$sb.AppendLine('## Pending decisions')
+    foreach ($h in $pending) { [void]$sb.AppendLine("- $h") }
   }
   return $sb.ToString()
 }

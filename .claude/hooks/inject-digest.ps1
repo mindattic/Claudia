@@ -20,8 +20,7 @@ try {
   $preamble = @"
 The following is the AUTHORITATIVE Codex digest for the Claudia project (source of truth:
 docs/BIBLE.md). Treat its laws and state as binding. When a fact here conflicts with code or
-memory, the digest wins; the latest amendment (docs/AMENDMENTS.md) wins over the bible. Keep a
-single home per fact and cite ids ({#CLA-...}, part.<slug>) rather than restating.
+memory, the digest wins. Keep a single home per fact and cite ids ({#CLA-...}, part.<slug>) rather than restating.
 
 "@
 

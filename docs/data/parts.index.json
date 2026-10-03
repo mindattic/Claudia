@@ -7,7 +7,7 @@
     "status": "living",
     "updated": "2026-06-09"
   },
-  "//note": "L5 canon-as-data registry. The CANONICAL store is ../../config/parts.json (read by MindAttic.Deploy to render the catalog page); it is NOT moved here so deploy tooling keeps working. This file mirrors each part's stable Codex id ('part.<id>') and validating schema so docs/codex.ps1 doctor can validate the catalog and cross-references resolve. Keep ids in sync with config/parts.json when parts are added or removed.",
+  "//note": "L5 canon-as-data registry. The CANONICAL store is ../../config/parts.json (the README parts tables are written by hand from it). This file mirrors each part's stable Codex id ('part.<id>') and validating schema so docs/codex.ps1 doctor can validate the catalog and cross-references resolve. Keep ids in sync with config/parts.json when parts are added or removed.",
   "canonicalSource": "config/parts.json",
   "schema": "docs/data/_schema/part.schema.json",
   "configAxes": ["battery", "mic", "asr", "tts", "case", "smarthome"],

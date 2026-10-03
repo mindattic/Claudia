@@ -4,12 +4,12 @@ project: Claudia
 code: CLA
 layer: stories
 status: living
-updated: 2026-06-09
+updated: 2026-10-03
 ---
 
 # Claudia — User Stories
 
-> ✅ done (shipped & tested) · 🟡 partial · ⬜ planned · 🗑️ cut. Every ✅ cites the test/check
+> ✅ done (shipped & tested) · 🟡 partial · ⬜ planned. Every ✅ cites the test/check
 > that proves it. For this repo, "tests" are: `tools/codex.ps1 doctor` checks, JSON-schema
 > validation of the catalog, `bash -n` syntax checks of the Pi scripts, and the named steps of
 > `scripts/pi/healthcheck.sh`. On-hardware behaviours that cannot be exercised in this repo's
@@ -20,13 +20,12 @@ updated: 2026-06-09
 - **CLA-US-A1 ✅** As a builder, I can see my build options (battery, microphone, ASR, TTS,
   case, smart-home) in the README, so I know which parts and guide steps apply to my choices.
   *Given the six `configAxes`, When I read the README, Then the parts table and guide note which
-  parts and steps each option changes.* *(rewritten 2026-10-03 by [CLA-A3](AMENDMENTS.md): the
-  landing-page configurator was retired. Verified by `codex.ps1 doctor` axis-contract check that
-  `configAxes` values in `config/parts.json` match part `when` gates; README prose checked manually
-  per [CLA-LAW-4](BIBLE.md#CLA-LAW-4).)*
+  parts and steps each option changes.* *(verified by the `codex.ps1 doctor` axis-contract check
+  that every part `when` key in `config/parts.json` is a `configAxes` key; the README tables are
+  written by hand from the catalog and checked by review per [CLA-LAW-4](BIBLE.md#CLA-LAW-4).)*
 - **CLA-US-A2 ✅** As a builder, I can see every required and optional part with a price estimate
   and at least three buy links (Amazon → official → reputable), so I can source the hardware.
-  *Given `config/parts.json`, When rendered, Then each part has ≥1 tier and a dated `pricesAsOf`.*
+  *Given `config/parts.json`, Then each part has ≥1 tier and the catalog a dated `pricesAsOf`.*
   *(verified by `part.schema.json` validation in `codex.ps1 doctor`.)*
 - **CLA-US-A3 ✅** As a builder, I am told prices and stock are non-authoritative and dated, so I
   don't trust a stale estimate. *Given any price, Then the catalog carries `pricesAsOf` and stock
@@ -75,7 +74,7 @@ updated: 2026-06-09
   is always-on. *(documented in README part 10 + `install-claudia.sh` step 10 calling upstream
   `startup.sh`; requires the Pi.)*
 - **CLA-US-D3 ✅** As a maintainer, I can validate the whole doc/config set in one command so a
-  bad edit is caught before deploy. *Given `tools/codex.ps1 doctor`, Then front-matter, ids,
+  bad edit is caught before it is pushed. *Given `tools/codex.ps1 doctor`, Then front-matter, ids,
   cross-refs, JSON+schema, and cited paths are checked.* *(verified by `codex.ps1 doctor`
   exiting 0 — see BIBLE [§6](BIBLE.md#CLA-§6).)*
 
@@ -88,21 +87,3 @@ Dependency-ordered toward "a non-expert ships a working Claudia":
 3. **CLA-US-D1 / CLA-US-D2** — healthcheck + boot service proven on a real Pi.
 4. Confirm the WonderEcho `0x52` address and `0x10` set-trigger opcode against shipping firmware,
    then drop the caveat where confirmed ([CLA-LAW-5](BIBLE.md#CLA-LAW-5)).
-
-### Audit log
-
-When a story is rewritten, the original spec is kept verbatim below, marked
-"(original spec — audit log)".
-
-- **CLA-US-A1** (original spec — audit log, superseded 2026-06-09 by [CLA-A2](AMENDMENTS.md)):
-  "As a builder, I can pick my build options (battery, ASR, TTS, case, smart-home) on the landing
-  page, so the shopping list and guide match my choices. *Given the five `configAxes`, When I
-  choose a value, Then matching `<!-- when: -->` README blocks and `when`-gated parts show.*"
-- **CLA-US-A1** (original spec — audit log, superseded 2026-10-03 by [CLA-A3](AMENDMENTS.md)):
-  "As a builder, I can pick my build options (battery, microphone, ASR, TTS, case, smart-home) on
-  the landing page, so the shopping list and guide match my choices. *Given the six `configAxes`,
-  When I choose a value, Then matching `<!-- when: -->` README blocks and `when`-gated parts show.*"
-- **CLA-US-D1** (original spec — audit log, superseded 2026-06-09 by [CLA-A2](AMENDMENTS.md)):
-  "As a builder, I can run a 90-second healthcheck that proves the WonderEcho is present, the
-  network reaches Anthropic, and my key + model return a response, so I debug before launch.
-  *Given `healthcheck.sh`, Then 3 layers report pass/fail.*"

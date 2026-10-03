@@ -2,7 +2,7 @@
   "_description": "Parts catalog for the Claudia build. Each part has a 'searchFor' Google Shopping URL plus at least 3 direct tier links (amazon -> official -> reputable). Prices are NON-AUTHORITATIVE estimates - they go stale fast. Refresh by querying current Google Shopping results (per part) and updating both 'price' (USD, integer dollars) and 'pricesAsOf' (date last verified, top-level).",
   "_priorityOrder": ["amazon", "official", "reputable"],
 
-  "_configAxesNote": "Drives the interactive build configurator on the landing page (rendered by MindAttic.Deploy/src/parts.js). Each axis becomes a <select>; the chosen value is matched against the README's <!-- when: key=value --> conditional blocks AND each part's `when` field. 'default' is the value shown on first visit and on Reset. Keys/values here MUST match the README markers exactly: battery=no|yes, mic=basic|array, asr=whisper-cpp|openai|google, tts=openai|elevenlabs|piper, case=none|fdm|sla, smarthome=none|kasa|shelly|sonoff.",
+  "_configAxesNote": "The build options the README describes (its build-options and parts tables are written by hand from this file). Each part's `when` field gates it to an axis value; 'default' is the option the README marks as default. Keys/values MUST agree with the part `when` gates and the README (CLA-LAW-4): battery=no|yes, mic=basic|array, asr=whisper-cpp|openai|google, tts=openai|elevenlabs|piper, case=none|fdm|sla, smarthome=none|kasa|shelly|sonoff.",
   "configAxes": [
     { "key": "battery", "label": "Battery / portability", "default": "no", "options": [
       ["no",  "No - desktop, wall-powered"],
@@ -40,7 +40,7 @@
 
   "categories": {
     "core": "Required for every build.",
-    "mic": "The conversation microphone — required, pick one in the configurator. The WonderEcho only handles the wake word; it never streams audio to the Pi.",
+    "mic": "The conversation microphone — required, pick one. The WonderEcho only handles the wake word; it never streams audio to the Pi.",
     "portable": "Optional battery for a roaming build.",
     "smarthome": "Optional locally-controllable smart plugs. Lets Claudia run commands like 'Claudia turn on the living room' without any cloud round-trip beyond Claude itself."
   },

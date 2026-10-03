@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://mindattic.com/claudia/schema/part.schema.json",
   "title": "Claudia parts-catalog part",
-  "description": "Schema for one entry in config/parts.json -> parts[]. The catalog itself is the L5 canon-as-data store (read by MindAttic.Deploy); this schema validates each part. Codex stable id is derived as 'part.<id>' (see docs/data/parts.index.json).",
+  "description": "Schema for one entry in config/parts.json -> parts[]. The catalog itself is the L5 canon-as-data store; this schema validates each part. Codex stable id is derived as 'part.<id>' (see docs/data/parts.index.json).",
   "type": "object",
   "required": ["id", "category", "name", "price", "tiers"],
   "additionalProperties": true,

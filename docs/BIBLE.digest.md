@@ -4,7 +4,7 @@ AUTHORITATIVE - full detail in docs/BIBLE.md
 # Claudia - Codex digest
 
 ## 1. The one sentence
-Claudia is a buildable, vendor-neutral guide ~~+ deployable landing page~~ (**Superseded by [CLA-A3](AMENDMENTS.md)**: published as its static GitHub README) for an always-on,
+Claudia is a buildable, vendor-neutral guide, published as its static GitHub README, for an always-on,
 privacy-respecting voice assistant — a Raspberry Pi Zero 2 WH with a USB conversation microphone
 and a Hiwonder WonderEcho I²C wake-word module, wired straight to the Claude API — that a
 non-expert can assemble in an afternoon.
@@ -18,7 +18,7 @@ non-expert can assemble in an afternoon.
   chip over I²C; there is no Pi-side listener, no openWakeWord, no training step.
 - **NOT a WonderEcho-as-microphone build.** The WonderEcho is a command-word recognizer: it
   reports event IDs over I²C and **never streams raw audio**, so it cannot feed Whisper and never
-  appears in ALSA ([CLA-A2](AMENDMENTS.md)). Conversation audio comes from the required USB mic.
+  appears in ALSA. Conversation audio comes from the required USB mic.
 - **NOT a Whisplay-HAT project.** The upstream repo is named for the Whisplay HAT, but Claudia
   deliberately uses only its LLM/ASR/TTS plumbing — wake events come from the WonderEcho and
   conversation audio from the USB mic instead.
@@ -26,8 +26,9 @@ non-expert can assemble in an afternoon.
   Piper, or OpenAI / Google / ElevenLabs). The LLM brain is Claude by design — that is the point
   of the project, not an incidental choice.
 - **NOT a web deploy.** The project page is this repo's GitHub README
-  (https://github.com/mindattic/Claudia); the old `mindattic.com/claudia.htm` landing page rendered
-  by the sibling **MindAttic.Deploy** repo was retired (MindAttic.Deploy DEP-A6).
+  (https://github.com/mindattic/Claudia). Nothing renders or uploads it; edit `README.md` and push.
+- **NOT an interactive configurator.** The README is a static page: its parts table is written by
+  hand from `config/parts.json`, and no tool reads the catalog to build a page or shopping list.
 
 ## The Laws
 Claudia inherits the org-wide [MindAttic House Rules](../../MindAttic.HouseRules.md). Those laws
@@ -59,11 +60,11 @@ Stale-by-design data must always say when it was last verified — never present
 live fact.
 
 ### {#CLA-LAW-4} Configurator axes are a single contract.
-An axis `key=value` is valid only if it agrees in all ~~three~~ places: the `configAxes` block in
-`config/parts.json`, the part `when` gates, ~~and the README `<!-- when: -->` markers~~ and the
-README's prose naming that option (**Superseded by [CLA-A3](AMENDMENTS.md)**: the README no longer carries `when` markers). Adding or
-renaming an axis value means updating all of them together; a value present in one but not the
-others is a defect.
+An axis `key=value` is valid only if it agrees in all three places: the `configAxes` block in
+`config/parts.json`, the part `when` gates, and the README's build-options table and prose naming
+that option. Adding or renaming an axis value means updating all of them together; a value present
+in one but not the others is a defect. `doctor` enforces that every `when` key is a known axis;
+the README leg is checked by review.
 
 ### {#CLA-LAW-5} No hardware claim ships unverified against the vendor.
 I²C addresses, register opcodes, pin mappings, SKUs, and "in the box" contents are asserted only
@@ -73,7 +74,7 @@ with a vendor citation, and firmware-dependent specifics (e.g. the WonderEcho `0
 ## Glossary
 - **WonderEcho** — Hiwonder I²C wake-word module (CI1302 chip); recognizes "Claudia" on-device
   and reports event IDs over I²C address `0x52` on bus 1. Its on-board mic + speaker serve only
-  the on-chip recognizer — it never streams audio and is not an ALSA device ([CLA-A2](AMENDMENTS.md)).
+  the on-chip recognizer — it never streams audio and is not an ALSA device.
   Catalog id `part.hiwonder-wonderecho`.
 - **USB conversation mic** — the required ALSA capture device the chatbot records from, attached
   via the Pi's OTG data port: `part.sunfounder-mic` (basic, default) or `part.respeaker-xvf3800`
@@ -85,22 +86,12 @@ with a vendor citation, and firmware-dependent specifics (e.g. the WonderEcho `0
   Pi (see [CLA-LAW-2](#CLA-LAW-2)).
 - **ASR / TTS** — automatic speech recognition (speech→text) / text-to-speech (text→speech); each
   builder-selectable via a config axis.
-- **Config axis** — a ~~landing-page `<select>` choice~~ build option (**Superseded by [CLA-A3](AMENDMENTS.md)**) (`battery`/`mic`/`asr`/`tts`/`case`/
-  `smarthome`) governed by [CLA-LAW-4](#CLA-LAW-4).
+- **Config axis** — a build option (`battery`/`mic`/`asr`/`tts`/`case`/`smarthome`) governed by
+  [CLA-LAW-4](#CLA-LAW-4).
 - **Wake event** — the WonderEcho flagging, over I²C, that it heard "Claudia"; the Pi polls this
   register and starts a recording session.
-- **MindAttic.Deploy** — sibling deploy repo. ~~Renders this README into the public landing page;~~
-  **Superseded by [CLA-A3](AMENDMENTS.md)** — it no longer renders or uploads Claudia (DEP-A6). Not part of Claudia's own scope.
 
 ## Story status index
 - done: 8
 - partial: 5
 - planned: 0
-- cut: 0
-
-## Latest amendment
-## CLA-A1 — Adopt the Codex documentation standard (supersedes —)
-**What changed.** Installed the MindAttic Codex canon for this repo: added `docs/BIBLE.md` (L0),
-`docs/USER_STORIES.md` (L2), this `docs/AMENDMENTS.md` (L1), `docs/rfc/0001-config-axis-contract.md`,
-the L5 data registry `docs/data/parts.index.json` + `docs/data/_schema/part.schema.json`,
-`tools/codex.ps1` (doctor + digest), and the `.claude/hooks/inject-digest.ps1` SessionStart hook

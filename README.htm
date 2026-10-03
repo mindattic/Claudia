@@ -136,7 +136,7 @@ pre:hover .cpbtn{opacity:1}
 <li>Starts on boot as a systemd service and ends each session after 60 seconds of silence or a stop word.</li>
 </ul>
 <h2 id="parts-list">Parts list</h2>
-<p>Prices are approximate USD retail as of 2026-06-09, from <a href="config/parts.json">config/parts.json</a>. Check current prices before you order. Buy links follow the catalog's priority order (Amazon, then official store, then reputable sellers).</p>
+<p>Prices are approximate USD retail as of 2026-06-09. These tables are static: they are written by hand from <a href="config/parts.json">config/parts.json</a> and updated by hand when the catalog changes. Check current prices before you order. Buy links follow the catalog's priority order (Amazon, then official store, then reputable sellers).</p>
 <h3 id="core-parts">Core parts</h3>
 <p>Required for every build.</p>
 <table><thead><tr>
@@ -870,7 +870,7 @@ rm -f ~/whisplay-ai-chatbot/data/recordings/*.wav 2&gt;/dev/null</code></pre>
 <tr>
 <td><code>tools/codex.ps1 digest</code></td>
 <td>Windows PowerShell 5.1</td>
-<td>Regenerates <code>docs/BIBLE.digest.md</code> from the bible and the latest amendment.</td>
+<td>Regenerates <code>docs/BIBLE.digest.md</code> from the bible, the story statuses and any pending decisions.</td>
 </tr>
 <tr>
 <td><code>tools/build-readme.ps1</code></td>
@@ -904,7 +904,7 @@ rm -f ~/whisplay-ai-chatbot/data/recordings/*.wav 2&gt;/dev/null</code></pre>
 <td>Part photos referenced by the catalog.</td>
 </tr>
 </tbody></table>
-<p>Build-option contract: an option <code>key=value</code> is valid only if the <code>configAxes</code> block and each part's gate agree. This is checked by review today; <a href="docs/rfc/0001-config-axis-contract.md">RFC 0001</a> proposes teaching <code>codex.ps1 doctor</code> to check it.</p>
+<p>Build-option contract: an option <code>key=value</code> is valid only if the <code>configAxes</code> block, each part's gate and this README's build-options table agree. <code>codex.ps1 doctor</code> checks that every part gate names a known axis; the README side is checked by review.</p>
 <h2 id="project-layout">Project layout</h2>
 <pre><code class="language-text">Claudia/
   README.md                 project page and build guide (this file)
@@ -923,10 +923,10 @@ rm -f ~/whisplay-ai-chatbot/data/recordings/*.wav 2&gt;/dev/null</code></pre>
     build-readme.ps1        regenerates README.htm
   docs/
     BIBLE.md                architecture, laws, verified state, glossary
-    AMENDMENTS.md           append-only change log
+    AMENDMENTS.md           pending decisions (normally empty)
     USER_STORIES.md         stories with their verifying checks
     BIBLE.digest.md         generated, never hand-edited
-    rfc/                    design notes
+    rfc/                    open design proposals
     data/                   catalog id index and schema</code></pre>
 <h2 id="testing">Testing</h2>
 <p>There is no compiler and no test runner. Build means regenerating generated files; test means these checks pass. Run from the repo root in Windows PowerShell 5.1:</p>
@@ -947,12 +947,11 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools/build-readme.ps1</code
 <h2 id="documentation">Documentation</h2>
 <ul>
 <li><a href="docs/BIBLE.md">docs/BIBLE.md</a>: what Claudia is and is not, architecture, laws, verified state, glossary</li>
-<li><a href="docs/AMENDMENTS.md">docs/AMENDMENTS.md</a>: append-only change log; an amendment wins over the bible</li>
+<li><a href="docs/AMENDMENTS.md">docs/AMENDMENTS.md</a>: decisions not yet folded into the bible (normally empty)</li>
 <li><a href="docs/USER_STORIES.md">User stories</a>: Epics A to D (configure and shop, assemble and flash, install and converse, verify and operate)</li>
-<li><a href="docs/rfc/0001-config-axis-contract.md">RFC 0001</a>: the build-option contract</li>
 <li><a href="AGENTS.md">AGENTS.md</a>: instructions for AI agents working in this repo</li>
 </ul>
-<p>This README on GitHub is the project page. The old mindattic.com/claudia.htm landing page was retired. Releases bump the major version only (1.0.0, 2.0.0, 3.0.0).</p>
+<p>This README on GitHub is the project page; it is a static page with no build or deploy step. Releases bump the major version only (1.0.0, 2.0.0, 3.0.0).</p>
 <p>Reference links:</p>
 <ul>
 <li><a href="https://www.hiwonder.com/products/wonderecho">Hiwonder WonderEcho</a></li>

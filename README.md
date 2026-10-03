@@ -30,7 +30,7 @@ Version 1.0.0. Try it: order the parts below, flash Raspberry Pi OS, then run th
 
 ## Parts list
 
-Prices are approximate USD retail as of 2026-06-09, from [config/parts.json](config/parts.json). Check current prices before you order. Buy links follow the catalog's priority order (Amazon, then official store, then reputable sellers).
+Prices are approximate USD retail as of 2026-06-09. These tables are static: they are written by hand from [config/parts.json](config/parts.json) and updated by hand when the catalog changes. Check current prices before you order. Buy links follow the catalog's priority order (Amazon, then official store, then reputable sellers).
 
 ### Core parts
 
@@ -815,7 +815,7 @@ rm -f ~/whisplay-ai-chatbot/data/recordings/*.wav 2>/dev/null
 | `scripts/pi/install-claudia.sh` | Raspberry Pi (bash) | Idempotent installer for the system setup, chatbot install, healthcheck and boot service. Safe to re-run. |
 | `scripts/pi/healthcheck.sh` | Raspberry Pi (bash) | Four-layer smoke test: WonderEcho on I²C, USB mic in ALSA, network to `api.anthropic.com`, and a Claude API call that must return HTTP 200. |
 | `tools/codex.ps1 doctor` | Windows PowerShell 5.1 | Validates the docs: front matter, unique ids, cross-references, JSON and schema validity for the config files, catalog id uniqueness, cited paths and digest freshness. Must exit 0. |
-| `tools/codex.ps1 digest` | Windows PowerShell 5.1 | Regenerates `docs/BIBLE.digest.md` from the bible and the latest amendment. |
+| `tools/codex.ps1 digest` | Windows PowerShell 5.1 | Regenerates `docs/BIBLE.digest.md` from the bible, the story statuses and any pending decisions. |
 | `tools/build-readme.ps1` | Windows PowerShell 5.1 | Regenerates README.htm from this README through the shared MindAttic engine. |
 
 ## Configuration
@@ -828,7 +828,7 @@ rm -f ~/whisplay-ai-chatbot/data/recordings/*.wav 2>/dev/null
 | [config/asoundrc.usbmic](config/asoundrc.usbmic) | ALSA profile that makes the USB mic the default capture device (card 1) and leaves playback on card 0. The installer writes it if `~/.asoundrc` does not exist. |
 | [config/images](config/images) | Part photos referenced by the catalog. |
 
-Build-option contract: an option `key=value` is valid only if the `configAxes` block and each part's gate agree. This is checked by review today; [RFC 0001](docs/rfc/0001-config-axis-contract.md) proposes teaching `codex.ps1 doctor` to check it.
+Build-option contract: an option `key=value` is valid only if the `configAxes` block, each part's gate and this README's build-options table agree. `codex.ps1 doctor` checks that every part gate names a known axis; the README side is checked by review.
 
 ## Project layout
 
@@ -850,10 +850,10 @@ Claudia/
     build-readme.ps1        regenerates README.htm
   docs/
     BIBLE.md                architecture, laws, verified state, glossary
-    AMENDMENTS.md           append-only change log
+    AMENDMENTS.md           pending decisions (normally empty)
     USER_STORIES.md         stories with their verifying checks
     BIBLE.digest.md         generated, never hand-edited
-    rfc/                    design notes
+    rfc/                    open design proposals
     data/                   catalog id index and schema
 ```
 
@@ -881,12 +881,11 @@ Reviewed by hand, not automated:
 ## Documentation
 
 - [docs/BIBLE.md](docs/BIBLE.md): what Claudia is and is not, architecture, laws, verified state, glossary
-- [docs/AMENDMENTS.md](docs/AMENDMENTS.md): append-only change log; an amendment wins over the bible
+- [docs/AMENDMENTS.md](docs/AMENDMENTS.md): decisions not yet folded into the bible (normally empty)
 - [User stories](docs/USER_STORIES.md): Epics A to D (configure and shop, assemble and flash, install and converse, verify and operate)
-- [RFC 0001](docs/rfc/0001-config-axis-contract.md): the build-option contract
 - [AGENTS.md](AGENTS.md): instructions for AI agents working in this repo
 
-This README on GitHub is the project page. The old mindattic.com/claudia.htm landing page was retired. Releases bump the major version only (1.0.0, 2.0.0, 3.0.0).
+This README on GitHub is the project page; it is a static page with no build or deploy step. Releases bump the major version only (1.0.0, 2.0.0, 3.0.0).
 
 Reference links:
 
