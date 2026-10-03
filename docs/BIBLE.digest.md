@@ -25,8 +25,9 @@ non-expert can assemble in an afternoon.
 - **NOT tied to one cloud vendor for speech.** ASR and TTS are builder-selectable (local Whisper /
   Piper, or OpenAI / Google / ElevenLabs). The LLM brain is Claude by design — that is the point
   of the project, not an incidental choice.
-- **NOT the deploy pipeline.** Rendering `README.md` into `mindattic.com/claudia.htm` is owned by
-  the sibling **MindAttic.Deploy** repo; Claudia only supplies the source `README.md` + catalog.
+- **NOT a web deploy.** The project page is this repo's GitHub README
+  (https://github.com/mindattic/Claudia); the old `mindattic.com/claudia.htm` landing page rendered
+  by the sibling **MindAttic.Deploy** repo was retired (MindAttic.Deploy DEP-A6).
 
 ## The Laws
 Claudia inherits the org-wide [MindAttic House Rules](../../MindAttic.HouseRules.md). Those laws

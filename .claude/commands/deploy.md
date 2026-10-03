@@ -1,21 +1,9 @@
-Deploy the Claudia landing page (`mindattic.com/claudia.htm`) via **MindAttic.Deploy** (sibling repo at `D:\Projects\MindAttic\MindAttic.Deploy`).
+# /deploy -- no web deploy
 
-This now uses the standard catalog pipeline: `README.md` is rendered through `template/index.template.htm` with the `Hardware` theme and FTPS-uploaded as a single file. The old 3-file long-form-guide pipeline (`scripts/cli/deploy.ps1` + marker-block splicing + `/claudia/` subfolder) is retired.
+**Claudia has no web deploy.** Its README on GitHub -- https://github.com/mindattic/Claudia -- is the project page. To update the project page, edit `README.md` and push to `main`.
 
-Run this command and report the result:
+The README-driven landing page `mindattic.com/claudia.htm` was retired together with MindAttic.Deploy's catalog mode (amendment DEP-A6 in `MindAttic.Deploy/docs/AMENDMENTS.md`, 2026-10-03). `npm run deploy -- --only claudia` is now rejected, so do not run MindAttic.Deploy for this project.
 
-```
-powershell -NoProfile -ExecutionPolicy Bypass -Command "cd D:\Projects\MindAttic\MindAttic.Deploy; npm run deploy -- --only claudia"
-```
+Note: the interactive parts configurator / cost calculator (`config/parts.json` filling the `<!-- CONFIG-WIDGET -->`, `<!-- PARTS-GALLERY -->` and `<!-- when: ... -->` markers in `README.md`) was rendered only by the retired catalog build (`MindAttic.Deploy/src/parts.js`). GitHub shows those markers as nothing; `config/parts.json` is left in place as the parts/price data.
 
-It will:
-
-1. Render `D:\Projects\MindAttic\Claudia\README.md` through the catalog template (Hardware theme, MindAttic.UIUX components loaded via jsDelivr).
-2. FTPS-upload `out/claudia.htm` to `/mindattic.com/claudia.htm`.
-
-After running, summarize the result and flag any failures.
-
-Notes:
-- Catalog entry: `MindAttic.Deploy/projects.json` -> `projects[]` slug `claudia` (theme: Hardware).
-- Credentials: `MindAttic.Deploy/secrets/ftp.json` (gitignored).
-- Old subfolder URL `mindattic.com/claudia/` still exists on the FTP server until you manually delete it.
+When invoked, tell the user the above and stop.

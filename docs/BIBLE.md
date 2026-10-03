@@ -50,8 +50,9 @@ non-expert can assemble in an afternoon.
 - **NOT tied to one cloud vendor for speech.** ASR and TTS are builder-selectable (local Whisper /
   Piper, or OpenAI / Google / ElevenLabs). The LLM brain is Claude by design — that is the point
   of the project, not an incidental choice.
-- **NOT the deploy pipeline.** Rendering `README.md` into `mindattic.com/claudia.htm` is owned by
-  the sibling **MindAttic.Deploy** repo; Claudia only supplies the source `README.md` + catalog.
+- **NOT a web deploy.** The project page is this repo's GitHub README
+  (https://github.com/mindattic/Claudia); the old `mindattic.com/claudia.htm` landing page rendered
+  by the sibling **MindAttic.Deploy** repo was retired (MindAttic.Deploy DEP-A6).
 
 ## 4. Architecture canon {#CLA-§4}
 
@@ -66,8 +67,8 @@ non-expert can assemble in an afternoon.
   │  docs/ ................ Codex canon (this bible, etc.)     │        │
   └───────────────────────────────────────────────────────────┼────────┘
             │ README.md + parts.json                            │
-            ▼ (rendered by sibling MindAttic.Deploy)            │
-     mindattic.com/claudia.htm  ◄── configurator reads ─────────┘
+            ▼ (published as the GitHub README)                  │
+     github.com/mindattic/Claudia  ◄── (configurator retired) ──┘
             │ builder follows guide
             ▼
   ┌────────────────────────── On the Pi ──────────────────────────────┐
@@ -124,7 +125,8 @@ non-expert can assemble in an afternoon.
 - **Healthcheck** — `scripts/pi/healthcheck.sh` proves I²C + network + Claude API before launch.
 - **Wake / converse** — WonderEcho detects "Claudia" on-device, flags a wake event on I²C; the
   chatbot service records from the USB mic, runs ASR → Claude → TTS, and speaks the reply.
-- **Deploy** — sibling MindAttic.Deploy renders `README.md` → `mindattic.com/claudia.htm` (external).
+- **Publish** — the GitHub README (https://github.com/mindattic/Claudia) is the project page; the
+  `mindattic.com/claudia.htm` landing page was retired (MindAttic.Deploy DEP-A6).
 
 ## 5. The Laws {#CLA-§5}
 
