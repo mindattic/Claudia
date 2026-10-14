@@ -87,3 +87,12 @@ Dependency-ordered toward "a non-expert ships a working Claudia":
 3. **CLA-US-D1 / CLA-US-D2** — healthcheck + boot service proven on a real Pi.
 4. Confirm the WonderEcho `0x52` address and `0x10` set-trigger opcode against shipping firmware,
    then drop the caveat where confirmed ([CLA-LAW-5](BIBLE.md#CLA-LAW-5)).
+
+## Tickets
+> Permanent log of every change and fix — this repo's ticket system. Rows are append-only: never
+> delete or reword one; only move its Status (open → closed / wont-do) and fill in Ref. Status is
+> a word, not a glyph, so tickets don't count toward the story index. Keep this section last.
+
+| ID | Date | Type | Status | Summary | Ref |
+|---|---|---|---|---|---|
+| CLA-T1 | 2026-10-12 | docs | closed | Start the permanent ticket log in USER_STORIES.md | — |
