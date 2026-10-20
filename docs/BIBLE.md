@@ -92,7 +92,8 @@ non-expert can assemble in an afternoon.
 - **`README.md`** — the canonical build guide (12 numbered parts + troubleshooting) and the
   project page as GitHub shows it. It is static: the parts tables and the build-options table are
   written by hand from `config/parts.json`, and per-option differences are plain prose (no
-  conditional markers). `tools/build-readme.ps1` regenerates `README.htm` from it.
+  conditional markers). It is also the home page of the docs site at
+  https://mindattic.github.io/Claudia/, published on every push to `main` [see HOUSE-LAW-14].
 - **`config/parts.json`** — L5 canon-as-data: the shopping catalog AND the `configAxes` (the build
   options the README describes). Only `tools/codex.ps1 doctor` reads it; the README tables are
   updated by hand when it changes. See [§4.2](#CLA-§4) and [`docs/data/parts.index.json`](data/parts.index.json).

@@ -816,7 +816,7 @@ rm -f ~/whisplay-ai-chatbot/data/recordings/*.wav 2>/dev/null
 | `scripts/pi/healthcheck.sh` | Raspberry Pi (bash) | Four-layer smoke test: WonderEcho on I²C, USB mic in ALSA, network to `api.anthropic.com`, and a Claude API call that must return HTTP 200. |
 | `tools/codex.ps1 doctor` | Windows PowerShell 5.1 | Validates the docs: front matter, unique ids, cross-references, JSON and schema validity for the config files, catalog id uniqueness, cited paths and digest freshness. Must exit 0. |
 | `tools/codex.ps1 digest` | Windows PowerShell 5.1 | Regenerates `docs/BIBLE.digest.md` from the bible, the story statuses and any pending decisions. |
-| `tools/build-readme.ps1` | Windows PowerShell 5.1 | Regenerates README.htm from this README through the shared MindAttic engine. |
+| `.github/workflows/docs.yml` | GitHub Actions | Publishes this README and `docs/` to https://mindattic.github.io/Claudia/ on every push to `main`, through the shared MindAttic.Toolkit DocFX pipeline. |
 
 ## Configuration
 
@@ -847,7 +847,8 @@ Claudia/
     healthcheck.sh          four-layer smoke test
   tools/
     codex.ps1               doctor and digest
-    build-readme.ps1        regenerates README.htm
+  .github/workflows/
+    docs.yml                publishes the docs site to GitHub Pages
   docs/
     BIBLE.md                architecture, laws, verified state, glossary
     AMENDMENTS.md           pending decisions (normally empty)
@@ -864,7 +865,6 @@ There is no compiler and no test runner. Build means regenerating generated file
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File tools/codex.ps1 digest
 powershell -NoProfile -ExecutionPolicy Bypass -File tools/codex.ps1 doctor
-powershell -NoProfile -ExecutionPolicy Bypass -File tools/build-readme.ps1
 ```
 
 Reviewed by hand, not automated:
