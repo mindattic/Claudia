@@ -96,12 +96,12 @@ All part photos are in [config/images](config/images).
 1. Order the core parts and one microphone.
 2. Wire the WonderEcho to the Pi with four jumpers and plug the USB mic into the middle `USB` port through the OTG adapter (see Assemble).
 3. Flash Raspberry Pi OS 64-bit with hostname `claudia`, SSH and Wi-Fi enabled (see Flash the microSD), then boot the Pi.
-4. Copy the installer to the Pi and run it from your computer, as shown below.
+4. Copy the installer and healthcheck to the Pi and run the installer from your computer, as shown below.
 5. Put your Claude API key in `~/whisplay-ai-chatbot/.env` (see Configure the chatbot) and run `bash ~/healthcheck.sh`. You should see four green check marks.
 6. Say "Claudia" and ask a question. Claude answers out loud.
 
 ```bash
-scp scripts/pi/install-claudia.sh <your-username>@claudia.local:~
+scp scripts/pi/install-claudia.sh scripts/pi/healthcheck.sh <your-username>@claudia.local:~
 ssh <your-username>@claudia.local 'bash ~/install-claudia.sh'
 ```
 
