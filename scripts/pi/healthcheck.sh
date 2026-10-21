@@ -45,8 +45,9 @@ fi
 step "3. Network reachability"
 # Use HTTPS instead of ping — many networks/APIs drop ICMP but pass TLS.
 # A 4xx response still proves we got a real reply from api.anthropic.com.
-net_code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 5 https://api.anthropic.com/ 2>/dev/null || echo "000")
-if [ "$net_code" != "000" ]; then
+# curl prints 000 via -w on failure itself, so don't append a fallback.
+net_code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 5 https://api.anthropic.com/ 2>/dev/null)
+if [ -n "$net_code" ] && [ "$net_code" != "000" ]; then
   ok "api.anthropic.com responded (HTTP $net_code)"
 else
   bad "cannot reach api.anthropic.com (Wi-Fi, DNS, or TLS issue)"
