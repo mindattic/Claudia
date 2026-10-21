@@ -521,7 +521,7 @@ The WonderEcho runs its own on-device wake-word detector, so the Pi does not hav
 # firmware revision before relying on this in production.
 cd ~/whisplay-ai-chatbot
 python3 - <<'PY'
-import smbus2 as smbus, time
+import smbus, time            # python3-smbus, installed with i2c-tools above
 bus = smbus.SMBus(1)          # I²C bus 1 on the Pi Zero
 ADDR = 0x52                    # WonderEcho default — confirm with i2cdetect
 WORD = b"claudia"
