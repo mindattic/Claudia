@@ -106,4 +106,4 @@ Dependency-ordered toward "a non-expert ships a working Claudia":
 | CLA-T8 | 2026-10-16 | docs | closed | Update USER_STORIES.md | — |
 | CLA-T9 | 2026-10-19 | chore | open | Convert tracked source files to LF line endings via .gitattributes, per HOUSE-LAW-13 (low priority) | — |
 | CLA-T10 | 2026-10-20 | docs | closed | Publish Claudia docs to GitHub Pages via the shared Toolkit DocFX pipeline: run adopt-docs-site.ps1 (README.md as home page, docs/*.md as articles, API reference only where the code builds in CI), enable Pages with build_type=workflow, set the repo homepage URL, retire tools/build-readme.ps1 and README.htm, confirm the docs Actions run is green and https://mindattic.github.io/Claudia/ returns 200. Depends on MAT-T8. | aeebc42 |
-| CLA-T11 | 2026-10-20 | chore | open | Update docs pipeline reference from MindAttic.Toolkit to its new name MindAttic.Agency | — |
+| CLA-T11 | 2026-10-20 | chore | closed | Update docs pipeline reference from MindAttic.Toolkit to its new name MindAttic.Agency | — |
