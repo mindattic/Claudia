@@ -57,8 +57,11 @@ step "4. Claude API call"
 if [ ! -f "$ENV_FILE" ]; then
   bad "$ENV_FILE not found — finish Part 08 first"
 else
-  # shellcheck disable=SC1090
-  set -a; source "$ENV_FILE"; set +a
+  # Read only the keys this check needs. The .env is dotenv, not shell:
+  # sourcing it would run the words of an unquoted SYSTEM_PROMPT as commands.
+  env_get() { grep -E "^$1=" "$ENV_FILE" | tail -n1 | cut -d= -f2- | tr -d "\r\"'"; }
+  ANTHROPIC_API_KEY=$(env_get ANTHROPIC_API_KEY)
+  ANTHROPIC_MODEL=$(env_get ANTHROPIC_MODEL)
   if [ -z "${ANTHROPIC_API_KEY:-}" ]; then
     bad "ANTHROPIC_API_KEY is empty in .env"
   else
