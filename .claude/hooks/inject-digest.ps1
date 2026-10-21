@@ -14,7 +14,9 @@ try {
   $digest = Join-Path $repo 'docs\BIBLE.digest.md'
 
   if (-not (Test-Path $digest)) { Write-Output '{}'; exit 0 }
-  $body = Get-Content -LiteralPath $digest -Raw
+  # Read as UTF-8 explicitly: PS 5.1's default is the ANSI codepage, which mangles
+  # the digest's em dashes, superscripts and section signs.
+  $body = [System.IO.File]::ReadAllText($digest, [System.Text.Encoding]::UTF8)
   if ([string]::IsNullOrWhiteSpace($body)) { Write-Output '{}'; exit 0 }
 
   $preamble = @"
