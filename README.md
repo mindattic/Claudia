@@ -816,7 +816,7 @@ rm -f ~/whisplay-ai-chatbot/data/recordings/*.wav 2>/dev/null
 | `scripts/pi/healthcheck.sh` | Raspberry Pi (bash) | Four-layer smoke test: WonderEcho on I²C, USB mic in ALSA, network to `api.anthropic.com`, and a Claude API call that must return HTTP 200. |
 | `tools/codex.ps1 doctor` | Windows PowerShell 5.1 | Validates the docs: front matter, unique ids, cross-references, JSON and schema validity for the config files, catalog id uniqueness, cited paths and digest freshness. Must exit 0. |
 | `tools/codex.ps1 digest` | Windows PowerShell 5.1 | Regenerates `docs/BIBLE.digest.md` from the bible, the story statuses and any pending decisions. |
-| `.github/workflows/docs.yml` | GitHub Actions | Publishes this README and `docs/` to https://mindattic.github.io/Claudia/ on every push to `main`, through the shared MindAttic.Toolkit DocFX pipeline. |
+| `.github/workflows/docs.yml` | GitHub Actions | Publishes this README and `docs/` to https://mindattic.github.io/Claudia/ on every push to `main`, through the shared MindAttic.Agency DocFX pipeline. |
 
 ## Configuration
 
