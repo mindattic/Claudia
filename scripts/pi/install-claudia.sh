@@ -116,7 +116,9 @@ fi
 # above (sk-ant-REPLACE-ME) or the upstream .env.template (empty / its own
 # "your key here" placeholder). Read the value and reject anything that
 # doesn't look like a real Anthropic key.
-api_key=$(grep -E '^ANTHROPIC_API_KEY=' .env | head -1 | cut -d= -f2-)
+# (|| true: under set -e + pipefail a .env with no ANTHROPIC_API_KEY= line
+# would otherwise end the script silently instead of reaching the warning.)
+api_key=$(grep -E '^ANTHROPIC_API_KEY=' .env | head -1 | cut -d= -f2- || true)
 api_key=$(echo "$api_key" | tr -d ' \t\r"'\''')   # strip whitespace, CR, and quotes
 case "$api_key" in
     ""|sk-ant-REPLACE-ME|*REPLACE*|*your*|*YOUR*|*here*|*HERE*)
