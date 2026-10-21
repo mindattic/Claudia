@@ -34,7 +34,12 @@ ok "trimmed background services"
 
 step "5.3  build dependencies"
 sudo apt install -y git curl build-essential python3-pip python3-venv \
-  portaudio19-dev libsndfile1 ffmpeg alsa-utils libatlas-base-dev
+  portaudio19-dev libsndfile1 ffmpeg alsa-utils
+# libatlas-base-dev exists on Bookworm but was dropped from Debian Trixie (the
+# base of current Raspberry Pi OS); install it only where apt can find it.
+if apt-cache policy libatlas-base-dev 2>/dev/null | grep -q 'Candidate: [0-9]'; then
+    sudo apt install -y libatlas-base-dev
+fi
 ok "apt deps installed"
 
 step "5.4  Enable I2C + tools for the WonderEcho module"

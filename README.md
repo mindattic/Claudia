@@ -232,8 +232,10 @@ sudo systemctl disable triggerhappy
 
 ```bash
 sudo apt install -y git curl build-essential python3-pip python3-venv \
-  portaudio19-dev libsndfile1 ffmpeg alsa-utils libatlas-base-dev
+  portaudio19-dev libsndfile1 ffmpeg alsa-utils
 ```
+
+On a Bookworm-based image you can also `sudo apt install -y libatlas-base-dev`; the package no longer exists on Trixie-based Raspberry Pi OS, so leave it out there.
 
 ### Enable I2C and detect the WonderEcho
 
