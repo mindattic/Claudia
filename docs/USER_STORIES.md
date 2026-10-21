@@ -99,7 +99,7 @@ Dependency-ordered toward "a non-expert ships a working Claudia":
 | CLA-T1 | 2026-10-12 | docs | closed | Start the permanent ticket log in USER_STORIES.md | — |
 | CLA-T2 | 2026-10-15 | chore | closed | Remove duplicate command copies (/deploy, /do, /quickload, /quicksave) now centralized at the user level (~/.claude/commands) | M.FLOW-T14 |
 | CLA-T3 | 2026-10-16 | chore | closed | install.ps1 adds this repo's 8 .prose/commands stubs for the shared global commands, so any LLM client finds them | mindattic-agent-standard/install.ps1 run 2026-10-16 |
-| CLA-T4 | 2026-10-16 | chore | open | Bug hunt: run an exhaustive /bughunt over the whole repo and fix every real bug found (each fix under its own fix ticket), then hunt again; close this only when a full pass finds nothing | user request 2026-10-16: approved repo sweep |
+| CLA-T4 | 2026-10-16 | chore | closed | Bug hunt: run an exhaustive /bughunt over the whole repo and fix every real bug found (each fix under its own fix ticket), then hunt again; close this only when a full pass finds nothing | 162cd23 |
 | CLA-T5 | 2026-10-16 | chore | open | Run the full unit test suite and fix every failure (each under its own fix ticket) until it passes; put the passing run in --ref. No test project: close this wont-do saying so | user request 2026-10-16: approved repo sweep |
 | CLA-T6 | 2026-10-16 | chore | open | Clean up code and docs: remove dead code, stale comments and outdated or duplicated docs, and simplify where behaviour doesn't change (/simplify); tests stay green | user request 2026-10-16: approved repo sweep |
 | CLA-T7 | 2026-10-16 | docs | open | Bring README.md up to date with the code as it is now (what it is, setup, usage, commands, current state), following codex-standard/README-STYLE.md; README.htm regenerated if the repo has one | user request 2026-10-16: approved repo sweep |
@@ -107,3 +107,11 @@ Dependency-ordered toward "a non-expert ships a working Claudia":
 | CLA-T9 | 2026-10-19 | chore | open | Convert tracked source files to LF line endings via .gitattributes, per HOUSE-LAW-13 (low priority) | — |
 | CLA-T10 | 2026-10-20 | docs | closed | Publish Claudia docs to GitHub Pages via the shared Toolkit DocFX pipeline: run adopt-docs-site.ps1 (README.md as home page, docs/*.md as articles, API reference only where the code builds in CI), enable Pages with build_type=workflow, set the repo homepage URL, retire tools/build-readme.ps1 and README.htm, confirm the docs Actions run is green and https://mindattic.github.io/Claudia/ returns 200. Depends on MAT-T8. | aeebc42 |
 | CLA-T11 | 2026-10-20 | chore | closed | Update docs pipeline reference from MindAttic.Toolkit to its new name MindAttic.Agency | — |
+| CLA-T12 | 2026-10-21 | fix | closed | healthcheck reports a dead network as reachable: curl -w prints 000 and the \|\| echo 000 fallback appends another, so 000000 passes the 000 check | 1556260 |
+| CLA-T13 | 2026-10-21 | fix | closed | healthcheck sources the chatbot .env as a shell script, executing unquoted SYSTEM_PROMPT words as commands and aborting on apostrophes | 9c14330 |
+| CLA-T14 | 2026-10-21 | fix | closed | install-claudia.sh exits silently under set -e/pipefail when .env has no ANTHROPIC_API_KEY= line instead of warning | e5b89ca |
+| CLA-T15 | 2026-10-21 | fix | closed | inject-digest.ps1 reads the UTF-8 digest as ANSI under PowerShell 5.1, injecting mojibake (em dash becomes a-euro-quote) into session context | b1ff01e |
+| CLA-T16 | 2026-10-21 | fix | closed | Wake-word snippet imports smbus2, but the guide only installs python3-smbus, so it fails with ModuleNotFoundError | 95a7a68 |
+| CLA-T17 | 2026-10-21 | fix | closed | Installer and guide apt line require libatlas-base-dev, which does not exist in Debian trixie (current Raspberry Pi OS), aborting the install | c5b8116 |
+| CLA-T18 | 2026-10-21 | fix | closed | Quick start copies only install-claudia.sh to the Pi, so the installer skips the healthcheck and step 5's 'bash ~/healthcheck.sh' fails with No such file | 162cd23 |
+| CLA-T19 | 2026-10-21 | docs | closed | Update USER_STORIES.md | — |
