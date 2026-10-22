@@ -104,7 +104,7 @@ Dependency-ordered toward "a non-expert ships a working Claudia":
 | CLA-T6 | 2026-10-16 | chore | open | Clean up code and docs: remove dead code, stale comments and outdated or duplicated docs, and simplify where behaviour doesn't change (/simplify); tests stay green | user request 2026-10-16: approved repo sweep |
 | CLA-T7 | 2026-10-16 | docs | open | Bring README.md up to date with the code as it is now (what it is, setup, usage, commands, current state), following codex-standard/README-STYLE.md; README.htm regenerated if the repo has one | user request 2026-10-16: approved repo sweep |
 | CLA-T8 | 2026-10-16 | docs | closed | Update USER_STORIES.md | — |
-| CLA-T9 | 2026-10-19 | chore | open | Convert tracked source files to LF line endings via .gitattributes, per HOUSE-LAW-13 (low priority) | — |
+| CLA-T9 | 2026-10-19 | chore | wont-do | Convert tracked source files to LF line endings via .gitattributes, per HOUSE-LAW-13 (low priority) | — |
 | CLA-T10 | 2026-10-20 | docs | closed | Publish Claudia docs to GitHub Pages via the shared Toolkit DocFX pipeline: run adopt-docs-site.ps1 (README.md as home page, docs/*.md as articles, API reference only where the code builds in CI), enable Pages with build_type=workflow, set the repo homepage URL, retire tools/build-readme.ps1 and README.htm, confirm the docs Actions run is green and https://mindattic.github.io/Claudia/ returns 200. Depends on MAT-T8. | aeebc42 |
 | CLA-T11 | 2026-10-20 | chore | closed | Update docs pipeline reference from MindAttic.Toolkit to its new name MindAttic.Agency | — |
 | CLA-T12 | 2026-10-21 | fix | closed | healthcheck reports a dead network as reachable: curl -w prints 000 and the \|\| echo 000 fallback appends another, so 000000 passes the 000 check | 1556260 |
@@ -115,3 +115,4 @@ Dependency-ordered toward "a non-expert ships a working Claudia":
 | CLA-T17 | 2026-10-21 | fix | closed | Installer and guide apt line require libatlas-base-dev, which does not exist in Debian trixie (current Raspberry Pi OS), aborting the install | c5b8116 |
 | CLA-T18 | 2026-10-21 | fix | closed | Quick start copies only install-claudia.sh to the Pi, so the installer skips the healthcheck and step 5's 'bash ~/healthcheck.sh' fails with No such file | 162cd23 |
 | CLA-T19 | 2026-10-21 | docs | closed | Update USER_STORIES.md | — |
+| CLA-T20 | 2026-10-22 | docs | closed | Update USER_STORIES.md | — |
