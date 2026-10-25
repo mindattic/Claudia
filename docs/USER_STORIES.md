@@ -41,36 +41,18 @@ updated: 2026-10-03
 - **CLA-US-B2 ✅** As a builder, I can flash Raspberry Pi OS 64-bit with hostname/SSH/Wi-Fi
   preset, so the Pi boots headless and reachable at `claudia.local`. *(verified by README part 04
   procedure; version label in `config/versions.json`.)*
-- **CLA-US-B3 🟡** As a builder, I confirm I²C is enabled and the WonderEcho answers on the bus,
-  so I know the module is wired correctly. *Given `i2cdetect -y 1`, Then a `0x5x` address appears.*
-  *(checked in software by `healthcheck.sh` step 1 and `install-claudia.sh` step 8.3; requires
-  real hardware — not exercisable in this repo's CI.)*
+- **CLA-US-B3 🟡** As a builder, I confirm I²C is enabled and the WonderEcho answers on the bus, so I know the module is wired correctly. *Given `i2cdetect -y 1`, Then address `0x34` (or `0x33` if re-addressed) appears.* *(checked in software by `healthcheck.sh` step 1 and `install-claudia.sh` step 8; requires real hardware — not exercisable in this repo's CI.)*
 
 ## Epic C — Install & converse
 
-- **CLA-US-C1 ✅** As a builder, I can run one idempotent installer that provisions the Pi
-  (apt deps, I²C, clone upstream, build, register the boot service), so setup isn't 20 manual
-  steps. *(verified by `bash -n scripts/pi/install-claudia.sh`; idempotency guards reviewed —
-  `.install_dependencies.done`, `systemctl is-enabled` check.)*
-- **CLA-US-C2 ✅** As a builder, I can configure the chatbot from a documented `.env` template
-  with the LLM set to Anthropic, so the brain is Claude. *Given `config/env.template`, Then
-  `LLM_SERVER=anthropic` and a model id are preset.* *(verified by `config/env.template` contents
-  + README part 08.)*
-- **CLA-US-C3 🟡** As a user, I can say "Claudia" and get a spoken answer within seconds, so it
-  works like a real assistant. *Given the running service, When I speak the wake word, Then a wake
-  event fires and Claude replies via TTS.* *(on-device behaviour; depends on WonderEcho firmware
-  register map — caveated per [CLA-LAW-5](BIBLE.md#CLA-LAW-5); not exercisable here.)*
-- **CLA-US-C4 🟡** As a privacy-minded user, I can run ASR and TTS fully locally (whisper-cpp +
-  Piper) so nothing but the Claude call leaves the device. *(local options documented and
-  default-able per [CLA-LAW-1](BIBLE.md#CLA-LAW-1); end-to-end latency only verifiable on hardware.)*
+- **CLA-US-C1 ✅** As a builder, I can run one idempotent installer that provisions the Pi (apt deps, I²C, USB audio config, clone upstream, `.env` defaults, wake bridge, local Vosk/Piper, build, boot service), so setup isn't 20 manual steps. *(verified by `bash -n scripts/pi/install-claudia.sh` and a local run of its ALSA-parsing and `.env` helpers against sample input; idempotency guards reviewed — `.install_dependencies.done`, `.env` keys only added when missing, `systemctl is-enabled` check.)*
+- **CLA-US-C2 ✅** As a builder, I can configure the chatbot from a documented `.env` template with the LLM set to Anthropic, so the brain is Claude. *Given `config/env.template`, Then `LLM_SERVER=anthropic` and `ANTHROPIC_LLM_MODEL` (the key upstream reads) are preset.* *(verified by `config/env.template` contents against upstream `src/cloud-api/anthropic/anthropic-llm.ts` + README Configure the chatbot.)*
+- **CLA-US-C3 🟡** As a user, I can say "Claudia" and get a spoken answer within seconds, so it works like a real assistant. *Given the running service, When I speak the wake word, Then the WonderEcho latches a result, `wonderecho-wake.py` prints WAKE, and Claude replies through the USB speaker.* *(bridge logic tested locally against a simulated I²C bus; on-device behaviour depends on the WonderEcho firmware result ID — caveated per [CLA-LAW-5](BIBLE.md#CLA-LAW-5); not exercisable here.)*
+- **CLA-US-C4 🟡** As a privacy-minded user, I can run ASR and TTS fully locally (Vosk + Piper, the defaults) so nothing but the Claude call leaves the device. *(local options are the default axis values per [CLA-LAW-1](BIBLE.md#CLA-LAW-1) and the installer sets them up; end-to-end latency only verifiable on hardware.)*
 
 ## Epic D — Verify & operate
 
-- **CLA-US-D1 🟡** As a builder, I can run a 90-second healthcheck that proves the WonderEcho is
-  present, the USB mic is visible to ALSA, the network reaches Anthropic, and my key + model
-  return a response, so I debug before launch. *Given `healthcheck.sh`, Then 4 layers report
-  pass/fail.* *(script `bash -n` clean and reviewed; steps 1–2 need hardware, step 4 needs a live
-  key — not run in this repo's CI.)*
+- **CLA-US-D1 🟡** As a builder, I can run a healthcheck that proves the WonderEcho is present, the USB mic and speaker are visible to ALSA, the wake bridge is configured, the network reaches Anthropic, and my key + model return a response, so I debug before launch. *Given `healthcheck.sh`, Then 5 sections report pass/fail.* *(script `bash -n` clean and reviewed; steps 1–3 need hardware, step 5 needs a live key — not run in this repo's CI.)*
 - **CLA-US-D2 🟡** As a builder, I can set the chatbot to start on boot via systemd, so the device
   is always-on. *(documented in README part 10 + `install-claudia.sh` step 10 calling upstream
   `startup.sh`; requires the Pi.)*
@@ -88,6 +70,7 @@ Dependency-ordered toward "a non-expert ships a working Claudia":
 3. **CLA-US-D1 / CLA-US-D2** — healthcheck + boot service proven on a real Pi.
 4. Confirm the WonderEcho `0x52` address and `0x10` set-trigger opcode against shipping firmware,
    then drop the caveat where confirmed ([CLA-LAW-5](BIBLE.md#CLA-LAW-5)).
+5. Confirm on shipping hardware the result ID a voice-learned "Claudia" reports in register `0x64` and the WonderEcho I²C idle voltage, then narrow the bridge default and the safety-check wording ([CLA-LAW-5](BIBLE.md#CLA-LAW-5)). Supersedes item 4: Hiwonder documents address `0x34`, and wake words are learned by voice, not set through a `0x10` opcode.
 
 ## Tickets
 > Permanent log of every change and fix — this repo's ticket system. Rows are append-only: never
@@ -116,3 +99,4 @@ Dependency-ordered toward "a non-expert ships a working Claudia":
 | CLA-T18 | 2026-10-21 | fix | closed | Quick start copies only install-claudia.sh to the Pi, so the installer skips the healthcheck and step 5's 'bash ~/healthcheck.sh' fails with No such file | 162cd23 |
 | CLA-T19 | 2026-10-21 | docs | closed | Update USER_STORIES.md | — |
 | CLA-T20 | 2026-10-22 | docs | closed | Update USER_STORIES.md | — |
+| CLA-T21 | 2026-10-24 | fix | open | Full parts/electrical/software review: default build had no speaker, no WonderEcho-to-chatbot wake glue (wrong I2C address 0x52 vs vendor 0x34, invented 0x10 opcode), wrong upstream env keys (ANTHROPIC_MODEL, whisper-cpp, google), cloud TTS as silent default, unloaded nvm in installer; fix catalog, scripts, guide and canon | — |

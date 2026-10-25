@@ -5,7 +5,7 @@
     "code": "CLA",
     "layer": "data",
     "status": "living",
-    "updated": "2026-06-09"
+    "updated": "2026-10-24"
   },
   "//note": "L5 canon-as-data registry. The CANONICAL store is ../../config/parts.json (the README parts tables are written by hand from it). This file mirrors each part's stable Codex id ('part.<id>') and validating schema so docs/codex.ps1 doctor can validate the catalog and cross-references resolve. Keep ids in sync with config/parts.json when parts are added or removed.",
   "canonicalSource": "config/parts.json",
@@ -17,7 +17,8 @@
     { "id": "part.pi-power-supply",   "category": "core",      "name": "Official Raspberry Pi 12.5W micro-USB power supply" },
     { "id": "part.sunfounder-mic",    "category": "mic",       "name": "SunFounder USB 2.0 Mini Microphone" },
     { "id": "part.respeaker-xvf3800", "category": "mic",       "name": "Seeed reSpeaker XVF3800 USB 4-Mic Array" },
-    { "id": "part.otg-adapter",       "category": "core",      "name": "micro-USB OTG adapter (USB-A female)" },
+    { "id": "part.otg-hub",           "category": "core",      "name": "micro-USB OTG hub, USB-only" },
+    { "id": "part.usb-speaker",       "category": "core",      "name": "Adafruit Mini External USB Stereo Speaker" },
     { "id": "part.hiwonder-wonderecho","category": "core",     "name": "Hiwonder WonderEcho voice module" },
     { "id": "part.elegoo-dupont-wires","category": "core",     "name": "ELEGOO 120pcs Dupont Jumper Wire Kit" },
     { "id": "part.pisugar3-battery",  "category": "portable",  "name": "PiSugar 3 1200 mAh battery" },

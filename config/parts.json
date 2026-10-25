@@ -2,7 +2,7 @@
   "_description": "Parts catalog for the Claudia build. Each part has a 'searchFor' Google Shopping URL plus at least 3 direct tier links (amazon -> official -> reputable). Prices are NON-AUTHORITATIVE estimates - they go stale fast. Refresh by querying current Google Shopping results (per part) and updating both 'price' (USD, integer dollars) and 'pricesAsOf' (date last verified, top-level).",
   "_priorityOrder": ["amazon", "official", "reputable"],
 
-  "_configAxesNote": "The build options the README describes (its build-options and parts tables are written by hand from this file). Each part's `when` field gates it to an axis value; 'default' is the option the README marks as default. Keys/values MUST agree with the part `when` gates and the README (CLA-LAW-4): battery=no|yes, mic=basic|array, asr=whisper-cpp|openai|google, tts=openai|elevenlabs|piper, case=none|fdm|sla, smarthome=none|kasa|shelly|sonoff.",
+  "_configAxesNote": "The build options the README describes (its build-options and parts tables are written by hand from this file). Each part's `when` field gates it to an axis value; 'default' is the option the README marks as default. Keys/values MUST agree with the part `when` gates and the README (CLA-LAW-4): battery=no|yes, mic=basic|array, asr=vosk|openai, tts=piper|openai|elevenlabs, case=none|fdm|sla, smarthome=none|kasa|shelly|sonoff. asr/tts values are upstream ASR_SERVER/TTS_SERVER names (elevenlabs only after the guide's patch); local options are the defaults (CLA-LAW-1).",
   "configAxes": [
     { "key": "battery", "label": "Battery / portability", "default": "no", "options": [
       ["no",  "No - desktop, wall-powered"],
@@ -12,15 +12,14 @@
       ["basic", "Basic - SunFounder USB mini mic"],
       ["array", "Upgrade - reSpeaker XVF3800 4-mic array"]
     ]},
-    { "key": "asr", "label": "Speech-to-text (ASR)", "default": "whisper-cpp", "options": [
-      ["whisper-cpp", "Whisper (local, free)"],
-      ["openai",      "OpenAI Whisper API (cloud, fast)"],
-      ["google",      "Google STT (cloud)"]
+    { "key": "asr", "label": "Speech-to-text (ASR)", "default": "vosk", "options": [
+      ["vosk",   "Vosk (local, free, fits in 512 MB)"],
+      ["openai", "OpenAI speech-to-text API (cloud, faster, more accurate)"]
     ]},
-    { "key": "tts", "label": "Text-to-speech (TTS)", "default": "openai", "options": [
-      ["openai",     "OpenAI gpt-4o-mini-tts (recommended, native)"],
-      ["elevenlabs", "ElevenLabs (best quality, requires patch)"],
-      ["piper",      "Piper (local, free, robotic)"]
+    { "key": "tts", "label": "Text-to-speech (TTS)", "default": "piper", "options": [
+      ["piper",      "Piper (local, free, flat voice)"],
+      ["openai",     "OpenAI gpt-4o-mini-tts (cloud, natural voices)"],
+      ["elevenlabs", "ElevenLabs (cloud, best quality, requires patch)"]
     ]},
     { "key": "case", "label": "3D-printed case", "default": "none", "options": [
       ["none", "No case"],
@@ -36,10 +35,10 @@
   ],
 
   "pricesAsOf": "2026-06-09",
-  "pricesNote": "Approximate USD retail at the date above. Click any part card to verify against current Google Shopping results.",
+  "pricesNote": "Approximate USD retail at the date above, except the OTG hub and USB speaker, added and priced 2026-10-24. Verify against current Google Shopping results before ordering.",
 
   "categories": {
-    "core": "Required for every build.",
+    "core": "Required for every build. The Pi Zero 2 WH has no audio jack, so the USB speaker is what Claudia talks through.",
     "mic": "The conversation microphone — required, pick one. The WonderEcho only handles the wake word; it never streams audio to the Pi.",
     "portable": "Optional battery for a roaming build.",
     "smarthome": "Optional locally-controllable smart plugs. Lets Claudia run commands like 'Claudia turn on the living room' without any cloud round-trip beyond Claude itself."
@@ -82,7 +81,7 @@
         { "label": "SKU",      "value": "SDSQUA4-032G-AN6MA (SanDisk Ultra microSDHC 32 GB)" },
         { "label": "Capacity", "value": "32 GB" },
         { "label": "Speed",    "value": "Class 10, UHS-I U1, A1 app-rated · up to 120 MB/s read" },
-        { "label": "Used for", "value": "Raspberry Pi OS 64-bit (full image) — flashed in Part 04 via Raspberry Pi Imager" },
+        { "label": "Used for", "value": "Raspberry Pi OS 64-bit (full image) — flashed in the guide's Flash the microSD step via Raspberry Pi Imager" },
         { "label": "In the box", "value": "microSD card + full-size SD adapter. No USB reader included." },
         { "label": "Substitutes", "value": "Any reputable 32 GB Class 10 / A1 microSD works (Samsung EVO Plus, Kingston Canvas Select, etc.)" }
       ],
@@ -123,7 +122,7 @@
       "name": "SunFounder USB 2.0 Mini Microphone",
       "price": 9,
       "when": { "mic": "basic" },
-      "note": "Required (or pick the reSpeaker array instead). The conversation mic — the WonderEcho only recognizes the wake word on-chip and never streams audio, so Whisper needs a real ALSA microphone. This thumb-size dongle is plug-and-play USB Audio Class: it shows up in 'arecord -l' the moment it's plugged in, no driver. Plugs into the Pi's middle 'USB' port via the OTG adapter below.",
+      "note": "Required (or pick the reSpeaker array instead). The conversation mic — the WonderEcho only recognizes the wake word on-chip and never streams audio, so Whisper needs a real ALSA microphone. This thumb-size dongle is plug-and-play USB Audio Class: it shows up in 'arecord -l' the moment it's plugged in, no driver. Plugs into one port of the OTG hub below.",
       "specs": [
         { "label": "SKU",        "value": "SunFounder CN0029 · Amazon ASIN B01KLRBHGM" },
         { "label": "Interface",  "value": "USB 2.0 — USB Audio Class 1.0, driverless on Linux/ALSA" },
@@ -147,7 +146,7 @@
       "name": "Seeed reSpeaker XVF3800 USB 4-Mic Array (far-field upgrade)",
       "price": 51,
       "when": { "mic": "array" },
-      "note": "The higher-quality alternative to the SunFounder mini mic: four MEMS mics with on-chip XMOS DSP (echo cancellation, beamforming, neural noise suppression, dereverberation) for 360° pickup up to ~5 m — Alexa-grade far-field capture. Standard USB Audio Class 2.0, so it's driverless ALSA just like the basic mic. Bonus: a 3.5 mm jack + JST connector give it a speaker output too.",
+      "note": "The higher-quality alternative to the SunFounder mini mic: four MEMS mics with on-chip XMOS DSP (echo cancellation, beamforming, neural noise suppression, dereverberation) for 360° pickup up to ~5 m — Alexa-grade far-field capture. Standard USB Audio Class 2.0, so it's driverless ALSA just like the basic mic. It also has a speaker output (3.5 mm jack + JST connector), so a powered or small passive speaker on the array can replace the USB speaker and hub; the guide's default is still the USB speaker.",
       "specs": [
         { "label": "SKU",       "value": "Seeed 101991441 · Amazon ASIN B0FKGFXQQ5" },
         { "label": "Mics",      "value": "4× PDM MEMS, circular array — 360° far-field up to ~5 m" },
@@ -167,24 +166,45 @@
       ]
     },
     {
-      "id": "otg-adapter",
+      "id": "otg-hub",
       "category": "core",
-      "name": "micro-USB OTG adapter (USB-A female)",
-      "price": 3,
-      "note": "Required — the Pi Zero 2 WH has no full-size USB-A port, so the USB mic connects through this. Plug it into the MIDDLE port labeled 'USB' (the data/OTG port), never the corner 'PWR IN' port, which carries power only. Any micro-B-male-to-A-female OTG cable or dongle works; Adafruit 1099 is the reference part.",
+      "name": "micro-USB OTG hub, 3-4 port, USB-only (no Ethernet)",
+      "price": 10,
+      "note": "Required — the Pi Zero 2 WH has a single USB data port and no audio jack, and the build needs two USB devices on it: the conversation mic and the USB speaker. Plug the hub into the MIDDLE port labeled 'USB' (the data/OTG port), never the corner 'PWR IN' port, which carries power only. Any bus-powered USB 2.0 hub with a micro-B OTG plug works. Skip hub+Ethernet combos: their network chip draws ~280 mA even when unused (The Pi Hut's figure).",
       "specs": [
-        { "label": "SKU",       "value": "Adafruit 1099 (cable) · Adafruit 2910 (flush dongle variant)" },
-        { "label": "Connectors","value": "micro-USB-B male (OTG, ID pin wired for host mode) → USB-A female" },
-        { "label": "Length",    "value": "~13 cm (5\") tip-to-tip; passive cable, no electronics" },
-        { "label": "Plugs into","value": "Pi Zero 2 WH middle 'USB' port — NOT the corner 'PWR IN' (power-only)" },
-        { "label": "Used for",  "value": "Hosting the USB conversation mic (basic dongle or reSpeaker array)" }
+        { "label": "Plug",       "value": "micro-USB-B male, OTG (ID pin wired for host mode)" },
+        { "label": "Ports",      "value": "3-4× USB-A 2.0, bus-powered" },
+        { "label": "Avoid",      "value": "Combo hubs with an Ethernet port (idle draw ~280 mA) and pogo-pin hubs that mount under the Pi (they collide with the PiSugar 3)" },
+        { "label": "Plugs into", "value": "Pi Zero 2 WH middle 'USB' port — NOT the corner 'PWR IN' (power-only)" },
+        { "label": "Used for",   "value": "USB conversation mic + USB speaker" },
+        { "label": "Power",      "value": "Mic (~50 mA) + speaker fit the Pi's USB budget on the official 2.5 A supply; keep speaker volume moderate on battery" }
       ],
-      "searchFor": "https://www.google.com/search?udm=28&q=micro+USB+OTG+adapter+raspberry+pi+zero",
+      "searchFor": "https://www.google.com/search?udm=28&q=micro+USB+OTG+hub+4+port+raspberry+pi+zero",
       "tiers": [
-        { "tier": "amazon",    "url": "https://www.amazon.com/s?k=micro+usb+otg+adapter&i=electronics&s=price-asc-rank&rh=p_72%3A2661618011" },
-        { "tier": "official",  "url": "https://www.adafruit.com/product/1099" },
-        { "tier": "reputable", "url": "https://thepihut.com/products/micro-usb-otg-adapter" },
-        { "tier": "reputable", "url": "https://www.adafruit.com/product/2910" }
+        { "tier": "amazon",    "url": "https://www.amazon.com/s?k=micro+usb+otg+hub+4+port&i=electronics&s=price-asc-rank" },
+        { "tier": "reputable", "url": "https://www.newegg.com/p/pl?d=micro+usb+otg+hub" },
+        { "tier": "reputable", "url": "https://www.bhphotovideo.com/c/search?Ntt=micro+usb+otg+hub&N=0&InitialSearch=yes" }
+      ]
+    },
+    {
+      "id": "usb-speaker",
+      "category": "core",
+      "name": "Adafruit Mini External USB Stereo Speaker",
+      "price": 13,
+      "note": "Required — Claudia's voice. The Pi Zero 2 WH has no audio jack, and the WonderEcho's own speaker plays only its firmware phrases, never the chatbot's replies. This USB-powered speaker is a USB audio device, so it needs no driver and shows up in 'aplay -l'. Any USB Audio Class speaker works.",
+      "specs": [
+        { "label": "SKU",       "value": "Adafruit 3369" },
+        { "label": "Interface", "value": "USB only (power + audio over one cable), driverless on Raspberry Pi OS" },
+        { "label": "Output",    "value": "2 × 2 W, 4 Ω" },
+        { "label": "Cable",     "value": "1.17 m (46\")" },
+        { "label": "Size",      "value": "84 × 43 × 32 mm, 74 g" },
+        { "label": "Plugs into","value": "The OTG hub" }
+      ],
+      "searchFor": "https://www.google.com/search?udm=28&q=Adafruit+3369+mini+USB+stereo+speaker",
+      "tiers": [
+        { "tier": "amazon",    "url": "https://www.amazon.com/s?k=adafruit+mini+external+usb+stereo+speaker" },
+        { "tier": "official",  "url": "https://www.adafruit.com/product/3369" },
+        { "tier": "reputable", "url": "https://www.digikey.com/en/products/result?keywords=adafruit%203369" }
       ]
     },
     {
@@ -216,13 +236,13 @@
       "name": "TP-Link Kasa HS103 / KP125M smart plug (local control via python-kasa)",
       "price": 10,
       "when": { "smarthome": "kasa" },
-      "note": "Works locally over the LAN with the python-kasa library — no cloud round-trip. Tell Claudia 'turn on the living room' and a one-line shell call flips it.",
+      "note": "Works locally over the LAN with the python-kasa library — no cloud round-trip at switch time. Tell Claudia 'turn on the living room' and a one-line shell call flips it. Caveat: the KP125M and HS103s on newer firmware use TP-Link's authenticated local protocol (KLAP), which needs your TP-Link account email and password once for the local handshake, so they are not account-free. Older-firmware HS103s are.",
       "specs": [
         { "label": "Model",     "value": "HS103 (single) / HS103P2 (2-pack). KP125M is the newer Matter-capable equivalent and also works with python-kasa." },
         { "label": "Max load",  "value": "10 A resistive @ 120 VAC (1200 W typical, general-use rating)" },
         { "label": "Wi-Fi",     "value": "2.4 GHz only · 802.11 b/g/n (Pi Zero 2 W also 2.4 GHz only)" },
         { "label": "Form",      "value": "“Mini” single outlet, 66.5 × 40 × 38 mm" },
-        { "label": "Local API", "value": "TP-Link Smart Home LAN protocol — “kasa --host <ip> on/off” via python-kasa, no Kasa cloud account required" }
+        { "label": "Local API", "value": "“kasa --host <ip> on/off” via python-kasa. Legacy LAN protocol needs no account; KLAP devices (KP125M, newer HS103 firmware) need --username/--password with your TP-Link credentials" }
       ],
       "searchFor": "https://www.google.com/search?udm=28&q=TP-Link+Kasa+HS103+smart+plug",
       "tiers": [
@@ -238,12 +258,12 @@
       "name": "Shelly Plug US (local HTTP / MQTT, no cloud required)",
       "price": 20,
       "when": { "smarthome": "shelly" },
-      "note": "REST endpoint at http://<ip>/relay/0?turn=on — Claudia can flip it with a single curl. No vendor account needed. Current model is Shelly Plug US Gen4; the legacy /relay/ endpoint still works alongside the new /rpc/ JSON-RPC.",
+      "note": "Local HTTP RPC at http://<ip>/rpc/Switch.Set?id=0&on=true — Claudia can flip it with a single curl. No vendor account needed. Current model is Shelly Plug US Gen4; the guide uses the Gen2+ RPC call, and Gen1 plugs use /relay/0?turn=on instead.",
       "specs": [
-        { "label": "Generation","value": "Shelly Plug US Gen4 (current model) — exposes the new /rpc/ JSON-RPC and the legacy /relay/ endpoints" },
+        { "label": "Generation","value": "Shelly Plug US Gen4 (current model) — Gen2+ /rpc/ JSON-RPC API" },
         { "label": "Max load",  "value": "12 A continuous / 15 A peak (1440 W @ 120 VAC)" },
         { "label": "Wi-Fi",     "value": "2.4 GHz · 802.11 b/g/n" },
-        { "label": "Local API", "value": "HTTP REST + MQTT + WebSocket. Guide uses GET /relay/0?turn=on|off (works on every Shelly generation)." },
+        { "label": "Local API", "value": "HTTP RPC + MQTT + WebSocket. Guide uses GET /rpc/Switch.Set?id=0&on=true|false (Gen2 and later)." },
         { "label": "Extras",    "value": "On-board energy metering · no vendor account needed for local control" }
       ],
       "searchFor": "https://www.google.com/search?udm=28&q=Shelly+Plug+US+Gen4",
@@ -258,14 +278,16 @@
       "category": "core",
       "name": "Hiwonder WonderEcho voice module (I2C wake-word frontend)",
       "price": 24,
-      "note": "The hardware wake-word trigger — NOT the conversation microphone. Its CI1302 chip recognizes 'Claudia' on-device and reports an event ID over I²C; it never streams raw audio, so the build also needs the USB mic above. Does not include any wiring — connect it to the Pi's GPIO header with 4 female-to-female jumper wires (see the ELEGOO Dupont kit below).",
+      "note": "The hardware wake-word trigger — NOT the conversation microphone. Its CI1302 chip recognizes the wake word on-device and reports a result byte over I²C; it never streams raw audio, so the build also needs the USB mic above. 'Claudia' is taught to it once by voice (factory firmware: say 'Hello Hiwonder', then 'study wake', then the new word). Power it from the Pi's 5 V pin; the vendor says to use 5 V to avoid damage. Does not include any wiring — connect it to the Pi's GPIO header with 4 female-to-female jumper wires (see the ELEGOO Dupont kit below).",
       "specs": [
         { "label": "SKU",        "value": "Hiwonder 21090150 · Amazon ASIN B0F7RR983M" },
         { "label": "In the box", "value": "1× WonderEcho module only — no jumper wires (source them separately)" },
         { "label": "Voice chip", "value": "CI1302 (on-device CNN wake-word + recognition firmware)" },
-        { "label": "Interface",  "value": "I²C bus 1, default address 0x52 — verify with “i2cdetect -y 1”" },
-        { "label": "Connector",  "value": "4-pin cable: SDA → BCM 2 (pin 3), SCL → BCM 3 (pin 5), 5V → pin 2, GND → pin 6" },
-        { "label": "On-board",   "value": "Mic + speaker (used only by its on-chip recognizer — not visible to ALSA) + red/blue status LEDs" },
+        { "label": "Interface",  "value": "I²C slave at 0x34 (0x33 if re-addressed via register 0x03); result register 0x64, 0x00 = nothing heard — per Hiwonder's docs; verify with “i2cdetect -y 1”" },
+        { "label": "Wake word",  "value": "Default “Hello Hiwonder”; one extra learned by voice (“study wake”). The result ID a learned wake word reports is not documented — read it with the bridge's --watch mode" },
+        { "label": "Supply",     "value": "5 V (vendor: “ensure the module is powered with 5V to prevent damage”); logic level of SDA/SCL not published — see the guide's pre-wiring check" },
+        { "label": "Connector",  "value": "4-pin header: SDA → BCM 2 (pin 3), SCL → BCM 3 (pin 5), 5V → pin 2, GND → pin 6" },
+        { "label": "On-board",   "value": "Mic + speaker (used only by its on-chip recognizer — not visible to ALSA), Type-C (power + firmware), RST button, red power LED, blue LED that blinks on each recognition" },
         { "label": "Memory",     "value": "2 MB Flash, 640 KB SRAM" },
         { "label": "Range",      "value": "~5 m quiet / ~1 m noisy · up to 255 phrases" },
         { "label": "Size",       "value": "48 × 24 × 10.5 mm, 10 g" },
@@ -276,6 +298,7 @@
       "tiers": [
         { "tier": "amazon",    "url": "https://www.amazon.com/dp/B0F7RR983M" },
         { "tier": "official",  "url": "https://www.hiwonder.com/products/wonderecho" },
+        { "tier": "official",  "url": "https://docs.hiwonder.com/projects/WonderEcho/en/latest/" },
         { "tier": "reputable", "url": "https://thinkrobotics.com/products/hiwonder-wonderecho-ai-voice-recognition-module" }
       ]
     },
@@ -284,7 +307,7 @@
       "category": "core",
       "name": "ELEGOO 120pcs Dupont Jumper Wire Kit (M-F / M-M / F-F)",
       "price": 7,
-      "note": "Required. The WonderEcho does not include any wiring, so you need these to tie the mic module to the Pi's GPIO header. This 120-pc assortment gives you the female-to-female wires for the 4-pin link (SDA → pin 3, SCL → pin 5, 5V → pin 2, GND → pin 6) plus jumpers for any other GPIO wiring. 2.54 mm pitch matches the Pi Zero 2 WH header exactly.",
+      "note": "Required. The WonderEcho does not include any wiring, so you need these to tie the wake-word module to the Pi's GPIO header. This 120-pc assortment gives you the female-to-female wires for the 4-pin link (SDA → pin 3, SCL → pin 5, 5V → pin 2, GND → pin 6) plus jumpers for any other GPIO wiring. 2.54 mm pitch matches the Pi Zero 2 WH header exactly.",
       "specs": [
         { "label": "Pieces",   "value": "120 (3× 40-pin ribbons — peel apart as needed)" },
         { "label": "Types",    "value": "40× male-to-female · 40× male-to-male · 40× female-to-female" },
@@ -315,7 +338,7 @@
         { "label": "Energy chip",    "value": "CSE7766 (UART-attached power meter on GPIO01/03)" },
         { "label": "Max load",       "value": "15 A / 1800 W @ 120 VAC" },
         { "label": "Stock firmware", "value": "eWeLink (cloud-dependent — does NOT meet the “local only” goal as-shipped)" },
-        { "label": "Re-flashable",   "value": "Yes — Tasmota via serial header inside the case (no soldering needed for the S31)" },
+        { "label": "Re-flashable",   "value": "Yes — Tasmota via the serial pads inside the case (no soldering on the S31), using a 3.3 V USB-to-serial adapter (not in this parts list)" },
         { "label": "Reference",      "value": "Tasmota template + flash steps: templates.blakadder.com/sonoff_S31.html" }
       ],
       "searchFor": "https://www.google.com/search?udm=28&q=Sonoff+S31+smart+plug",

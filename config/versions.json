@@ -1,15 +1,18 @@
 {
   "_description": "External dependency versions referenced in the build guide (README.md). Update these when upstream releases new majors; README.md currently hardcodes the labels, so keep them in sync by hand.",
-  "versionsAsOf": "2026-05-20",
+  "versionsAsOf": "2026-10-24",
 
-  "NODE_MAJOR": "24",
-  "NODE_LABEL": "v24.x",
+  "NODE_MAJOR": "20",
+  "NODE_LABEL": "v20.x (installed by upstream install_dependencies.sh via nvm)",
 
-  "PYTHON_SYSTEM_MAJOR": "3.12",
-  "PYTHON_SYSTEM_LABEL": "Python 3.12 (Raspberry Pi OS default)",
+  "PYTHON_SYSTEM_MAJOR": "3.13",
+  "PYTHON_SYSTEM_LABEL": "Python 3.13 (Trixie-based Raspberry Pi OS; Bookworm ships 3.11)",
 
   "RPI_OS_LABEL": "Raspberry Pi OS 64-bit",
 
-  "CLAUDE_DEFAULT_MODEL": "claude-haiku-4-5-20251001",
-  "CLAUDE_DEFAULT_MODEL_LABEL": "Claude Haiku 4.5"
+  "CLAUDE_DEFAULT_MODEL": "claude-haiku-5-5",
+  "CLAUDE_DEFAULT_MODEL_LABEL": "Claude Haiku 5.5",
+
+  "VOSK_MODEL": "vosk-model-small-en-us-0.15",
+  "PIPER_VOICE": "en_US-amy-low"
 }
