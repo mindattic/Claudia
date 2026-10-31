@@ -102,7 +102,7 @@ All part photos are in [config/images](config/images).
 3. Wire the WonderEcho to the Pi with four jumpers, and plug the OTG hub into the middle `USB` port with the mic and speaker in the hub (see Assemble).
 4. Flash Raspberry Pi OS 64-bit with hostname `claudia`, SSH and Wi-Fi enabled (see Flash the microSD), then boot the Pi.
 5. Copy the three Pi scripts over and run the installer from your computer, as shown below. It stops once and asks for your Claude API key.
-6. Put your key in `~/whisplay-ai-chatbot/.env` (see Configure the chatbot) and run the installer again. It finishes with the healthcheck; you should see green check marks in all five sections.
+6. Put your key in `~/whisplay-ai-chatbot/.env` (see Configure the chatbot) and run the installer again. It finishes with the healthcheck; you should see green check marks in all five sections. If you use MindAttic Vault, set Claudia's settings and keys there instead (Claudia tab, Keys tab) and run `python scripts/claudia_vault.py --push`; `--pull` imports a Pi's existing `.env` into Vault once.
 7. Say "Claudia" and ask a question. Claude answers out loud.
 
 ```bash
