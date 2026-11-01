@@ -100,3 +100,5 @@ Dependency-ordered toward "a non-expert ships a working Claudia":
 | CLA-T19 | 2026-10-21 | docs | closed | Update USER_STORIES.md | — |
 | CLA-T20 | 2026-10-22 | docs | closed | Update USER_STORIES.md | — |
 | CLA-T21 | 2026-10-24 | fix | closed | Full parts/electrical/software review: default build had no speaker, no WonderEcho-to-chatbot wake glue (wrong I2C address 0x52 vs vendor 0x34, invented 0x10 opcode), wrong upstream env keys (ANTHROPIC_MODEL, whisper-cpp, google), cloud TTS as silent default, unloaded nvm in installer; fix catalog, scripts, guide and canon | c8a76c2 |
+| CLA-T22 | 2026-10-31 | feature | closed | LAMP: move Claudia's app-level settings and keys to MindAttic.Vault.Desktop (manifest, LoadOrSeed, shared named keys, cog opens Vault) | ee10ad9 scripts/tests/test_claudia_vault.py (26/26) |
+| CLA-T23 | 2026-10-31 | docs | closed | Update USER_STORIES.md | — |
