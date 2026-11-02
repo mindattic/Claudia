@@ -205,6 +205,10 @@ def _env_value(value):
     if isinstance(value, bool):
         return "true" if value else "false"
     text = str(value)
+    if "\n" in text or "\r" in text:
+        # A Multiline value (the system prompt) must stay on one .env line; dotenv turns
+        # \n back into a newline inside double quotes.
+        return '"' + text.replace("\r\n", "\n").replace("\r", "\n").replace("\n", "\\n") + '"'
     return f'"{text}"' if any(c in text for c in " #\"'") else text
 
 
@@ -245,7 +249,9 @@ def parse_env(text):
         k, v = s.split("=", 1)
         v = v.strip()
         if len(v) >= 2 and v[0] == v[-1] and v[0] in "\"'":
-            v = v[1:-1]
+            quote, v = v[0], v[1:-1]
+            if quote == '"':
+                v = v.replace("\\n", "\n")
         values[k.strip()] = v
     return values
 
@@ -293,7 +299,13 @@ def _add_key(provider, name, value):
 
 def _ssh(settings, command, stdin=None):
     host = settings["piHost"] if not settings.get("piUser") else f'{settings["piUser"]}@{settings["piHost"]}'
-    return subprocess.run(["ssh", host, command], input=stdin, capture_output=True, text=True, timeout=60)
+    # Bytes, not text=True: text mode on Windows encodes with the ANSI codepage and turns
+    # every \n into \r\n, so the Pi's UTF-8 .env would come back mangled or with CRLFs.
+    r = subprocess.run(["ssh", host, command], input=None if stdin is None else stdin.encode("utf-8"),
+                       capture_output=True, timeout=60)
+    r.stdout = r.stdout.decode("utf-8", "replace")
+    r.stderr = r.stderr.decode("utf-8", "replace")
+    return r
 
 
 def main(argv):
@@ -312,7 +324,12 @@ def main(argv):
         return 0
     if "--push" in argv:
         r = _ssh(settings, f"cat {REMOTE_ENV} 2>/dev/null || true")
-        merged = merge_env(r.stdout if r.returncode == 0 else "", build_env_values(settings))
+        if r.returncode != 0:
+            # The remote command itself always succeeds, so this is ssh failing; writing now
+            # would replace the Pi's .env with only Vault's keys and drop every other line.
+            print(f"Couldn't read {REMOTE_ENV} on {settings['piHost']}: {r.stderr.strip()}", file=sys.stderr)
+            return 1
+        merged = merge_env(r.stdout, build_env_values(settings))
         w = _ssh(settings, f"umask 077 && cat > {REMOTE_ENV}.tmp && mv {REMOTE_ENV}.tmp {REMOTE_ENV} && "
                            f"(sudo systemctl restart chatbot.service 2>/dev/null || true)", stdin=merged)
         if w.returncode != 0:
